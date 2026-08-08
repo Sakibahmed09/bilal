@@ -347,7 +347,7 @@ body.dimmed #scrim{opacity:.5}
   var CFG={
     slug: Q.get('masjid')||'darul-ummah-goresbrook-1649608083137',
     key:  Q.get('key')||'JejYcMS7hsOsZTPDk2ZhKOAlW9IyQ6Px',
-    walk: parseInt(Q.get('walk')||'10',10),
+    walk: parseInt(Q.get('walk')||'15',10),   // Sakib's actual walk to Darul Ummah
     mode: Q.get('mode')||'home',
     athan:Q.get('athan')||'athan.mp3',
     quiet:Q.get('quiet')==='1',
@@ -372,7 +372,7 @@ body.dimmed #scrim{opacity:.5}
   var CACHE='bilal.tt.'+CFG.slug;
 
   var data=null,lastFetch=0,fired={},athanReady=false,armed=false;
-  var audioEl=null,ctx=null,skyFromKey=null,skyToKey=null,lastKey=null;
+  var audioEl=null,cueEl=null,ctx=null,skyFromKey=null,skyToKey=null,lastKey=null;
 
   function $(i){return document.getElementById(i);}
   function pad(n){return (n<10?'0':'')+n;}
@@ -592,10 +592,21 @@ body.dimmed #scrim{opacity:.5}
     a.addEventListener('canplaythrough',function(){athanReady=true;audioState();});
     a.addEventListener('error',function(){athanReady=false;audioEl=null;audioState();});
 
+    /* The leave-cue has to ride the SAME unlock as the athan. It used to come
+       from the Web Audio API, a separate permission path — which on Silk could
+       well have stayed silent while the athan worked, and only at Maghrib,
+       where nobody would think to check. Same element type, same gesture. */
+    cueEl=new Audio('cue.mp3');
+    cueEl.preload='auto'; cueEl.muted=false; cueEl.volume=0;
+    var cp=cueEl.play();
+    if(cp&&cp.then) cp.then(function(){ try{cueEl.pause();cueEl.currentTime=0;}catch(e){} cueEl.volume=1; })
+                     .catch(function(){ cueEl.volume=1; });
+    else cueEl.volume=1;
+
     armed=true;
     $('gate').classList.remove('show');
     audioEl=a;
-    window.__bilal={audio:a, calls:0, lastError:null, unlock:'pending'};
+    window.__bilal={audio:a, cue:cueEl, calls:0, cues:0, lastError:null, unlock:'pending'};
 
     var p=a.play();                                  // must be in the gesture
     function settle(state, err){
@@ -605,7 +616,14 @@ body.dimmed #scrim{opacity:.5}
       if(err) window.__bilal.lastError=String(err);
       audioState();
       keepAwake();
-      if(Q.get('test')==='athan') setTimeout(function(){ call(); }, 1200);
+      var t=Q.get('test');
+      if(t==='athan') setTimeout(function(){ call(); }, 1200);
+      // ?test=cue hears the leave-cue alone; ?test=maghrib plays the real
+      // sequence compressed — cue, then the athan 4s later — so the Maghrib
+      // behaviour can be checked without waiting for sunset
+      if(t==='cue')     setTimeout(function(){ cue(); }, 1200);
+      if(t==='maghrib'){ setTimeout(function(){ cue(); }, 1200);
+                         setTimeout(function(){ call(); }, 5200); }
     }
     if(p&&p.then) p.then(function(){ settle('ok'); })
                    .catch(function(e){ settle('BLOCKED:'+(e&&e.name||'?'), e); });
@@ -641,9 +659,19 @@ body.dimmed #scrim{opacity:.5}
   }
   // fallback only, when there's no athan.mp3
   function tone(){ beeps([392,523.25,392], 1.05, .5); }
-  // "leave now" — deliberately NOT the athan. Rising, short, a summons rather
+  // "leave now" — deliberately NOT the athan. Rising, ~2s, a summons rather
   // than a call to prayer, because at Maghrib this fires before Maghrib exists.
-  function cue(){ beeps([523.25,659.25,783.99], 0.42, .55); }
+  // Media element first (same unlock as the athan); Web Audio only as a fallback.
+  function cue(){
+    if(CFG.quiet||!armed) return;
+    if(window.__bilal) window.__bilal.cues++;
+    if(cueEl){
+      try{ cueEl.currentTime=0; }catch(e){}
+      cueEl.volume=1;
+      var p=cueEl.play();
+      if(p&&p.catch) p.catch(function(){ beeps([523.25,659.25,783.99],0.42,.55); });
+    } else beeps([523.25,659.25,783.99],0.42,.55);
+  }
 
   function call(){
     if(CFG.quiet||!armed) return;
