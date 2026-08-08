@@ -257,7 +257,11 @@ footer{display:flex;justify-content:space-between;align-items:center;
 #gateBtn:focus{outline:none;background:var(--clay-lift);
   box-shadow:0 0 0 calc(var(--u)*.28) rgba(217,164,143,.3)}
 
-#keepawake{position:fixed;width:2px;height:2px;bottom:0;left:0;opacity:.01;
+/* Was 2x2px. A element that small can be skipped by the compositor entirely,
+   which means no real decode and nothing for the OS to treat as playback.
+   Big enough to genuinely decode, faint enough to be invisible on a TV.
+   Best-effort only — Fire OS's 20 min sleep is an OS timer, see README. */
+#keepawake{position:fixed;width:320px;height:180px;bottom:0;left:0;opacity:.014;
   pointer-events:none;z-index:0}
 
 /* ── mosque wall mode ───────────────────────────────────────────────────── */
@@ -583,6 +587,7 @@ body.dimmed #scrim{opacity:.5}
         // deliberate debug hook: lets playback be verified on the device itself
         // (window.__bilal.audio.paused / .currentTime) rather than by ear alone
         window.__bilal={audio:a, calls:0, lastError:null};
+        keepAwake();          // gesture in hand — start the media session now
         // ?test=athan — fire it straight away so the speakers can be checked
         // without waiting for a real leave-time
         if(Q.get('test')==='athan') setTimeout(function(){ call(); }, 1200);
@@ -753,8 +758,17 @@ body.dimmed #scrim{opacity:.5}
     $('shell').style.webkitTransform=t; $('shell').style.transform=t;
   }
 
+  // A muted element often is not counted as playback. Once the gate has given
+  // us a gesture we can run a genuinely-playing, inaudible audio loop, which is
+  // far more likely to hold a media session open on Fire OS.
+  var hum=null;
   function keepAwake(){
     var v=$('keepawake'); if(v){ var p=v.play(); if(p&&p.catch) p.catch(function(){}); }
+    if(armed){
+      if(!hum){ hum=new Audio('keepawake.mp3'); hum.loop=true; hum.volume=0.02; }
+      if(hum.paused){ var q=hum.play(); if(q&&q.catch) q.catch(function(){}); }
+      if(window.__bilal) window.__bilal.hum=hum;
+    }
     if('wakeLock' in navigator){ try{ navigator.wakeLock.request('screen').catch(function(){}); }catch(e){} }
   }
 
