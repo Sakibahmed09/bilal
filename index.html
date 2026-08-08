@@ -101,9 +101,12 @@ body.cursor{cursor:auto}
   pointer-events:none;background-repeat:repeat-x;background-size:50% 100%;
   opacity:0;-webkit-transition:opacity 1.6s ease;transition:opacity 1.6s ease;
   -webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0)}
-#starFar{-webkit-animation:glide 1054s linear infinite;animation:glide 1054s linear infinite}
-#starMid{-webkit-animation:glideFlip 506s linear infinite;animation:glideFlip 506s linear infinite}
-#cloud  {-webkit-animation:glide 760s linear infinite;animation:glide 760s linear infinite}
+/* Speeds are set from JS (var(--sp*)) so ?drift= can retune them live.
+   dhikry's originals were 3-5x slower; those were right for a phone 40cm from
+   your face and invisible on a TV across a room. */
+#starFar{-webkit-animation:glide var(--spFar) linear infinite;animation:glide var(--spFar) linear infinite}
+#starMid{-webkit-animation:glideFlip var(--spMid) linear infinite;animation:glideFlip var(--spMid) linear infinite}
+#cloud  {-webkit-animation:glide var(--spCloud) linear infinite;animation:glide var(--spCloud) linear infinite}
 @-webkit-keyframes glide{from{-webkit-transform:translate3d(0,0,0)}to{-webkit-transform:translate3d(-50%,0,0)}}
 @keyframes glide{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
 /* mirrored so one tile reads as two different depths */
@@ -123,7 +126,7 @@ body.cursor{cursor:auto}
 #heroes{position:absolute;top:0;left:0;width:200%;height:100%;
   pointer-events:none;opacity:0;
   -webkit-transition:opacity 1.6s ease;transition:opacity 1.6s ease;
-  -webkit-animation:heroDrift 279s linear infinite;animation:heroDrift 279s linear infinite}
+  -webkit-animation:heroDrift var(--spHero) linear infinite;animation:heroDrift var(--spHero) linear infinite}
 @-webkit-keyframes heroDrift{from{-webkit-transform:translate3d(0,0,0)}to{-webkit-transform:translate3d(-50%,-2.6vh,0)}}
 @keyframes heroDrift{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,-2.6vh,0)}}
 .hero{position:absolute;border-radius:50%}
@@ -389,15 +392,31 @@ body.dimmed #scrim{opacity:.5}
   // "stars or clouds" so the whole lot can be interpolated between two windows
   // — that's what lets Maghrib's cloud slowly hand over to Isha's stars instead
   // of one snapping off as the other snaps on.
+  // Daylight cloud was at .16-.20 — too faint to notice on a TV, which is half
+  // of why "I don't see anything". Lifted so there's actually something moving
+  // during the hours the screen is mostly looked at.
   var DRIFT={
-    fajr:    {starFar:.30, starMid:.16, cloud:.07, heroes:.55},
-    dhuhr:   {starFar:0,   starMid:0,   cloud:.16, heroes:0},
-    asr:     {starFar:0,   starMid:0,   cloud:.20, heroes:0},
-    maghrib: {starFar:.06, starMid:.03, cloud:.26, heroes:.12},
-    isha:    {starFar:.58, starMid:.30, cloud:.05, heroes:1}
+    fajr:    {starFar:.34, starMid:.18, cloud:.14, heroes:.55},
+    dhuhr:   {starFar:0,   starMid:0,   cloud:.38, heroes:0},
+    asr:     {starFar:0,   starMid:0,   cloud:.42, heroes:0},
+    maghrib: {starFar:.08, starMid:.04, cloud:.46, heroes:.14},
+    isha:    {starFar:.62, starMid:.34, cloud:.10, heroes:1}
   };
   var LAYERS=['starFar','starMid','cloud'];
   function lerp(a,b,t){ return a+(b-a)*t; }
+
+  /* Seconds to cross one screen width. dhikry's numbers (far 1054 / mid 506 /
+     hero 279) were tuned for a phone held close in a dark room; on a TV across
+     a living room nothing at that rate registers as moving at all. ?drift=2
+     halves the speed again, ?drift=0.5 doubles it. */
+  var SPEED={ spFar:330, spMid:205, spCloud:190, spHero:150 };
+  (function(){
+    var m=parseFloat(Q.get('drift')||'1');
+    if(!(m>0.05 && m<40)) m=1;
+    for(var k in SPEED){
+      document.documentElement.style.setProperty('--'+k, (SPEED[k]*m).toFixed(0)+'s');
+    }
+  })();
 
   /* The five skies are one photograph graded five ways. Because every version
      is driven by the same luminance channel, they are structurally identical
@@ -559,9 +578,17 @@ body.dimmed #scrim{opacity:.5}
       a.addEventListener('error',function(){athanReady=false;audioEl=null;audioState();});
       a.muted=true;
       var p=a.play();
-      if(p&&p.then){ p.then(function(){a.pause();a.currentTime=0;a.muted=false;audioEl=a;audioState();})
-                      .catch(function(){a.muted=false;audioEl=a;audioState();}); }
-      else { a.muted=false; audioEl=a; audioState(); }
+      function ready(){
+        a.muted=false; audioEl=a; audioState();
+        // deliberate debug hook: lets playback be verified on the device itself
+        // (window.__bilal.audio.paused / .currentTime) rather than by ear alone
+        window.__bilal={audio:a, calls:0, lastError:null};
+        // ?test=athan — fire it straight away so the speakers can be checked
+        // without waiting for a real leave-time
+        if(Q.get('test')==='athan') setTimeout(function(){ call(); }, 1200);
+      }
+      if(p&&p.then){ p.then(function(){a.pause();a.currentTime=0;ready();}).catch(ready); }
+      else { ready(); }
     }
     if(ctx&&ctx.state==='suspended'){ var r=ctx.resume();
       if(r&&r.then) r.then(done).catch(done); else done(); }
@@ -588,10 +615,15 @@ body.dimmed #scrim{opacity:.5}
 
   function call(){
     if(CFG.quiet||!armed) return;
+    if(window.__bilal) window.__bilal.calls++;
     if(audioEl&&athanReady){
       try{audioEl.currentTime=0;}catch(e){}
       audioEl.volume=1;
-      var p=audioEl.play(); if(p&&p.catch) p.catch(tone);
+      var p=audioEl.play();
+      if(p&&p.catch) p.catch(function(e){
+        if(window.__bilal) window.__bilal.lastError=String(e);
+        tone();
+      });
     } else tone();
   }
 
