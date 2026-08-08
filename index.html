@@ -143,9 +143,12 @@ body.cursor{cursor:auto}
 /* scrim: pure gradients, no blur. Darkens where type lives. */
 #scrim{position:fixed;top:0;right:0;bottom:0;left:0;z-index:2;pointer-events:none;
   background:
-    linear-gradient(to bottom, rgba(23,20,15,.62) 0%, rgba(23,20,15,.26) 14%, rgba(23,20,15,0) 32%),
-    linear-gradient(to top,    rgba(23,20,15,.92) 0%, rgba(23,20,15,.66) 26%, rgba(23,20,15,0) 60%),
-    linear-gradient(to right,  rgba(23,20,15,.70) 0%, rgba(23,20,15,.22) 48%, rgba(23,20,15,0) 78%)}
+    /* A broad wash was flattening a bright midday sky back into dusk. These are
+       tighter and local: protect exactly where type sits, leave the sky open. */
+    radial-gradient(ellipse 58% 42% at 20% 47%, rgba(23,20,15,.52) 0%, rgba(23,20,15,.20) 52%, rgba(23,20,15,0) 78%),
+    linear-gradient(to bottom, rgba(23,20,15,.44) 0%, rgba(23,20,15,.14) 13%, rgba(23,20,15,0) 26%),
+    linear-gradient(to top,    rgba(23,20,15,.90) 0%, rgba(23,20,15,.52) 22%, rgba(23,20,15,0) 46%),
+    linear-gradient(to right,  rgba(23,20,15,.50) 0%, rgba(23,20,15,.14) 42%, rgba(23,20,15,0) 68%)}
 #wash{position:fixed;top:0;right:0;bottom:0;left:0;z-index:2;pointer-events:none;
   background:radial-gradient(ellipse at 30% 62%, rgba(217,164,143,.30) 0%, rgba(217,164,143,.06) 42%, rgba(23,20,15,0) 72%);
   opacity:0;-webkit-transition:opacity 1s ease;transition:opacity 1s ease}
@@ -341,8 +344,18 @@ body.dimmed #scrim{opacity:.5}
     mode: Q.get('mode')||'home',
     athan:Q.get('athan')||'athan.mp3',
     quiet:Q.get('quiet')==='1',
-    dim:  Q.get('dim')!=='0'
+    dim:  Q.get('dim')!=='0',
+    at:   Q.get('at')||''          // ?at=17:40 to preview any hour
   };
+
+  // Time override for previewing. Real clock unless ?at= is given.
+  var SHIFT=0;
+  if(/^\d{1,2}:\d{2}$/.test(CFG.at)){
+    var hm=CFG.at.split(':'), t=new Date();
+    t.setHours(parseInt(hm[0],10), parseInt(hm[1],10), 0, 0);
+    SHIFT = t.getTime() - Date.now();
+  }
+  function nowDate(){ return new Date(Date.now()+SHIFT); }
   document.body.setAttribute('data-mode',CFG.mode);
 
   var API='https://api.masjidbox.com/1.0/masjidbox/landing/athany/';
@@ -591,7 +604,7 @@ body.dimmed #scrim{opacity:.5}
   }
 
   function paint(){
-    var now=new Date();
+    var now=nowDate();
     $('clock').textContent=hhmm(now);
 
     var row=rowFor(now);
