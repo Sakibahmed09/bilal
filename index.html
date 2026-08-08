@@ -608,19 +608,25 @@ body.dimmed #scrim{opacity:.5}
     a.addEventListener('canplaythrough',function(){athanReady=true;audioState();});
     a.addEventListener('error',function(){athanReady=false;audioEl=null;audioState();});
 
-    cueEl=new Audio('cue.mp3');
-    cueEl.preload='auto'; cueEl.muted=false; cueEl.volume=0;
-    var cp=cueEl.play();
-    if(cp&&cp.then) cp.then(function(){ try{cueEl.pause();cueEl.currentTime=0;}catch(e){} cueEl.volume=1; })
-                     .catch(function(){ cueEl.volume=1; });
-    else cueEl.volume=1;
-
     armed=true;
     $('gate').classList.remove('show');
     audioEl=a;
     window.__bilal={audio:a, cue:cueEl, calls:0, cues:0, lastError:null, unlock:'pending'};
 
     var p=a.play();                                  // must be in the gesture
+
+    /* The cue unlocks SECOND, and that ordering is the whole bug.
+       Silk grants one media unlock per gesture. When the cue was added it went
+       in above the athan and quietly ate the grant, so the athan — the one that
+       matters — was refused. It sounded fine on desktop, which grants freely.
+       If the cue misses out, cue() degrades to the Web Audio beeps; if the
+       athan misses out, the product does not work. */
+    cueEl=new Audio('cue.mp3');
+    cueEl.preload='auto'; cueEl.muted=false; cueEl.volume=0;
+    var cp=cueEl.play();
+    if(cp&&cp.then) cp.then(function(){ try{cueEl.pause();cueEl.currentTime=0;}catch(e){} cueEl.volume=1; })
+                     .catch(function(){ cueEl.volume=1; });
+    else cueEl.volume=1;
     function settle(state, err){
       try{ a.pause(); a.currentTime=0; }catch(e){}
       a.volume=1;
