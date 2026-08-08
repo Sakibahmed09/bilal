@@ -188,7 +188,7 @@ header{display:flex;justify-content:space-between;align-items:flex-start}
    that never visibly changes reads as crashed. But they must not compete with
    the prayer, so they sit at 42% the size and drop to the muted colour: a pulse
    rather than a number you read. Tabular figures stop the clock jittering. */
-.now{font-size:calc(var(--u)*2.35);font-weight:600;letter-spacing:-.022em;line-height:1}
+.now{font-size:calc(var(--u)*4.4);font-weight:600;letter-spacing:-.028em;line-height:1}
 .now .sec{font-size:.42em;font-weight:500;color:var(--veil);letter-spacing:0;
   margin-left:calc(var(--u)*.2)}
 /* cream, not clay: terracotta over a warm sky turns to mush. Clay stays
@@ -206,9 +206,15 @@ main{flex:1;display:flex;flex-direction:column;justify-content:center;
 .prayer{font-family:var(--display);font-size:calc(var(--u)*9.4);line-height:.86;
   letter-spacing:-.032em;margin:calc(var(--u)*.42) 0 calc(var(--u)*.34);color:var(--cream)}
 .line{display:flex;align-items:baseline}
-.line .t{font-size:calc(var(--u)*3.5);font-weight:600;letter-spacing:-.028em;line-height:1}
-.line .c{font-size:calc(var(--u)*1.5);color:var(--veil);font-weight:400;
-  margin-left:calc(var(--u)*1.15)}
+/* Furquan, 8 Aug: "the hierarchy of the name of the prayer and time is
+   conflicting". He was right — 'asr' and '18:30' were two heavy elements
+   stacked in one block, so the eye could not tell which was the subject. The
+   time is now one subordinate line, and it is no longer duplicating the rail,
+   which already prints 18:30 under ASR. */
+.line .t{font-size:calc(var(--u)*2.2);font-weight:600;letter-spacing:-.022em;line-height:1;
+  color:var(--cream);opacity:.9}
+.line .c{font-size:calc(var(--u)*2.2);color:var(--veil);font-weight:400;
+  margin-left:calc(var(--u)*.7)}
 .leave{margin-top:calc(var(--u)*1.15);display:flex;align-items:center;
   font-size:calc(var(--u)*1.32);color:var(--clay);font-weight:600;letter-spacing:-.005em}
 .leave i{width:calc(var(--u)*.5);height:calc(var(--u)*.5);border-radius:50%;
@@ -275,7 +281,7 @@ body[data-mode="mosque"] .leave{display:none}
 body[data-mode="mosque"] main{max-width:80%}
 body[data-mode="mosque"] .prayer{font-size:calc(var(--u)*10.4)}
 body[data-mode="mosque"] .stop .jm{font-size:calc(var(--u)*2.8)}
-body[data-mode="mosque"] .now{font-size:calc(var(--u)*3.4)}
+body[data-mode="mosque"] .now{font-size:calc(var(--u)*5.6)}
 body.dimmed #shell{opacity:.14;-webkit-transition:opacity 2.4s ease;transition:opacity 2.4s ease}
 body.dimmed #scrim{opacity:.5}
 </style>
