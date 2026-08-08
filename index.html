@@ -800,8 +800,7 @@ body.dimmed #scrim{opacity:.5}
       hero.style.display='none'; take.style.display='block';
       $('bigTitle').textContent='leave now';
       $('bigSub').textContent=next.cap+" jama'ah at "+hhmm(next.jamaah)
-        +' · '+Math.max(0,Math.round(toJamaah))+' min to get there'
-        + (tight ? "  ·  athan at "+hhmm(next.begins) : '');
+        +' · '+Math.max(0,Math.round(toJamaah))+' min to get there';
     } else {
       take.style.display='none'; hero.style.display='block';
       $('prayerName').textContent=next.label;
@@ -809,10 +808,10 @@ body.dimmed #scrim{opacity:.5}
       $('countdown').textContent='in '+gap(toJamaah);
       if(CFG.mode==='home'&&toLeave>0&&toLeave<90){
         $('leaveRow').style.display='flex';
-        // in the tight case say when the adhan lands too, so it's clear the
-        // screen isn't going to call you at leave-time
-        $('leaveText').textContent='leave by '+hhmm(leaveAt)+' · '+gap(toLeave)
-          + (tight ? '  ·  athan '+hhmm(next.begins) : '');
+        /* No athan time here. The rail already prints "begins 18:16" directly
+           under that prayer, so repeating it in the leave line was saying the
+           same thing twice in one glance. */
+        $('leaveText').textContent='leave by '+hhmm(leaveAt)+' · '+gap(toLeave);
       } else $('leaveRow').style.display='none';
     }
 
