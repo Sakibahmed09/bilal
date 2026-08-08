@@ -574,36 +574,58 @@ body.dimmed #scrim{opacity:.5}
   function arm(evt){
     if(armed||CFG.quiet) return;
     if(evt&&evt.isTrusted===false) return;
-    try{ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){}
-    function done(){
-      armed=true; $('gate').classList.remove('show');
-      var a=new Audio(CFG.athan); a.preload='auto'; a.volume=1;
-      a.addEventListener('canplaythrough',function(){athanReady=true;audioState();});
-      a.addEventListener('error',function(){athanReady=false;audioEl=null;audioState();});
-      a.muted=true;
-      var p=a.play();
-      function ready(){
-        a.muted=false; audioEl=a; audioState();
-        // deliberate debug hook: lets playback be verified on the device itself
-        // (window.__bilal.audio.paused / .currentTime) rather than by ear alone
-        window.__bilal={audio:a, calls:0, lastError:null};
-        keepAwake();          // gesture in hand — start the media session now
-        // ?test=athan — fire it straight away so the speakers can be checked
-        // without waiting for a real leave-time
-        if(Q.get('test')==='athan') setTimeout(function(){ call(); }, 1200);
-      }
-      if(p&&p.then){ p.then(function(){a.pause();a.currentTime=0;ready();}).catch(ready); }
-      else { ready(); }
+
+    /* TWO bugs lived here, and both only showed on the TV.
+     *
+     * 1. The unlocking play() used to run inside ctx.resume().then(), i.e. a
+     *    microtask AFTER the gesture had ended. Desktop Chrome is lenient about
+     *    that; Fire TV's Silk is not, so the athan was silent on the TV while
+     *    testing clean on my machine. It is now the first thing that happens,
+     *    synchronously, inside the handler.
+     * 2. It unlocked with muted=true. On Android a muted unlock only buys you
+     *    muted playback. Unmuted-at-volume-0 is what actually grants audio.
+     */
+    var a=new Audio(CFG.athan);
+    a.preload='auto';
+    a.muted=false;
+    a.volume=0;
+    a.addEventListener('canplaythrough',function(){athanReady=true;audioState();});
+    a.addEventListener('error',function(){athanReady=false;audioEl=null;audioState();});
+
+    armed=true;
+    $('gate').classList.remove('show');
+    audioEl=a;
+    window.__bilal={audio:a, calls:0, lastError:null, unlock:'pending'};
+
+    var p=a.play();                                  // must be in the gesture
+    function settle(state, err){
+      try{ a.pause(); a.currentTime=0; }catch(e){}
+      a.volume=1;
+      window.__bilal.unlock=state;
+      if(err) window.__bilal.lastError=String(err);
+      audioState();
+      keepAwake();
+      if(Q.get('test')==='athan') setTimeout(function(){ call(); }, 1200);
     }
-    if(ctx&&ctx.state==='suspended'){ var r=ctx.resume();
-      if(r&&r.then) r.then(done).catch(done); else done(); }
-    else done();
+    if(p&&p.then) p.then(function(){ settle('ok'); })
+                   .catch(function(e){ settle('BLOCKED:'+(e&&e.name||'?'), e); });
+    else settle('ok');
+
+    // The AudioContext only backs the fallback tone, so it can come after the
+    // element unlock rather than stealing the gesture from it.
+    try{ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){}
+    if(ctx&&ctx.state==='suspended'){ try{ ctx.resume(); }catch(e){} }
   }
 
+  // The TV has no console, so the footer has to be able to say why it is silent.
   function audioState(){
     if(CFG.quiet){ $('audioState').textContent='silent'; return; }
     if(!armed){ $('audioState').textContent='athan not armed'; return; }
-    $('audioState').textContent=athanReady?'athan ready':'no athan.mp3 — tone only';
+    var u=window.__bilal&&window.__bilal.unlock;
+    if(u&&u.indexOf('BLOCKED')===0){ $('audioState').textContent='athan blocked by browser'; return; }
+    if(!athanReady){ $('audioState').textContent='no athan.mp3 — tone only'; return; }
+    var played=window.__bilal&&window.__bilal.calls>0;
+    $('audioState').textContent=played?'athan played':'athan ready';
   }
 
   function beeps(notes, dur, peak){
