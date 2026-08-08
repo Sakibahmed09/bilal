@@ -601,17 +601,22 @@ body.dimmed #scrim{opacity:.5}
     $('audioState').textContent=athanReady?'athan ready':'no athan.mp3 — tone only';
   }
 
-  function tone(){
+  function beeps(notes, dur, peak){
     if(!ctx) return;
-    var n=[392,523.25,392],t0=ctx.currentTime;
-    for(var i=0;i<n.length;i++){
-      var o=ctx.createOscillator(),g=ctx.createGain(),s=t0+i*1.05;
-      o.type='sine'; o.frequency.value=n[i];
-      g.gain.setValueAtTime(0,s); g.gain.linearRampToValueAtTime(.5,s+.1);
-      g.gain.exponentialRampToValueAtTime(.0001,s+1);
-      o.connect(g); g.connect(ctx.destination); o.start(s); o.stop(s+1.05);
+    var t0=ctx.currentTime;
+    for(var i=0;i<notes.length;i++){
+      var o=ctx.createOscillator(),g=ctx.createGain(),s=t0+i*dur;
+      o.type='sine'; o.frequency.value=notes[i];
+      g.gain.setValueAtTime(0,s); g.gain.linearRampToValueAtTime(peak,s+.1);
+      g.gain.exponentialRampToValueAtTime(.0001,s+dur*0.95);
+      o.connect(g); g.connect(ctx.destination); o.start(s); o.stop(s+dur);
     }
   }
+  // fallback only, when there's no athan.mp3
+  function tone(){ beeps([392,523.25,392], 1.05, .5); }
+  // "leave now" — deliberately NOT the athan. Rising, short, a summons rather
+  // than a call to prayer, because at Maghrib this fires before Maghrib exists.
+  function cue(){ beeps([523.25,659.25,783.99], 0.42, .55); }
 
   function call(){
     if(CFG.quiet||!armed) return;
@@ -671,9 +676,31 @@ body.dimmed #scrim{opacity:.5}
     var key=(started?'j-'+started.key:state+'-'+next.key)+'-'+next.day;
     if(key!==lastKey){ lastKey=key; choreograph(); }
 
-    // the trigger: athan at LEAVE time, not at begins, not at jama'ah
-    var stamp=next.day+':'+next.key;
-    if(CFG.mode==='home'&&!fired[stamp]&&toLeave<=0&&toLeave>-1.5){ fired[stamp]=true; call(); }
+    /* THE trigger. Normally the athan fires at LEAVE time, not at begins —
+       hearing it means "go now and you make the jama'ah", which was the 2024
+       thesis.
+
+       Except when leave-time lands BEFORE the prayer has begun. Maghrib's
+       jama'ah is only ~5 min after the adhan (20:39 -> 20:44 today), so a 10 min
+       walk means leaving at 20:34, when Maghrib does not exist yet. Playing the
+       adhan then would be calling a prayer before its time.
+
+       There they split: a short rising cue at leave-time, the adhan at its
+       proper start. Written as a condition, not "if maghrib", because the gaps
+       move through the year — at a 15 min walk Asr crosses the same line today,
+       and that should correct itself without a code change. */
+    var tight = next.begins && (leaveAt < next.begins);
+    if(CFG.mode==='home'){
+      var kLeave=next.day+':'+next.key+':leave';
+      var kAthan=next.day+':'+next.key+':athan';
+      var due=function(m){ return m<=0 && m>-1.5; };
+      if(tight){
+        if(!fired[kLeave] && due(toLeave)){ fired[kLeave]=1; cue(); }
+        if(!fired[kAthan] && due((next.begins-now)/60000)){ fired[kAthan]=1; call(); }
+      } else {
+        if(!fired[kAthan] && due(toLeave)){ fired[kAthan]=1; call(); }
+      }
+    }
 
     var hero=$('hero'),take=$('takeover');
     if(state==='jamaah'){
@@ -684,7 +711,8 @@ body.dimmed #scrim{opacity:.5}
       hero.style.display='none'; take.style.display='block';
       $('bigTitle').textContent='leave now';
       $('bigSub').textContent=next.cap+" jama'ah at "+hhmm(next.jamaah)
-        +' · '+Math.max(0,Math.round(toJamaah))+' min to get there';
+        +' · '+Math.max(0,Math.round(toJamaah))+' min to get there'
+        + (tight ? "  ·  athan at "+hhmm(next.begins) : '');
     } else {
       take.style.display='none'; hero.style.display='block';
       $('prayerName').textContent=next.label;
@@ -692,7 +720,10 @@ body.dimmed #scrim{opacity:.5}
       $('countdown').textContent='in '+gap(toJamaah);
       if(CFG.mode==='home'&&toLeave>0&&toLeave<90){
         $('leaveRow').style.display='flex';
-        $('leaveText').textContent='leave by '+hhmm(leaveAt)+' · '+gap(toLeave);
+        // in the tight case say when the adhan lands too, so it's clear the
+        // screen isn't going to call you at leave-time
+        $('leaveText').textContent='leave by '+hhmm(leaveAt)+' · '+gap(toLeave)
+          + (tight ? '  ·  athan '+hhmm(next.begins) : '');
       } else $('leaveRow').style.display='none';
     }
 
