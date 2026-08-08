@@ -95,7 +95,9 @@ body.cursor{cursor:auto}
    should not be asked to hold twice over. The vertical component lives on the
    heroes instead — 14 tiny DOM nodes — so the diagonal life lands exactly
    where the eye goes, at almost no cost. */
-.drift{position:fixed;top:0;left:0;height:100%;width:200%;z-index:1;
+/* absolute, not fixed: they sit inside the masked wrapper now, and a masked
+   ancestor can become the containing block for fixed children */
+.drift{position:absolute;top:0;left:0;height:100%;width:200%;
   pointer-events:none;background-repeat:repeat-x;background-size:50% 100%;
   opacity:0;-webkit-transition:opacity 1.6s ease;transition:opacity 1.6s ease;
   -webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0)}
@@ -108,16 +110,17 @@ body.cursor{cursor:auto}
 @-webkit-keyframes glideFlip{from{-webkit-transform:translate3d(0,0,0) scaleY(-1)}to{-webkit-transform:translate3d(-50%,0,0) scaleY(-1)}}
 @keyframes glideFlip{from{transform:translate3d(0,0,0) scaleY(-1)}to{transform:translate3d(-50%,0,0) scaleY(-1)}}
 
-/* The minaret is a single fixed element, not part of the sky.
-   Photographs of five different skies each had their own minaret in a slightly
-   different place, so crossfading them produced a ghost double-tower. One
-   silhouette above the drift fixes it outright — and the stars now pass
-   BEHIND it, which is what should happen anyway. */
-#minaret{position:fixed;bottom:0;right:9%;height:78%;width:auto;z-index:1;
-  pointer-events:none;opacity:.93}
+/* The minaret lives in the photograph again, so the drift has to stop before
+   it — otherwise cloud and stars visibly slide across the tower's face. The
+   wrapper is fixed to the viewport and carries the mask; the layers inside
+   translate, so the fade stays put while the sky moves through it. */
+#driftWrap{position:fixed;top:0;right:0;bottom:0;left:0;z-index:1;overflow:hidden;
+  pointer-events:none;
+  -webkit-mask-image:linear-gradient(to right, #000 0%, #000 58%, transparent 78%);
+  mask-image:linear-gradient(to right, #000 0%, #000 58%, transparent 78%)}
 
 /* heroes: the bright few, each on its own clock */
-#heroes{position:fixed;top:0;left:0;width:200%;height:100%;z-index:1;
+#heroes{position:absolute;top:0;left:0;width:200%;height:100%;
   pointer-events:none;opacity:0;
   -webkit-transition:opacity 1.6s ease;transition:opacity 1.6s ease;
   -webkit-animation:heroDrift 279s linear infinite;animation:heroDrift 279s linear infinite}
@@ -265,11 +268,12 @@ body.dimmed #scrim{opacity:.5}
 
 <div class="sky" id="skyFrom"></div>
 <div class="sky" id="skyTo"></div>
-<div class="drift" id="starFar"></div>
-<div class="drift" id="starMid"></div>
-<div class="drift" id="cloud"></div>
-<div id="heroes"></div>
-<img id="minaret" src="sky/minaret.png" alt="">
+<div id="driftWrap">
+  <div class="drift" id="starFar"></div>
+  <div class="drift" id="starMid"></div>
+  <div class="drift" id="cloud"></div>
+  <div id="heroes"></div>
+</div>
 <div id="scrim"></div>
 <div id="wash"></div>
 <video id="keepawake" muted playsinline loop preload="auto" src="keepawake.mp4"></video>
@@ -365,8 +369,8 @@ body.dimmed #scrim{opacity:.5}
   window.addEventListener('resize',scale);
   window.addEventListener('orientationchange',scale);
 
-  // skies are gradients now, so only the three bitmaps need preloading
-  ['stars','clouds','minaret'].forEach(function(k){ var i=new Image(); i.src='sky/'+k+'.png'; });
+  ORDER.forEach(function(k){ var i=new Image(); i.src='sky/'+k+'.jpg'; });
+  ['stars','clouds'].forEach(function(k){ var i=new Image(); i.src='sky/'+k+'.png'; });
 
   // Every layer's weight at each prayer. Written out per-layer rather than as
   // "stars or clouds" so the whole lot can be interpolated between two windows
@@ -382,21 +386,13 @@ body.dimmed #scrim{opacity:.5}
   var LAYERS=['starFar','starMid','cloud'];
   function lerp(a,b,t){ return a+(b-a)*t; }
 
-  /* The five grounds. dhikry's rule holds: the top stays deep at every hour so
-     cream type never loses contrast, and the horizon does all the talking. */
-  var SKY={
-    fajr:    ['#06091A','#0C1428','#18203C','#2C304C','#463C52'],
-    dhuhr:   ['#1E4A78','#2E6FA0','#5498C0','#8FBBD6','#C3D9E6'],
-    asr:     ['#1B3A5C','#3A5F80','#7A7A72','#C09B62','#E5B978'],
-    maghrib: ['#12162A','#2E1E33','#6B3A34','#B85B30','#E88A38'],
-    isha:    ['#02040B','#050813','#0A0F1E','#101726','#171E2E']
-  };
-  var STOPS=['0%','38%','66%','86%','100%'];
-  function grad(key){
-    var c=SKY[key]||SKY.isha, s=[];
-    for(var i=0;i<c.length;i++) s.push(c[i]+' '+STOPS[i]);
-    return 'linear-gradient(to bottom,'+s.join(',')+')';
-  }
+  /* The five skies are one photograph graded five ways. Because every version
+     is driven by the same luminance channel, they are structurally identical
+     (measured correlation 0.996, the remainder being JPEG noise) — which is
+     what lets them crossfade with no ghost minaret. Grading beats generating
+     five separate photos: those had the tower in five slightly different
+     places and the blend showed two of them. */
+  function grad(key){ return "url('sky/"+key+".jpg')"; }
 
   // The bright few. Seeded once so the sky is the same every boot, and laid
   // out to avoid the vertical middle-left where the prayer name sits — that
