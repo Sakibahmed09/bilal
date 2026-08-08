@@ -272,6 +272,38 @@ footer{display:flex;justify-content:space-between;align-items:center;
 .stat.err i{background:#c4614f}
 
 /* ── audio gate ─────────────────────────────────────────────────────────── */
+
+/* ── pairing ──────────────────────────────────────────────────────────────
+   The first screen a stranger ever sees, so it is the product rather than a
+   utility page: same sky for the actual hour, same Prata, same terracotta.
+   The CODE is the hero because the code is the thing they must carry to their
+   phone; the QR is the shortcut, not the instruction. */
+#pair{position:fixed;top:0;right:0;bottom:0;left:0;z-index:70;display:none;
+  padding:var(--safe-y) var(--safe-x)}
+/* The sky stays — it is the best first impression we have — but the prayer data
+   underneath must go, or the two screens read as one broken one. */
+body.pairing #shell{display:none}
+#pair.show{display:flex;flex-direction:column;justify-content:center}
+#pair .eyebrow{color:var(--clay)}
+#pair .head{font-family:var(--display);font-size:calc(var(--u)*5.4);line-height:1.02;
+  letter-spacing:-.032em;margin:calc(var(--u)*.5) 0 calc(var(--u)*.9);max-width:17ch}
+#pair .cols{display:flex;align-items:flex-end;gap:calc(var(--u)*4)}
+#pair .step{font-size:calc(var(--u)*1.3);color:var(--veil);line-height:1.65;max-width:30ch}
+#pair .step b{color:var(--cream);font-weight:600}
+#pair .code{font-family:var(--text);font-size:calc(var(--u)*5.2);font-weight:700;
+  letter-spacing:.14em;line-height:1;margin-top:calc(var(--u)*1.1);color:var(--clay);
+  font-variant-numeric:tabular-nums}
+#pair .code i{font-style:normal;opacity:.30;margin:0 calc(var(--u)*.5);letter-spacing:0}
+#pair .qr{width:calc(var(--u)*11);height:calc(var(--u)*11);border-radius:calc(var(--u)*.5);
+  background:#f6efe7;padding:calc(var(--u)*.5);flex:none}
+#pair .qr img{width:100%;height:100%;display:block;image-rendering:pixelated}
+#pair .wait{display:flex;align-items:center;margin-top:calc(var(--u)*1.6);
+  font-size:calc(var(--u)*1.05);color:var(--veil);letter-spacing:.1em;text-transform:uppercase}
+#pair .wait i{width:calc(var(--u)*.5);height:calc(var(--u)*.5);border-radius:50%;
+  background:var(--clay);margin-right:calc(var(--u)*.6);font-style:normal;
+  -webkit-animation:breathe 2.6s ease-in-out infinite;animation:breathe 2.6s ease-in-out infinite}
+#pair.done .head{color:var(--clay)}
+
 #gate{position:fixed;top:0;right:0;bottom:0;left:0;z-index:60;display:none;
   align-items:center;justify-content:center;background:rgba(23,20,15,.97);
   text-align:center;padding:7%}
@@ -363,6 +395,19 @@ body.dimmed #scrim{opacity:.5}
 
 </div>
 
+<div id="pair">
+  <div class="eyebrow">Set up</div>
+  <div class="head" id="pairHead">Point your phone at this screen.</div>
+  <div class="cols">
+    <div>
+      <div class="step">Open <b id="setupUrl">bilalathan.co.uk/s</b> on your phone,<br>or scan the code, then enter:</div>
+      <div class="code" id="pairCode">– – –<i>·</i>– – –</div>
+      <div class="wait" id="pairWait"><i></i><span>waiting for your phone</span></div>
+    </div>
+    <div class="qr"><img src="pair-qr.png" alt=""></div>
+  </div>
+</div>
+
 <div id="gate"><div>
   <h2 id="gateTitle">Press OK to let the athan play</h2>
   <p id="gateBody">Browsers keep sound locked until someone presses a button. Do it once and this screen can call you to jama'ah for as long as it stays on.</p>
@@ -374,10 +419,16 @@ body.dimmed #scrim{opacity:.5}
   "use strict";
 
   var Q=new URLSearchParams(location.search);
+  /* Config resolves URL > paired > default. The default mosque only applies when
+     a URL names none, so every existing bookmark keeps working untouched. */
+  var SAVED={};
+  try{ SAVED=JSON.parse(localStorage.getItem('bilal.config')||'{}')||{}; }catch(e){}
+  var NEEDS_PAIRING = (!Q.get('masjid') && !SAVED.slug) || Q.get('setup')==='1';
+
   var CFG={
-    slug: Q.get('masjid')||'darul-ummah-goresbrook-1649608083137',
+    slug: Q.get('masjid')||SAVED.slug||'darul-ummah-goresbrook-1649608083137',
     key:  Q.get('key')||'JejYcMS7hsOsZTPDk2ZhKOAlW9IyQ6Px',
-    walk: parseInt(Q.get('walk')||'15',10),   // Sakib's actual walk to Darul Ummah
+    walk: parseInt(Q.get('walk')||SAVED.walk||'15',10),
     mode: Q.get('mode')||'home',
     athan:Q.get('athan')||'athan.mp3',
     quiet:Q.get('quiet')==='1',
@@ -882,6 +933,71 @@ body.dimmed #scrim{opacity:.5}
     if('wakeLock' in navigator){ try{ navigator.wakeLock.request('screen').catch(function(){}); }catch(e){} }
   }
 
+  // ---------- pairing ----------
+  /* The phone does the thinking; this screen only holds a code and waits.
+     Alphabet excludes O/0 and I/1 — somebody is reading this off a TV from a
+     sofa and typing it with their thumbs. */
+  var SB  = 'https://vstfgrlkwqevonrznzwm.supabase.co/rest/v1/bilal_pairings';
+  var SBK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzdGZncmxrd3Fldm9ucnpuendtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MDAwOTUsImV4cCI6MjA4OTk3NjA5NX0.IjPhlACgy3xslF9EvhKeIemoobHKR02LXcEgiKYHdYg';
+  var ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+  function sbHeaders(extra){
+    var h = {'apikey': SBK, 'Authorization': 'Bearer ' + SBK};
+    for (var k in (extra||{})) h[k] = extra[k];
+    return h;
+  }
+
+  function newCode(){
+    var c = '';
+    for (var i = 0; i < 6; i++) c += ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
+    return c;
+  }
+
+  function showCode(c){
+    $('pairCode').innerHTML = c.slice(0,3) + '<i>·</i>' + c.slice(3);
+  }
+
+  function startPairing(){
+    // show the host we are actually on: staging must not point at production
+    try{
+      var base=location.host+location.pathname.replace(/\/[^/]*$/,'');
+      $('setupUrl').textContent=(base+'/s').replace(/\/+$/,'').replace(/\/\//g,'/');
+    }catch(e){}
+    document.body.setAttribute('data-state','idle');
+    document.body.classList.add('pairing');
+    $('pair').classList.add('show');
+    var code = newCode();
+    showCode(code);
+
+    fetch(SB, {method:'POST',
+      headers: sbHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),
+      body: JSON.stringify({code: code})
+    }).catch(function(){});
+
+    var tries = 0;
+    var poll = setInterval(function(){
+      tries++;
+      if (tries > 450) { clearInterval(poll); location.reload(); return; }  // code expired, get a fresh one
+      fetch(SB + '?code=eq.' + encodeURIComponent(code) + '&select=config',
+            {headers: sbHeaders()})
+        .then(function(r){ return r.json(); })
+        .then(function(rows){
+          var cfg = rows && rows[0] && rows[0].config;
+          if (!cfg || !cfg.slug) return;
+          clearInterval(poll);
+          try{ localStorage.setItem('bilal.config', JSON.stringify(cfg)); }catch(e){}
+          /* Acknowledge before switching. Jumping straight to the display makes
+             a stranger wonder whether it worked; a beat of confirmation is the
+             difference between "it changed" and "it heard me". */
+          $('pairHead').textContent = (cfg.name || 'Your mosque') + ' is set.';
+          $('pair').classList.add('done');
+          $('pairWait').style.display = 'none';
+          setTimeout(function(){ location.href = location.pathname; }, 1600);
+        })
+        .catch(function(){});
+    }, 2000);
+  }
+
   // ---------- boot ----------
   $('gateBtn').addEventListener('click',arm);
   $('gate').addEventListener('click',arm);
@@ -894,7 +1010,11 @@ body.dimmed #scrim{opacity:.5}
     window.__c=setTimeout(function(){document.body.classList.remove('cursor');},3000);
   });
 
-  if(!CFG.quiet){ $('gate').classList.add('show'); try{$('gateBtn').focus();}catch(e){} }
+  if(NEEDS_PAIRING){
+    startPairing();
+  } else if(!CFG.quiet){
+    $('gate').classList.add('show'); try{$('gateBtn').focus();}catch(e){}
+  }
   audioState();
   buildHeroes();
   window.addEventListener('resize',buildHeroes);
