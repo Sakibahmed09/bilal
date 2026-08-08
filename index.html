@@ -203,11 +203,13 @@ main{flex:1;display:flex;flex-direction:column;justify-content:center;
   max-width:74%}                                  /* keep type off the minaret */
 .eyebrow{font-size:calc(var(--u)*.92);letter-spacing:.24em;text-transform:uppercase;
   color:var(--clay);font-weight:600}
-/* line-height .86 clipped Prata's descenders — the 'g' in maghrib collided with
-   the line beneath it. Prata has a deep descender; the box has to allow for it
-   rather than the type being cropped to fit a number. */
-.prayer{font-family:var(--display);font-size:calc(var(--u)*9.4);line-height:1.0;
-  letter-spacing:-.032em;margin:calc(var(--u)*.30) 0 calc(var(--u)*.62);color:var(--cream)}
+/* Prata's descenders are deep and they are not equal. Measured ink below the
+   baseline at display size:  fajr 42.5px · maghrib 37.1px · dhuhr/asr/isha 1.5px.
+   'j' is the deepest, and sizing the gap to maghrib (as I first did) still let
+   fajr collide. The line box now contains the worst case rather than the margin
+   compensating for it, so spacing stays uniform whichever prayer is showing. */
+.prayer{font-family:var(--display);font-size:calc(var(--u)*9.4);line-height:1.14;
+  letter-spacing:-.032em;margin:calc(var(--u)*.16) 0 calc(var(--u)*1.02);color:var(--cream)}
 .line{display:flex;align-items:baseline}
 /* Furquan, 8 Aug: "the hierarchy of the name of the prayer and time is
    conflicting". He was right — 'asr' and '18:30' were two heavy elements
