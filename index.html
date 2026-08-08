@@ -184,7 +184,13 @@ header{display:flex;justify-content:space-between;align-items:flex-start}
 .masjid{font-size:calc(var(--u)*.94);letter-spacing:.15em;text-transform:uppercase;
   color:var(--veil);font-weight:500;margin-top:calc(var(--u)*.62)}
 .right{text-align:right}
+/* Seconds earn their place by proving the screen is alive — an ambient display
+   that never visibly changes reads as crashed. But they must not compete with
+   the prayer, so they sit at 42% the size and drop to the muted colour: a pulse
+   rather than a number you read. Tabular figures stop the clock jittering. */
 .now{font-size:calc(var(--u)*2.35);font-weight:600;letter-spacing:-.022em;line-height:1}
+.now .sec{font-size:.42em;font-weight:500;color:var(--veil);letter-spacing:0;
+  margin-left:calc(var(--u)*.2)}
 /* cream, not clay: terracotta over a warm sky turns to mush. Clay stays
    reserved for the dark-left column where it always has contrast. */
 .hijri-ar{font-family:var(--arabic);font-size:calc(var(--u)*1.5);color:var(--cream);
@@ -697,7 +703,8 @@ body.dimmed #scrim{opacity:.5}
 
   function paint(){
     var now=nowDate();
-    $('clock').textContent=hhmm(now);
+    // innerHTML, not textContent, so the seconds can carry their own style
+    $('clock').innerHTML=hhmm(now)+'<span class="sec">'+pad(now.getSeconds())+'</span>';
 
     var row=rowFor(now);
     if(row&&row.hijri){
