@@ -293,17 +293,6 @@ body.dimmed #scrim{opacity:.5}
 <div id="scrim"></div>
 <div id="wash"></div>
 <video id="keepawake" muted playsinline loop preload="auto" src="keepawake.mp4"></video>
-<!-- In the DOM on purpose. These were built with new Audio(), which creates a
-     DETACHED element, and several Android browsers refuse to play media that is
-     not in the document. That is the likeliest reason Silk still reported the
-     athan blocked after the gesture timing was fixed. -->
-<audio id="athanEl"  preload="auto" playsinline></audio>
-<audio id="cueEl"    preload="auto" playsinline></audio>
-<!-- 593 bytes of silence. The permission probe must not race a download: the
-     old one judged permission from the 3.7MB athan, which on a Fire Stick has
-     not buffered at the moment of the press, so it rejected and got reported
-     as "blocked by browser" while the audio was in fact perfectly fine. -->
-<audio id="unlockEl" preload="auto" playsinline src="unlock.mp3"></audio>
 
 <div id="shell">
 
@@ -602,77 +591,57 @@ body.dimmed #scrim{opacity:.5}
      * 2. It unlocked with muted=true. On Android a muted unlock only buys you
      *    muted playback. Unmuted-at-volume-0 is what actually grants audio.
      */
-    // elements that live in the document, not detached ones
-    var a=$('athanEl');
-    if(!a.src) a.src=CFG.athan;
-    a.muted=false; a.volume=0;
+    /* REVERTED to the shape Sakib confirmed working on the TV.
+     *
+     * He reported a wrong LABEL — a cosmetic bug — and I responded by changing
+     * the MECHANISM: DOM elements, a separate probe, and a play() followed
+     * synchronously by pause(). That last one aborts the play before the
+     * permission can take, and it stopped the athan sounding at all. Changing
+     * load-bearing behaviour to fix a cosmetic bug is how working things break.
+     *
+     * So: exactly the original recipe. Detached element, unmuted at volume 0,
+     * play() first and synchronously inside the gesture, and NOTHING pauses it
+     * until its own promise resolves.
+     */
+    var a=new Audio(CFG.athan);
+    a.preload='auto'; a.muted=false; a.volume=0;
     a.addEventListener('canplaythrough',function(){athanReady=true;audioState();});
-    a.addEventListener('error',function(){athanReady=false;audioState();});
+    a.addEventListener('error',function(){athanReady=false;audioEl=null;audioState();});
 
-    /* The leave-cue rides the SAME unlock as the athan. It used to come from the
-       Web Audio API, a separate permission path — which on Silk could have
-       stayed silent while the athan worked, and only at Maghrib, where nobody
-       would think to check. */
-    cueEl=$('cueEl');
-    if(!cueEl.src) cueEl.src='cue.mp3';
-    cueEl.muted=false; cueEl.volume=0;
+    cueEl=new Audio('cue.mp3');
+    cueEl.preload='auto'; cueEl.muted=false; cueEl.volume=0;
     var cp=cueEl.play();
     if(cp&&cp.then) cp.then(function(){ try{cueEl.pause();cueEl.currentTime=0;}catch(e){} cueEl.volume=1; })
                      .catch(function(){ cueEl.volume=1; });
     else cueEl.volume=1;
 
+    armed=true;
+    $('gate').classList.remove('show');
     audioEl=a;
     window.__bilal={audio:a, cue:cueEl, calls:0, cues:0, lastError:null, unlock:'pending'};
 
-    /* Bless the real elements inside the gesture — some browsers grant playback
-       per element, not per document — but ignore what their promises say. A
-       3.7MB file that has not buffered yet rejects for reasons that have nothing
-       to do with permission, and reading that as "blocked" is what produced a
-       false alarm on a screen whose audio worked. */
-    try{ var ap=a.play();      if(ap&&ap.catch) ap.catch(function(){}); }catch(e){}
-    try{ var q2=cueEl.play();  if(q2&&q2.catch) q2.catch(function(){}); }catch(e){}
-    try{ a.pause(); a.currentTime=0; cueEl.pause(); cueEl.currentTime=0; }catch(e){}
-
-    // Permission is judged only by the 593-byte probe, which cannot be slow.
-    var u=$('unlockEl'); u.muted=false; u.volume=0;
-    var p=u.play();                                  // must be in the gesture
+    var p=a.play();                                  // must be in the gesture
     function settle(state, err){
-      try{ u.pause(); u.currentTime=0; }catch(e){}
-      a.volume=1; cueEl.volume=1;
-      window.__bilal.unlock=state;
+      try{ a.pause(); a.currentTime=0; }catch(e){}
+      a.volume=1;
+      /* The prime is ADVISORY ONLY. It races a 3.7MB download, so its failure
+         says nothing about permission — that is what printed "blocked" over a
+         screen whose audio was fine. Only real playback sets the truth, in
+         call(). */
+      window.__bilal.unlock = (state==='ok') ? 'ok' : 'unproven';
       if(err) window.__bilal.lastError=String(err);
-
-      if(state==='ok'){
-        armed=true;
-        $('gate').classList.remove('show');
-      } else {
-        /* Do NOT pretend. Previously the gate was dismissed optimistically
-           before the result was known, so a refusal left no gate, no sound and
-           no way back except a reload. If the browser refused, say so and offer
-           the press again. */
-        armed=false;
-        $('gateTitle').textContent='Press OK again';
-        $('gateBody').textContent='The browser refused to unlock sound ('
-          + (err && err.name ? err.name : 'unknown')
-          + '). Press OK with the remote — a press from the remote counts, a page reload does not.';
-        $('gate').classList.add('show');
-        try{ $('gateBtn').focus(); }catch(e){}
-      }
-
       audioState();
       keepAwake();
       var t=Q.get('test');
-      if(!armed) return;
       if(t==='athan') setTimeout(function(){ call(); }, 1200);
       // ?test=cue hears the leave-cue alone; ?test=maghrib plays the real
-      // sequence compressed — cue, then the athan 4s later — so the Maghrib
-      // behaviour can be checked without waiting for sunset
+      // sequence compressed so Maghrib can be checked without waiting for sunset
       if(t==='cue')     setTimeout(function(){ cue(); }, 1200);
       if(t==='maghrib'){ setTimeout(function(){ cue(); }, 1200);
                          setTimeout(function(){ call(); }, 5200); }
     }
     if(p&&p.then) p.then(function(){ settle('ok'); })
-                   .catch(function(e){ settle('BLOCKED:'+(e&&e.name||'?'), e); });
+                   .catch(function(e){ settle('unproven', e); });
     else settle('ok');
 
     // The AudioContext only backs the fallback tone, so it can come after the
@@ -686,8 +655,11 @@ body.dimmed #scrim{opacity:.5}
     if(CFG.quiet){ $('audioState').textContent='silent'; return; }
     if(!armed){ $('audioState').textContent='athan not armed'; return; }
     var u=window.__bilal&&window.__bilal.unlock;
+    // 'unproven' means the silent prime lost a race with a 3.7MB download. It is
+    // NOT a permission failure and must never be shown as one — that false alarm
+    // is exactly what made a working screen look broken.
     if(u&&u.indexOf('BLOCKED')===0){ $('audioState').textContent='athan blocked by browser'; return; }
-    if(!athanReady){ $('audioState').textContent='no athan.mp3 — tone only'; return; }
+    if(!athanReady && u!=='unproven'){ $('audioState').textContent='no athan.mp3 — tone only'; return; }
     var played=window.__bilal&&window.__bilal.calls>0;
     $('audioState').textContent=played?'athan played':'athan ready';
   }
