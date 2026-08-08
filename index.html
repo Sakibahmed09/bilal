@@ -203,8 +203,11 @@ main{flex:1;display:flex;flex-direction:column;justify-content:center;
   max-width:74%}                                  /* keep type off the minaret */
 .eyebrow{font-size:calc(var(--u)*.92);letter-spacing:.24em;text-transform:uppercase;
   color:var(--clay);font-weight:600}
-.prayer{font-family:var(--display);font-size:calc(var(--u)*9.4);line-height:.86;
-  letter-spacing:-.032em;margin:calc(var(--u)*.42) 0 calc(var(--u)*.34);color:var(--cream)}
+/* line-height .86 clipped Prata's descenders — the 'g' in maghrib collided with
+   the line beneath it. Prata has a deep descender; the box has to allow for it
+   rather than the type being cropped to fit a number. */
+.prayer{font-family:var(--display);font-size:calc(var(--u)*9.4);line-height:1.0;
+  letter-spacing:-.032em;margin:calc(var(--u)*.30) 0 calc(var(--u)*.62);color:var(--cream)}
 .line{display:flex;align-items:baseline}
 /* Furquan, 8 Aug: "the hierarchy of the name of the prayer and time is
    conflicting". He was right — 'asr' and '18:30' were two heavy elements
@@ -810,15 +813,18 @@ body.dimmed #scrim{opacity:.5}
     } else {
       take.style.display='none'; hero.style.display='block';
       $('prayerName').textContent=next.label;
-      $('prayerTime').textContent=hhmm(next.jamaah);
-      $('countdown').textContent='in '+gap(toJamaah);
-      if(CFG.mode==='home'&&toLeave>0&&toLeave<90){
-        $('leaveRow').style.display='flex';
-        /* No athan time here. The rail already prints "begins 18:16" directly
-           under that prayer, so repeating it in the leave line was saying the
-           same thing twice in one glance. */
-        $('leaveText').textContent='leave by '+hhmm(leaveAt)+' · '+gap(toLeave);
-      } else $('leaveRow').style.display='none';
+      /* Separation of concerns. The rail answers "what is the schedule today"
+         and already prints 20:44 under MAGHRIB. The hero answers "what do I do
+         next" — and that is leaving, not the prayer time. So it counts down to
+         the moment you act and says nothing the rail has already said.
+         Three overlapping lines (20:44 / in 1h51m / leave by 20:29) became one. */
+      if(CFG.mode==='home'){
+        $('prayerTime').textContent='leave in '+gap(toLeave>0?toLeave:0);
+      } else {
+        $('prayerTime').textContent=hhmm(next.jamaah);   // the wall wants the time
+      }
+      $('countdown').textContent='';
+      $('leaveRow').style.display='none';
     }
 
     rail(now,next,started);
