@@ -17,6 +17,39 @@
 <meta name="twitter:title" content="bilal">
 <meta name="twitter:description" content="The screen that calls you to jama'ah, not just to prayer.">
 <meta name="twitter:image" content="https://bilalathan.co.uk/og.jpg">
+<script>
+/* Device routing. One URL has to serve a wall display, a Fire Stick, an Echo
+   Show and a phone, so this runs in <head> — before a megabyte of sky images
+   gets pulled down onto a handset that is about to leave.
+
+   The trap: an Echo Show is ALSO a small touchscreen. Routing on viewport size
+   alone would send Echo Shows to the phone page and break the one device that
+   needs nothing configured. So Amazon hardware is identified explicitly, and
+   anything we are unsure about gets the display — a phone seeing the display is
+   merely untidy, a TV seeing the phone page is broken.
+
+   ?display=1 is the escape hatch, and it sticks: tv.html itself recommends
+   using a spare phone as a screen, so a handset must always be able to get here
+   and stay here. */
+(function(){
+  try{
+    if(/[?&](display|masjid|test|at|mode|walk|drift|quiet|lite)=/.test(location.search)){
+      if(/[?&]display=1/.test(location.search)){
+        try{ localStorage.setItem('bilal.display','1'); }catch(e){}
+      }
+      return;
+    }
+    try{ if(localStorage.getItem('bilal.display')==='1') return; }catch(e){}
+
+    var ua = navigator.userAgent || '';
+    if(/Silk|AFT[A-Z0-9]|Echo|KF[A-Z]{2}|Fire ?TV/i.test(ua)) return;   // Amazon: always the display
+
+    var handset = /iPhone|iPod|Android.*Mobile|Windows Phone|BlackBerry|Opera Mini/i.test(ua);
+    var w = (screen && screen.width) || 9999, h = (screen && screen.height) || 9999;
+    if(handset && Math.min(w,h) < 520) location.replace('tv.html' + location.search);
+  }catch(e){}
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Prata&family=Archivo:wght@400;500;600;700&family=Amiri:wght@400&display=swap" rel="stylesheet">
