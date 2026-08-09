@@ -24,12 +24,15 @@
  * 1. EXTRACTING — the longest wait in the product. A spinner here reads as a
  *    hang. Months landing one by one read as work being done, and tell the
  *    truth about what is happening.
- * 2. THE SHAPE — five thin lines, one per prayer, across the whole year. A real
- *    timetable is five smooth curves; a misread digit is a visible spike. This
- *    is how someone verifies 365 days in one glance, which is otherwise the
- *    thing that makes review impossible.
- * 3. FLAGGED ROWS — show WHY it was flagged, with its neighbours, so the
+ * 2. FLAGGED ROWS — show WHY it was flagged, with its neighbours, so the
  *    correction is obvious rather than a guess.
+ *
+ * There was a third: a chart of the whole year, where a misread digit shows as
+ * a spike. It was the cleverest screen here and it was cut, because the question
+ * it asked — "does this look like your year?" — is one no reader can answer.
+ * Nobody knows the shape of their mosque's Asr curve. What it was really trying
+ * to say is that we read every day and almost all of them are consistent, and
+ * that is one sentence on the screen that follows.
  *
  * The "this helps everyone at your mosque" line lands at the END. Asking for
  * altruism up front is a demand; showing it afterwards is a reward.
@@ -105,16 +108,6 @@ input:focus{border-color:var(--clay)}
 .mo.read{border-color:rgba(127,176,138,.4);color:#a6ceac;background:rgba(127,176,138,.08)}
 .readout{margin-top:16px;font-size:13.5px;color:var(--veil);min-height:1.5em}
 .readout b{color:var(--cream)}
-
-/* the shape */
-.shape{margin-top:16px;padding:16px 14px 12px;border-radius:16px;
-  background:rgba(34,30,28,.62);border:1px solid var(--hair)}
-.shape svg{width:100%;height:150px;display:block;overflow:visible}
-.shape .cap{display:flex;justify-content:space-between;margin-top:9px;
-  font-size:11px;color:var(--veil);letter-spacing:.08em;text-transform:uppercase}
-.keys{display:flex;flex-wrap:wrap;gap:10px;margin-top:11px;font-size:11.5px;color:var(--veil)}
-.keys span{display:flex;align-items:center;gap:5px}
-.keys i{width:14px;height:2px;border-radius:2px;display:block}
 
 /* flagged rows */
 .flag{margin-top:12px;padding:15px;border-radius:14px;border:1px solid rgba(216,162,74,.35);
@@ -198,7 +191,7 @@ input:focus{border-color:var(--clay)}
 
   <!-- 2 ─ the document -->
   <section id="s2">
-    <div class="eyebrow r r1">Step 2 of 4</div>
+    <div class="eyebrow r r1">Step 2 of 3</div>
     <h1 class="r r2">Where are its times?</h1>
     <p class="sub r r3">Whatever your mosque publishes. A year at once is ideal —
       that's the whole point.</p>
@@ -241,40 +234,23 @@ input:focus{border-color:var(--clay)}
     </div>
   </section>
 
-  <!-- 4 ─ the shape -->
+  <!-- 4 ─ flagged rows.
+       There used to be a chart of the whole year here, on the theory that a
+       misread digit shows up as a visible spike. It does — but nobody knows
+       what their mosque's Asr curve is supposed to look like, so "does this
+       look like your year?" is a question the reader cannot answer. The screen
+       below is the actual review, and it was always doing the real work. The
+       one true thing the chart carried — that we read every day and almost all
+       of them are consistent — is a sentence, not a slide. -->
   <section id="s4">
-    <div class="eyebrow r r1">Step 3 of 4</div>
-    <h1 class="r r2">Does this look like your year?</h1>
-    <p class="sub r r3">Every day we read, drawn as one line per prayer. A real timetable
-      curves smoothly with the seasons. <b>A misread digit is a spike.</b></p>
-    <div class="step r r3">
-      <div class="shape">
-        <svg id="chart" viewBox="0 0 340 150" preserveAspectRatio="none"></svg>
-        <div class="cap"><span id="capFrom">Jan</span><span id="capTo">Dec</span></div>
-      </div>
-      <div class="keys">
-        <span><i style="background:#8ea9c8"></i>Fajr</span>
-        <span><i style="background:#d9a48f"></i>Dhuhr</span>
-        <span><i style="background:#c9b27f"></i>Asr</span>
-        <span><i style="background:#c98a6a"></i>Maghrib</span>
-        <span><i style="background:#9b8fb0"></i>Isha</span>
-      </div>
-      <div class="note" id="shapeNote"></div>
-      <button class="btn" id="toFix">Continue</button>
-    </div>
-  </section>
-
-  <!-- 5 ─ flagged rows -->
-  <section id="s5">
-    <div class="eyebrow r r1">Step 4 of 4</div>
+    <div class="eyebrow r r1">Step 3 of 3</div>
     <h1 class="r r2" id="fixTitle">A few days look wrong.</h1>
-    <p class="sub r r3">We're not asking you to check 365 days. Only the ones that don't
-      fit the pattern.</p>
+    <p class="sub r r3" id="fixSub"></p>
     <div class="step r r3" id="flags"></div>
   </section>
 
-  <!-- 6 ─ done -->
-  <section id="s6">
+  <!-- 5 ─ done -->
+  <section id="s5">
     <div class="done">
       <div class="tick r r1">Done.</div>
       <p class="sub r r2" id="doneMsg" style="margin-top:12px"></p>
@@ -303,7 +279,7 @@ input:focus{border-color:var(--clay)}
   var pin=null, name='', src='link', YEAR=[], FLAGS=[], fixed=0, corrected=0;
 
   function show(id){
-    ['s1','s2','s3','s4','s5','s6'].forEach(function(x){ $(x).classList.remove('on','go'); });
+    ['s1','s2','s3','s4','s5'].forEach(function(x){ $(x).classList.remove('on','go'); });
     var el=$(id);
     /* Order matters. The reflow used to happen BEFORE the element was displayed,
        so the animation was assigned to a display:none element and never ran —
@@ -423,7 +399,16 @@ input:focus{border-color:var(--clay)}
       return '<div class="mo" id="mo'+i+'">'+m+'</div>'; }).join('');
     var i=0;
     (function next(){
-      if(i>=12){ buildYear(); setTimeout(function(){ show('s4'); drawShape(); },500); return; }
+      if(i>=12){
+        buildYear();
+        setTimeout(function(){
+          // A clean read has nothing to review. Showing an empty review screen
+          // to say "nothing to review" is a step for the sake of the counter.
+          if(!FLAGS.length){ finish(); return; }
+          show('s4'); drawFlags();
+        },500);
+        return;
+      }
       var el=$('mo'+i); el.className='mo now';
       // Quorum, shown honestly: two readings, a third only where they disagree.
       var reads = (i===3||i===9) ? 3 : 2;
@@ -453,34 +438,7 @@ input:focus{border-color:var(--clay)}
     });
   }
 
-  /* ── 4. the shape ───────────────────────────────────────────────────── */
-  function drawShape(){
-    var keys=['fajr','dhuhr','asr','maghrib','isha'];
-    var cols={fajr:'#8ea9c8',dhuhr:'#d9a48f',asr:'#c9b27f',maghrib:'#c98a6a',isha:'#9b8fb0'};
-    var lo=1e9, hi=-1e9;
-    YEAR.forEach(function(r){ keys.forEach(function(k){ lo=Math.min(lo,r[k]); hi=Math.max(hi,r[k]); }); });
-    var pad=(hi-lo)*0.06; lo-=pad; hi+=pad;
-    var svg='';
-    keys.forEach(function(k){
-      var pts=YEAR.map(function(r,i){
-        return (i/364*340).toFixed(1)+','+(150-(r[k]-lo)/(hi-lo)*150).toFixed(1); }).join(' ');
-      svg+='<polyline points="'+pts+'" fill="none" stroke="'+cols[k]+
-           '" stroke-width="1.6" stroke-linejoin="round" opacity=".92"/>';
-    });
-    // mark the spikes so the eye is told where to look rather than hunting
-    FLAGS.forEach(function(f){
-      var x=(f.i/364*340).toFixed(1);
-      svg+='<line x1="'+x+'" y1="0" x2="'+x+'" y2="150" stroke="#d8a24a" '+
-           'stroke-width="1" stroke-dasharray="3 3" opacity=".75"/>';
-    });
-    $('chart').innerHTML=svg;
-    $('shapeNote').innerHTML='The five curves look right — they rise and fall with the '+
-      'seasons as they should. <b>'+FLAGS.length+' days break the pattern</b>, marked above. '+
-      'Those are the only ones worth your eyes.';
-  }
-  $('toFix').onclick=function(){ show('s5'); drawFlags(); };
-
-  /* ── 5. flagged rows ────────────────────────────────────────────────── */
+  /* ── 4. flagged rows ────────────────────────────────────────────────── */
   var LABEL={fajr:'Fajr',dhuhr:'Dhuhr',asr:'Asr',maghrib:'Maghrib',isha:'Isha'};
   // Zero-padded both sides: a column of 6:07 next to 17:43 reads as ragged, and
   // these are meant to look like the times printed on the card.
@@ -492,13 +450,21 @@ input:focus{border-color:var(--clay)}
   }
   function drawFlags(){
     fixed=0; corrected=0;
-    $('fixTitle').textContent = FLAGS.length+' day'+(FLAGS.length===1?'':'s')+' look wrong.';
+    var n=FLAGS.length, ok=365-n;
+    $('fixTitle').textContent = n+' day'+(n===1?'':'s')+' look'+(n===1?'s':'')+' wrong.';
+    // The evidence the chart used to draw, said plainly and in the place where
+    // it actually matters.
+    $('fixSub').innerHTML = 'We read all 365. <b>'+ok+'</b> move the way a timetable '+
+      'should, a minute or two at a time. These '+(n===1?'one':n)+' jump.';
     $('flags').innerHTML = FLAGS.map(function(f,n){
       var prev=YEAR[f.i-1][f.k], cur=YEAR[f.i][f.k], next=YEAR[f.i+1][f.k];
       var expect=(prev+next)/2;
+      /* Said once. "Every other day moves by one or two" was on all three cards
+         and is already the sentence under the headline; the three dated rows
+         below show the jump anyway. */
       return '<div class="flag" id="fl'+n+'">'+
         '<div class="why">'+LABEL[f.k]+' jumps '+Math.abs(Math.round(f.delta))+
-          ' minutes here. Every other day moves by one or two.</div>'+
+          ' minutes.</div>'+
         '<div class="ctx">'+
           '<span class="d">'+dateOf(f.i-1)+'</span> &nbsp;'+hhmm(prev)+'<br>'+
           '<span class="d">'+dateOf(f.i)+'</span> &nbsp;<span class="bad">'+hhmm(cur)+'</span>'+
@@ -511,10 +477,9 @@ input:focus{border-color:var(--clay)}
         '</div>'+
         '<button class="keep" data-n="'+n+'" data-a="keep">'+
           'My card really says <b>'+hhmm(cur)+'</b></button>'+
-        /* Said once, under the first card. Repeating it on every card taught
-           nothing after the first read and made the list feel longer. */
-        (n===0 ? '<div class="hint">Pre-filled with what the days either side '+
-                 'suggest. Change it if your card says otherwise.</div>' : '')+
+        /* The hint that used to sit here explained that the box is pre-filled
+           from the neighbouring days. The neighbouring days are printed directly
+           above it. Nothing to explain. */
       '</div>';
     }).join('')+
       '<button class="skipall" id="skipAll">I don\'t have the timetable in front of me '+
@@ -542,7 +507,7 @@ input:focus{border-color:var(--clay)}
   }
 
   function finish(){
-    show('s6');
+    show('s5');
     /* Say what actually happened. Someone who skipped every flag should not be
        told the year is confirmed — the next person at their mosque is the one
        who will settle those rows, and the copy should set that up. */
