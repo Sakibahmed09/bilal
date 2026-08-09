@@ -588,6 +588,8 @@ body.compact #driftWrap{
     athan:Q.get('athan')||'athan.mp3',
     quiet:Q.get('quiet')==='1',
     dim:  Q.get('dim')!=='0',
+    lite: Q.get('lite')==='1',   // no drift, no heroes: isolates GPU flicker
+
     at:   Q.get('at')||''          // ?at=17:40 to preview any hour
   };
 
@@ -608,6 +610,7 @@ body.compact #driftWrap{
   var CACHE='bilal.tt.'+CFG.slug;
 
   var data=null,lastFetch=0,fired={},athanReady=false,armed=false;
+  var clkHM=null,clkS=null,railKey=null;
   var audioEl=null,cueEl=null,ctx=null,skyFromKey=null,skyToKey=null,lastKey=null;
   var revealed=false;   // has anything taken the shell out of opacity 0
 
@@ -633,6 +636,11 @@ body.compact #driftWrap{
   window.addEventListener('orientationchange',scale);
 
   ORDER.forEach(function(k){ var i=new Image(); i.src='sky/'+k+'.jpg'; });
+  /* ?lite=1 removes every moving layer and the mask that composites them. If the
+     flicker goes with it, the cause is GPU compositing rather than the DOM. */
+  if(CFG.lite){
+    var dw=$('driftWrap'); if(dw) dw.style.display='none';
+  }
   ['stars','clouds'].forEach(function(k){ var i=new Image(); i.src='sky/'+k+'.png'; });
 
   // Every layer's weight at each prayer. Written out per-layer rather than as
@@ -992,8 +1000,15 @@ body.compact #driftWrap{
 
   function paint(){
     var now=nowDate();
-    // innerHTML, not textContent, so the seconds can carry their own style
-    $('clock').innerHTML=hhmm(now)+'<span class="sec">'+pad(now.getSeconds())+'</span>';
+    /* Two persistent text nodes, built once. This used to reparse HTML every
+       second, which is 60 needless DOM teardowns a minute on a device whose GPU
+       cannot spare them. */
+    if(!clkHM){
+      $('clock').innerHTML='<span id="clkHM"></span><span class="sec" id="clkS"></span>';
+      clkHM=$('clkHM'); clkS=$('clkS');
+    }
+    clkHM.textContent=hhmm(now);
+    clkS.textContent=pad(now.getSeconds());
 
     var row=rowFor(now);
     if(row&&row.hijri){
@@ -1085,6 +1100,17 @@ body.compact #driftWrap{
 
   function rail(now,next,started){
     var row=rowFor(now); if(!row) return;
+    /* The rail's contents change when the day turns over, when the highlighted
+       prayer moves, or when one goes past. That is a handful of times a day, and
+       it was being torn down and rebuilt every single second. */
+    var head=started||next;
+    var key=row.date.slice(0,10)+'|'+(head?head.key+head.day:'')+'|';
+    for(var z=0;z<ORDER.length;z++){
+      var jz=row.iqamah&&row.iqamah[ORDER[z]];
+      key+=(jz&&new Date(jz)<now)?'1':'0';
+    }
+    if(key===railKey) return;
+    railKey=key;
     var head=started||next, html='';
     for(var i=0;i<ORDER.length;i++){
       var k=ORDER[i];
