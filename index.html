@@ -334,6 +334,49 @@ body[data-mode="mosque"] .stop .jm{font-size:calc(var(--u)*2.8)}
 body[data-mode="mosque"] .now{font-size:calc(var(--u)*5.6)}
 body.dimmed #shell{opacity:.14;-webkit-transition:opacity 2.4s ease;transition:opacity 2.4s ease}
 body.dimmed #scrim{opacity:.5}
+
+/* ── compact: Echo Show and other small panels ───────────────────────────
+   The whole composition assumes a 16:9 TV four metres away. On an Echo Show 5
+   or 8 that reads as cramped: five rail columns each carrying a name, a time
+   and a "begins" line is far too much information for a 5-inch screen you look
+   at from two feet.
+
+   So the small layout is not a scaled-down TV, it is a different edit. Rail
+   loses its "begins" sub-line, the Arabic date and the wordmark tagline go, the
+   hero comes down hard, and the type block takes the full width because there
+   is no room to compose around the minaret. Overscan margins also shrink — a
+   Show has no overscan, that padding was purely a TV concession. */
+body.compact{--safe-x:3.2%;--safe-y:3.6%}
+body.compact .masjid{display:none}
+body.compact .hijri-ar{display:none}
+body.compact .mark .word{font-size:calc(var(--u)*1.5)}
+body.compact .now{font-size:calc(var(--u)*3.1)}
+body.compact .greg{font-size:calc(var(--u)*.85)}
+body.compact main{max-width:100%}
+body.compact .eyebrow{font-size:calc(var(--u)*.82);letter-spacing:.16em}
+body.compact .prayer{font-size:calc(var(--u)*5.6);margin:calc(var(--u)*.2) 0 calc(var(--u)*.1)}
+body.compact .line .t{font-size:calc(var(--u)*1.9)}
+body.compact .line .c{font-size:calc(var(--u)*1.9)}
+body.compact .leave{font-size:calc(var(--u)*1.15);margin-top:calc(var(--u)*.6)}
+body.compact .big{font-size:calc(var(--u)*4.4)}
+body.compact .big-sub{font-size:calc(var(--u)*1.4)}
+body.compact .rail{padding-top:calc(var(--u)*.7)}
+body.compact .stop .bg{display:none}
+body.compact .stop .nm{font-size:calc(var(--u)*.78);letter-spacing:.1em}
+body.compact .stop .jm{font-size:calc(var(--u)*1.7)}
+body.compact .stop{padding:calc(var(--u)*.3) calc(var(--u)*.3)}
+body.compact footer{font-size:calc(var(--u)*.7);margin-top:calc(var(--u)*.5)}
+/* the scrim was tuned to protect type on a wide frame; on a narrow one the
+   type fills the width, so it needs to be flatter and more even */
+body.compact #scrim{background:
+  linear-gradient(to bottom, rgba(23,20,15,.55) 0%, rgba(23,20,15,.2) 18%, rgba(23,20,15,0) 40%),
+  linear-gradient(to top,    rgba(23,20,15,.88) 0%, rgba(23,20,15,.5) 30%, rgba(23,20,15,0) 60%),
+  linear-gradient(to right,  rgba(23,20,15,.55) 0%, rgba(23,20,15,.3) 60%, rgba(23,20,15,.1) 100%)}
+/* nothing should slide across the tower, but on a narrow frame the tower is
+   most of the picture, so let the drift run wider */
+body.compact #driftWrap{
+  -webkit-mask-image:linear-gradient(to right, #000 0%, #000 74%, transparent 94%);
+  mask-image:linear-gradient(to right, #000 0%, #000 74%, transparent 94%)}
 </style>
 </head>
 <body data-state="idle">
@@ -478,6 +521,12 @@ body.dimmed #scrim{opacity:.5}
     var u=Math.min(w*0.0122,h*0.0215);
     if(u<9) u=9;
     document.documentElement.style.setProperty('--u',u.toFixed(2)+'px');
+    // Echo Show and similar. Judged on the real viewport rather than a user
+    // agent string, so it also catches a browser window someone shrank.
+    var small = (w < 820) || (h < 460);
+    document.body.classList[small?'add':'remove']('compact');
+    if(small) document.documentElement.style.setProperty('--u',
+      Math.max(10, Math.min(w*0.019, h*0.032)).toFixed(2)+'px');
   }
   scale();
   window.addEventListener('resize',scale);
