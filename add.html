@@ -157,6 +157,27 @@ input:focus{border-color:var(--clay)}
 </style>
 </head>
 <body>
+<!-- This page is a working design, not a working product: the extraction behind
+     it is stubbed and nothing is saved anywhere. It lives on the live domain so
+     it can be reviewed on a real phone, so it has to say so to anyone who finds
+     it by accident — otherwise it tells them their mosque was added when it
+     wasn't. ?preview=1 opens the flow. -->
+<div id="gate" style="display:none;padding:calc(env(safe-area-inset-top) + 28px) 22px 72px;
+     max-width:560px;margin:0 auto">
+  <div class="brand">bilal</div>
+  <div class="eyebrow" style="margin-top:26px">Not open yet</div>
+  <h1 style="margin-top:6px">Adding your own timetable isn't live.</h1>
+  <p class="sub">This is the flow being built. Nothing you enter here is saved.
+    Bilal works today for mosques that already publish their jama'ah times.</p>
+  <div class="step">
+    <a class="btn" href="s.html" style="display:block;text-align:center;
+       text-decoration:none;line-height:1.2">Set up a mosque that is listed</a>
+    <a class="btn ghost" href="https://x.com/mertesakib/status/2086140712693764552"
+       target="_blank" rel="noopener" style="display:block;text-align:center;
+       text-decoration:none;line-height:1.2">Ask for your mosque on X</a>
+  </div>
+</div>
+
 <div id="app">
   <div class="brand">bilal</div>
 
@@ -272,6 +293,13 @@ input:focus{border-color:var(--clay)}
 (function(){
   "use strict";
   var $=function(i){return document.getElementById(i);};
+
+  if(!/[?&]preview=1(&|$)/.test(location.search)){
+    $('app').style.display='none';
+    $('gate').style.display='block';
+    return;   // never boot the map or the stubbed extraction
+  }
+
   var pin=null, name='', src='link', YEAR=[], FLAGS=[], fixed=0, corrected=0;
 
   function show(id){
