@@ -319,6 +319,10 @@ input:focus{border-color:var(--clay)}
     map.setView([p.coords.latitude,p.coords.longitude],16);
   },function(){},{timeout:8000});
 
+  // What they searched for on the setup page is almost always what it is called.
+  var passedName=new URLSearchParams(location.search).get('name');
+  if(passedName) $('mname').value=passedName;
+
   $('toSrc').onclick=function(){
     name=($('mname').value||'').trim();
     if(!name){
@@ -528,7 +532,17 @@ input:focus{border-color:var(--clay)}
       msg+=' '+corrected+' corrected, '+unresolved+' left as read.';
     $('doneMsg').innerHTML=msg;
   }
-  $('toTv').onclick=function(){ location.href='s.html'; };
+  /* Hand the code back to the setup page so the loop closes where it started:
+     scan the TV, fail to find your mosque, add it, and land back on the same
+     television without typing anything. Without this the last step drops you on
+     a fresh setup page that has forgotten which screen you were standing in
+     front of. */
+  $('toTv').onclick=function(){
+    var q=new URLSearchParams(location.search), out=[];
+    if(q.get('c')) out.push('c='+encodeURIComponent(q.get('c')));
+    if(q.get('preview')) out.push('preview=1');
+    location.href='s.html'+(out.length?'?'+out.join('&'):'');
+  };
 })();
 </script>
 </body>
