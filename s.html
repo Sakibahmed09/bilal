@@ -215,15 +215,14 @@ a{color:var(--clay)}
     <h1 class="r r2">We don't have your mosque yet.</h1>
     <p class="sub r r3">Bilal only shows jama'ah times a mosque publishes itself. We won't guess them, because a guessed time makes you late.</p>
     <div class="step r r4">
-      <div class="note">Tell me which mosque and I'll ask them to publish theirs. It's free for the mosque, and it fixes it for everyone who prays there.</div>
-      <a class="btn tweet" id="tweetReq" target="_blank" rel="noopener">Reply with your mosque →</a>
-      <!-- The route that will eventually live here: add the times yourself from
-           the timetable on the wall. Hidden until the extraction behind it is
-           real, because a button leading to a page that saves nothing is a
-           worse dead end than no button. ?preview=1 opens it for testing the
-           whole path end to end. -->
-      <a class="btn ghost" id="addOwn" style="display:none;text-align:center;
+      <div class="note">You can add its times yourself from the timetable on the wall. It takes a
+        couple of minutes, and it fixes it for everyone who prays there.</div>
+      <!-- The route out of the dead end: add the times yourself from the
+           timetable on the wall. It genuinely submits, so it belongs here, and
+           it goes first because it is the one that actually fixes anything. -->
+      <a class="btn" id="addOwn" style="display:block;text-align:center;
          text-decoration:none;line-height:1.2">Add its times yourself</a>
+      <a class="btn ghost tweet" id="tweetReq" target="_blank" rel="noopener">Ask them to publish it instead</a>
       <button class="btn ghost" id="back2">Back to search</button>
     </div>
   </section>
@@ -440,14 +439,13 @@ a{color:var(--clay)}
 
   function notListed(term){
     $('tweetReq').href=tweet('Can you add '+(term||'my mosque')+'?');
-    if(PREVIEW){
-      /* Carry the code through, so adding a mosque and then sending it to the
-         television is one unbroken route rather than two pages that happen to
-         exist. */
-      $('addOwn').href='add.html?preview=1'+(CODE?'&c='+encodeURIComponent(CODE):'')+
-        (term?'&name='+encodeURIComponent(term):'');
-      $('addOwn').style.display='block';
-    }
+    /* Carry the code and what they typed through, so adding a mosque is a
+       continuation of setting one up rather than a separate errand. */
+    var qs=[];
+    if(PREVIEW) qs.push('preview=1');
+    if(CODE) qs.push('c='+encodeURIComponent(CODE));
+    if(term) qs.push('name='+encodeURIComponent(term));
+    $('addOwn').href='add.html'+(qs.length?'?'+qs.join('&'):'');
     show('s5');
   }
 

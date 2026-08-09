@@ -150,27 +150,6 @@ input:focus{border-color:var(--clay)}
 </style>
 </head>
 <body>
-<!-- This page is a working design, not a working product: the extraction behind
-     it is stubbed and nothing is saved anywhere. It lives on the live domain so
-     it can be reviewed on a real phone, so it has to say so to anyone who finds
-     it by accident — otherwise it tells them their mosque was added when it
-     wasn't. ?preview=1 opens the flow. -->
-<div id="gate" style="display:none;padding:calc(env(safe-area-inset-top) + 28px) 22px 72px;
-     max-width:560px;margin:0 auto">
-  <div class="brand">bilal</div>
-  <div class="eyebrow" style="margin-top:26px">Not open yet</div>
-  <h1 style="margin-top:6px">Adding your own timetable isn't live.</h1>
-  <p class="sub">This is the flow being built. Nothing you enter here is saved.
-    Bilal works today for mosques that already publish their jama'ah times.</p>
-  <div class="step">
-    <a class="btn" href="s.html" style="display:block;text-align:center;
-       text-decoration:none;line-height:1.2">Set up a mosque that is listed</a>
-    <a class="btn ghost" href="https://x.com/mertesakib/status/2086140712693764552"
-       target="_blank" rel="noopener" style="display:block;text-align:center;
-       text-decoration:none;line-height:1.2">Ask for your mosque on X</a>
-  </div>
-</div>
-
 <div id="app">
   <div class="brand">bilal</div>
 
@@ -224,8 +203,8 @@ input:focus{border-color:var(--clay)}
   <!-- 3 ─ extracting -->
   <section id="s3">
     <div class="eyebrow r r1">Reading</div>
-    <h1 class="r r2">Going through it month by month.</h1>
-    <p class="sub r r3">Each month is read more than once and the readings compared.
+    <h1 class="r r2" id="readHead">Going through it month by month.</h1>
+    <p class="sub r r3" id="readSub">Each month is read more than once and the readings compared.
       Where they disagree it reads again, until they agree.</p>
     <div class="step r r4">
       <div class="months" id="months"></div>
@@ -248,18 +227,24 @@ input:focus{border-color:var(--clay)}
     <div class="step r r3" id="flags"></div>
   </section>
 
-  <!-- 5 ─ done -->
+  <!-- 5 ─ done.
+       The copy says what actually happens, which right now is that a person
+       reads the timetable. Promising it on the television tonight would be the
+       one lie this whole flow cannot afford, because the person finds out at
+       Fajr. -->
   <section id="s5">
     <div class="done">
-      <div class="tick r r1">Done.</div>
+      <div class="tick r r1">Got it.</div>
       <p class="sub r r2" id="doneMsg" style="margin-top:12px"></p>
     </div>
     <div class="note r r3">
-      <b>Everyone who prays there gets this too.</b> The next person setting up at your
-      mosque won't have to do any of it. They'll just be asked whether your times still
-      match their card.
+      Reading a timetable is still done by hand, so it will not be on your TV today.
+      Once it is in, <b>everyone who prays there gets it</b>, and nobody at your mosque
+      has to do this again.
     </div>
-    <button class="btn r r4" id="toTv">Send it to my TV</button>
+    <a class="btn r r4" id="chase" target="_blank" rel="noopener"
+       style="display:block;text-align:center;text-decoration:none;line-height:1.2">Tell me on X so I chase it</a>
+    <button class="btn ghost r r4" id="toTv">Back to setup</button>
   </section>
 </div>
 
@@ -269,11 +254,16 @@ input:focus{border-color:var(--clay)}
   "use strict";
   var $=function(i){return document.getElementById(i);};
 
-  if(!/[?&]preview=1(&|$)/.test(location.search)){
-    $('app').style.display='none';
-    $('gate').style.display='block';
-    return;   // never boot the map or the stubbed extraction
-  }
+  var SB  = 'https://vstfgrlkwqevonrznzwm.supabase.co';
+  var SBK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzdGZncmxrd3Fldm9ucnpuendtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MDAwOTUsImV4cCI6MjA4OTk3NjA5NX0.IjPhlACgy3xslF9EvhKeIemoobHKR02LXcEgiKYHdYg';
+
+  /* Two modes, and the difference is honesty rather than features.
+     Normally this collects the mosque and its timetable and puts them in a
+     queue, and says exactly that. ?preview=1 additionally runs the extraction
+     and review screens, which are designed but not built: they show invented
+     months landing and invented days to correct. Showing that to a stranger
+     would tell them their year had been read when nothing had. */
+  var PREVIEW = /[?&]preview=1(&|$)/.test(location.search);
 
   var pin=null, name='', src='link', YEAR=[], FLAGS=[], fixed=0, corrected=0;
 
@@ -397,8 +387,68 @@ input:focus{border-color:var(--clay)}
       $(src==='pdf'?'pdfFile':'imgFiles').click();
       return;
     }
-    show('s3'); extract();
+    if(PREVIEW){ show('s3'); extract(); return; }
+    submit(this);
   };
+
+  /* ── send it ─────────────────────────────────────────────────────────────
+     Files first, then the row, so a row never points at an upload that failed.
+     Everything is insert-only: this page can add to the queue and cannot read a
+     single thing back out of it. */
+  function submit(btn){
+    var label=btn.innerHTML;
+    btn.innerHTML='<span class="spin"></span> Sending…'; btn.disabled=true;
+    show('s3');
+    $('months').innerHTML='';
+    $('readout').innerHTML='<span class="spin"></span> Sending your timetable…';
+    $('readHead').textContent='Sending it over.';
+    $('readSub').textContent='Hold on, this takes a moment on a phone connection.';
+
+    var stamp=String(Date.now())+'-'+Math.floor(Math.random()*1e6);
+    var uploads=picked.map(function(f,i){
+      var ext=(f.name.match(/\.[a-z0-9]+$/i)||[''])[0].toLowerCase();
+      var path=stamp+'/'+(i+1)+ext;
+      return fetch(SB+'/storage/v1/object/bilal-timetables/'+path,{
+        method:'POST',
+        headers:{'apikey':SBK,'Authorization':'Bearer '+SBK,
+                 'Content-Type':f.type||'application/octet-stream'},
+        body:f
+      }).then(function(r){ if(!r.ok) throw new Error('upload'); return path; });
+    });
+
+    Promise.all(uploads).then(function(paths){
+      var q=new URLSearchParams(location.search);
+      return fetch(SB+'/rest/v1/bilal_submissions',{
+        method:'POST',
+        headers:{'apikey':SBK,'Authorization':'Bearer '+SBK,
+                 'Content-Type':'application/json','Prefer':'return=minimal'},
+        body:JSON.stringify({
+          name:name, lat:pin.lat, lng:pin.lng, source:src,
+          url: src==='link' ? ($('srcUrl').value||'').trim() : null,
+          files: paths, pair_code: q.get('c')||null
+        })
+      });
+    }).then(function(r){
+      if(!r.ok) throw new Error('insert');
+      done();
+    }).catch(function(){
+      btn.innerHTML=label; btn.disabled=false;
+      show('s2');
+      $('srcHint').style.display='block';
+      $('srcHint').style.color='var(--clay)';
+      $('srcHint').textContent='That did not send. Check your connection and try again.';
+    });
+  }
+
+  function done(){
+    show('s5');
+    $('doneMsg').innerHTML='We have <b>'+esc(name)+'</b> and its timetable.';
+    $('chase').href='https://x.com/intent/tweet?in_reply_to=2086140712693764552&text='+
+      encodeURIComponent('Just sent you '+name+"'s timetable for bilal");
+  }
+  function esc(s){return (s||'').replace(/[&<>"]/g,function(c){
+    return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});}
+
   $('srcUrl').oninput=function(){
     $('srcUrl').classList.remove('nudge'); $('srcHint').style.display='none';
     $('srcHint').style.color='';
