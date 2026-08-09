@@ -295,6 +295,8 @@ main{flex:1;display:flex;flex-direction:column;justify-content:center;
 .stop.on:before{content:"";position:absolute;top:calc(var(--u)*-1.05 - 1px);left:0;
   width:calc(var(--u)*2.4);height:2px;background:var(--clay)}
 
+#devId{font-size:calc(var(--u)*.62);letter-spacing:.22em;opacity:.30;
+  font-variant-numeric:tabular-nums;text-transform:uppercase}
 footer{display:flex;justify-content:space-between;align-items:center;
   margin-top:calc(var(--u)*1.05);font-size:calc(var(--u)*.82);color:var(--veil);
   letter-spacing:.1em;text-transform:uppercase;font-weight:500}
@@ -487,6 +489,11 @@ body.compact #driftWrap{
 
   <footer>
     <div class="stat rise d4" id="stat"><i></i><span id="statText">connecting</span></div>
+    <!-- The screen's own id, dim and small. It exists so somebody standing in a
+         hallway can quote it into the report form and have their words land next
+         to what this screen was actually doing. Bilal is experimental and will
+         break; the id is what makes a report solvable rather than a shrug. -->
+    <div class="rise d4" id="devId" title="Quote this when reporting a problem"></div>
     <div class="rise d4" id="audioState"></div>
   </footer>
 
@@ -517,6 +524,7 @@ body.compact #driftWrap{
 </div></div>
 
 <script src="qr.js"></script>
+<script src="diag.js"></script>
 <script>
 (function(){
   "use strict";
@@ -1229,6 +1237,8 @@ body.compact #driftWrap{
      choreograph() removes and re-adds .go, so a later real one still plays. */
   function reveal(){ if(revealed) return; revealed = true; $('shell').classList.add('go'); }
   setTimeout(reveal, 4000);
+
+  try{ $('devId').textContent = window.BilalDiag.id(); }catch(e){}
 
   /* Cache first, then network. paint() choreographs itself the first time the
      headline prayer resolves (lastKey starts null), so painting from cache is
