@@ -94,11 +94,93 @@
     } catch (e) { return { present: false, error: true }; }
   }
 
+  /* ── "the device falls asleep" ──────────────────────────────────────────
+     There is no API that reports a television going to sleep, so this infers
+     it. A timer set for 20s that fires 90s late means the machine was not
+     running: it slept, or the browser was suspended, or the tab was frozen.
+     Recording those gaps is the only way that failure is ever provable, and it
+     is the one Fire TV complaint we expect most. */
+  var lastTick = Date.now(), gaps = [], hides = 0, started = Date.now();
+  setInterval(function () {
+    var now = Date.now(), late = now - lastTick - 20000;
+    if (late > 70000 && gaps.length < 20) {
+      gaps.push({ at: new Date(lastTick).toISOString(), minutes: Math.round(late / 60000) });
+    }
+    lastTick = now;
+  }, 20000);
+  try {
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) hides++;
+    });
+  } catch (e) {}
+
+  /* ── "I can't hear the athan" ───────────────────────────────────────────
+     The distinction that decides who has the problem: did the browser REFUSE
+     to play, or did it play and nobody heard it. The first is ours. The second
+     is the television's volume, and no amount of our code fixes it. The
+     display already records both outcomes on window.__bilal, so read that
+     rather than guessing from the status line. */
+  function audio() {
+    var b = global.__bilal || {};
+    var el = document.getElementById('audioState');
+    var out = {
+      line: el ? el.textContent.trim() : null,
+      unlocked: b.unlock || null,          // 'ok' means a play() actually resolved
+      athanAttempts: b.calls || 0,
+      cueAttempts: b.cues || 0,
+      lastError: b.lastError ? String(b.lastError).slice(0, 200) : null
+    };
+    out.verdict =
+      out.unlocked === 'ok' && out.athanAttempts > 0
+        ? 'played, so check the TV volume'
+        : /BLOCKED/.test(out.unlocked || '')
+          ? 'browser refused to play, ours to fix'
+          : out.athanAttempts === 0
+            ? 'has not tried yet today'
+            : 'unproven';
+    return out;
+  }
+
+  /* ── "those aren't my mosque's times" ───────────────────────────────────
+     Capture what is actually on the screen, not what we believe should be, so
+     it can be held against the card on the mosque wall without anyone needing
+     to reproduce anything. The slug is what identifies who to complain to. */
+  function times() {
+    var rail = document.getElementById('rail');
+    if (!rail) return null;
+    var rows = [], seen = {};
+    try {
+      var cells = rail.querySelectorAll('div');
+      for (var i = 0; i < cells.length && rows.length < 5; i++) {
+        var t = cells[i].textContent.replace(/\s+/g, ' ').trim();
+        // Must name a prayer AND carry a time: the rail nests, so matching on
+        // the name alone returns the wrapper and its own label as two rows.
+        if (!/^(fajr|dhuhr|asr|maghrib|isha)/i.test(t)) continue;
+        if (!/\d{1,2}:\d{2}/.test(t) || t.length > 60) continue;
+        var key = t.slice(0, 6).toLowerCase();
+        if (seen[key]) continue;
+        seen[key] = 1;
+        rows.push(t);
+      }
+    } catch (e) {}
+    var head = document.getElementById('prayerName');
+    var sub  = document.getElementById('prayerSub') || document.getElementById('countdown');
+    return {
+      shown: rows,
+      headline: head ? head.textContent.trim() : null,
+      under: sub ? sub.textContent.trim() : null
+    };
+  }
+
   function snapshot() {
     var cfg = config();
     var shell = document.getElementById('shell');
     var rail  = document.getElementById('rail');
     return {
+      audio: audio(),
+      times: times(),
+      asleep: { gaps: gaps.slice(), timesHidden: hides,
+                uptimeMin: Math.round((Date.now() - started) / 60000) },
       at: new Date().toISOString(),
       tzOffsetMin: new Date().getTimezoneOffset(),
       device: device(),
@@ -116,7 +198,6 @@
       shellRevealed: shell ? shell.classList.contains('go') : null,
       railTimes: rail ? (rail.textContent.match(/\d{1,2}:\d{2}/g) || []).length : null,
       status: text('statText'),
-      audio: text('audioState'),
       errors: errors.slice()
     };
   }

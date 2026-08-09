@@ -360,6 +360,31 @@ body.claimed #pair .step,
 body.claimed #pair .fallback{opacity:0;transition:opacity .5s ease}
 body.claimed #pair .qr{opacity:.18;transition:opacity .7s ease}
 
+/* ── the screen asking for help ────────────────────────────────────────────
+   A footer link is fine on a phone, where somebody is already holding the
+   device and looking at a page. It is close to useless on a wall: the serious
+   faults happen at Fajr, the person is across the room, and they are not going
+   to open a browser and type a URL to tell us something is wrong.
+
+   So the screen watches itself, and when it has been genuinely unhealthy for
+   several minutes it asks. The QR carries this screen's own id, so a scan lands
+   on the report form with the machine's side of the story already attached.
+
+   It appears only on a sustained real fault and never on a healthy screen. A
+   wall display that nags is worse than one that stays quiet. */
+#fault{position:fixed;right:var(--safe-x);bottom:var(--safe-y);z-index:55;
+  display:none;align-items:center;gap:calc(var(--u)*1.1);
+  padding:calc(var(--u)*.9) calc(var(--u)*1.2);border-radius:calc(var(--u)*.9);
+  background:rgba(34,30,28,.92);border:1px solid rgba(216,162,74,.42);
+  max-width:calc(var(--u)*26)}
+#fault.show{display:flex}
+#fault canvas{width:calc(var(--u)*6.4);height:calc(var(--u)*6.4);display:block;
+  border-radius:calc(var(--u)*.3);background:#f6efe7;padding:calc(var(--u)*.25);flex:none;
+  image-rendering:pixelated}
+#fault .t{font-size:calc(var(--u)*1.02);line-height:1.45;color:var(--cream)}
+#fault .t b{color:#e0bd7d;font-weight:700;display:block;margin-bottom:calc(var(--u)*.3)}
+#fault .t span{color:var(--veil);font-size:calc(var(--u)*.9)}
+
 #gate{position:fixed;top:0;right:0;bottom:0;left:0;z-index:60;display:none;
   align-items:center;justify-content:center;background:rgba(23,20,15,.97);
   text-align:center;padding:7%}
@@ -515,6 +540,12 @@ body.compact #driftWrap{
       <div class="wait" id="pairWait"><i></i><span>waiting for your phone</span></div>
     </div>
   </div>
+</div>
+
+<div id="fault">
+  <canvas id="faultQr"></canvas>
+  <div class="t"><b id="faultWhat">This screen isn't right.</b>
+    <span>Scan to tell us. It takes a sentence.</span></div>
 </div>
 
 <div id="gate"><div>
@@ -1239,6 +1270,49 @@ body.compact #driftWrap{
   setTimeout(reveal, 4000);
 
   try{ $('devId').textContent = window.BilalDiag.id(); }catch(e){}
+
+  /* ── watching itself ────────────────────────────────────────────────────
+     Three states where the screen is up but useless, all of which look to a
+     person like the mosque's fault or the television's rather than ours:
+     revealed with nothing on the rail, no connection, and a cache that has run
+     out of days. Each is checked from what is actually on screen rather than
+     from internal flags, so this stays true if the internals change.
+
+     Sustained for SICK_AFTER before it says anything. Prayer changes and the
+     first seconds of a load both flicker through empty states, and a display
+     that cries wolf during a normal minute is one nobody reads. */
+  var SICK_AFTER = 5 * 60 * 1000;
+  var sickSince = 0, faultShown = false;
+
+  function ailment(){
+    var rail = $('rail'), status = ($('statText').textContent || '').toLowerCase();
+    var times = rail ? (rail.textContent.match(/\d{1,2}:\d{2}/g) || []).length : 0;
+    if(status.indexOf('run out') > -1)     return 'Its prayer times have run out.';
+    if(revealed && times === 0)            return 'It has no prayer times to show.';
+    if(status.indexOf('no connection') > -1) return "It can't reach your mosque's times.";
+    return null;
+  }
+
+  function watch(){
+    var what = ailment();
+    if(!what){ sickSince = 0;
+      if(faultShown){ faultShown = false; $('fault').classList.remove('show'); }
+      return; }
+    if(!sickSince){ sickSince = Date.now(); return; }
+    if(faultShown || Date.now() - sickSince < SICK_AFTER) return;
+
+    faultShown = true;
+    $('faultWhat').textContent = what;
+    try{
+      var base = location.origin + location.pathname.replace(/\/[^/]*$/, '');
+      window.BilalQR.draw($('faultQr'),
+        base + '/bug.html?c=' + window.BilalDiag.id(),
+        { size: 260, dark:'#221E1C', light:'#F6EFE7', quiet: 3 });
+      $('fault').classList.add('show');
+      window.BilalDiag.send('error', 'self-detected: ' + what);
+    }catch(e){}
+  }
+  setInterval(watch, 30000);
 
   /* Cache first, then network. paint() choreographs itself the first time the
      headline prayer resolves (lastKey starts null), so painting from cache is
