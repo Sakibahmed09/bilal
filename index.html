@@ -570,6 +570,7 @@ body.compact #driftWrap{
 
   var data=null,lastFetch=0,fired={},athanReady=false,armed=false;
   var audioEl=null,cueEl=null,ctx=null,skyFromKey=null,skyToKey=null,lastKey=null;
+  var revealed=false;   // has anything taken the shell out of opacity 0
 
   function $(i){return document.getElementById(i);}
   function pad(n){return (n<10?'0':'')+n;}
@@ -720,6 +721,7 @@ body.compact #driftWrap{
   // replay the entrance choreography
   function choreograph(){
     var s=$('shell');
+    revealed = true;          // whatever else happens, the shell is not black now
     s.classList.remove('go');
     /* force reflow so the transition restarts */
     void s.offsetWidth;
@@ -737,15 +739,31 @@ body.compact #driftWrap{
         stat('','live · synced '+hhmm(new Date()));
         if(j.name) $('masjidName').textContent=j.name;
       })
-      .catch(function(){
-        try{
-          var c=JSON.parse(localStorage.getItem(CACHE)||'null');
-          if(c&&c.j){ data=c.j;
-            stat('warn','offline · cached '+Math.round((Date.now()-c.t)/3600000)+'h ago');
-            if(c.j.name) $('masjidName').textContent=c.j.name; return; }
-        }catch(e){}
-        stat('err','no connection');
-      });
+      .catch(function(){ if(!useCache()) stat('err','no connection'); });
+  }
+
+  /* Yesterday's timetable, read synchronously and with no network involved.
+     This used to live inside load()'s catch, which meant it was only ever
+     reached when the request FAILED. A request that hangs neither resolves nor
+     rejects, so the most common failure on a wall screen — a Fire Stick waking
+     up before its wifi has associated — was the one route that never touched
+     the cache. The screen sat there with a complete timetable in localStorage
+     and --:-- across the rail.
+
+     So the boot order is now cache first, network second: show what we know,
+     then upgrade. A prayer timetable a few hours old is still correct to the
+     minute for today, and the status line says how old it is. */
+  function useCache(){
+    try{
+      var c=JSON.parse(localStorage.getItem(CACHE)||'null');
+      if(c&&c.j){
+        data=c.j;
+        stat('warn','offline · cached '+Math.round((Date.now()-c.t)/3600000)+'h ago');
+        if(c.j.name) $('masjidName').textContent=c.j.name;
+        return true;
+      }
+    }catch(e){}
+    return false;
   }
 
   function stat(k,t){ $('stat').className='stat rise d4'+(k?' '+k:''); $('statText').textContent=t; }
@@ -1201,12 +1219,18 @@ body.compact #driftWrap{
      associated sits on an unsettled promise, and every second of that is spent
      black rather than merely empty. The failsafe reveals the shell regardless.
      choreograph() removes and re-adds .go, so a later real one still plays. */
-  var revealed = false;
   function reveal(){ if(revealed) return; revealed = true; $('shell').classList.add('go'); }
   setTimeout(reveal, 4000);
 
+  /* Cache first, then network. paint() choreographs itself the first time the
+     headline prayer resolves (lastKey starts null), so painting from cache is
+     what reveals the shell in the normal case, and the later live paint leaves
+     the key unchanged and does not replay the entrance. */
+  useCache();
+  try{ paint(); }catch(e){}
+
   load().then(function(){
-    try{ paint(); } finally { revealed = true; choreograph(); }
+    try{ paint(); } finally { reveal(); }
   });
   setInterval(function(){ paint(); if(Date.now()-lastFetch>3*3600*1000) load(); },1000);
   setInterval(drift,60000);
