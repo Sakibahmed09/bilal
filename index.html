@@ -758,8 +758,16 @@ body.compact #driftWrap{
       var c=JSON.parse(localStorage.getItem(CACHE)||'null');
       if(c&&c.j){
         data=c.j;
-        stat('warn','offline · cached '+Math.round((Date.now()-c.t)/3600000)+'h ago');
         if(c.j.name) $('masjidName').textContent=c.j.name;
+        /* The cache holds a 7 day window. Past that it still parses, still has
+           a name, and still has a plausible age, but it has no row for today,
+           so paint() finds nothing and the rail stays empty. Reporting "cached
+           12h ago" over an empty rail claims we have the times while showing
+           none of them, which is the same lie as a footer saying the athan is
+           ready when it is muted. Age is only worth stating when the times it
+           describes actually exist. */
+        if(!rowFor(new Date())){ stat('err','cached times have run out'); return true; }
+        stat('warn','offline · cached '+Math.round((Date.now()-c.t)/3600000)+'h ago');
         return true;
       }
     }catch(e){}
