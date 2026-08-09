@@ -40,7 +40,11 @@ html,body{background:var(--deep);color:var(--cream);font-family:var(--text);
   font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;min-height:100%}
 
 /* sky + scrim, fixed so content scrolls over it like the TV */
-#sky{position:fixed;top:0;left:0;right:0;height:62vh;z-index:0;
+/* 72vh, not 62vh. The scrim below only reaches full --deep at 68%, so a sky
+   that stopped at 62% left its bottom edge sitting in the part of the gradient
+   that is still translucent — a visible horizontal seam across the page. The
+   sky has to end underneath opaque scrim, never inside the ramp. */
+#sky{position:fixed;top:0;left:0;right:0;height:72vh;z-index:0;
   background-position:center 30%;background-size:cover;
   opacity:0;transition:opacity 1.4s ease}
 #sky.on{opacity:1}
@@ -63,13 +67,14 @@ h1{font-family:var(--display);font-size:35px;line-height:1.12;letter-spacing:-.0
 /* ── entrance choreography ─────────────────────────────────────────────── */
 section{display:none}
 section.on{display:block}
-section.on .r{opacity:0;transform:translate3d(0,14px,0);
+section.on .r{opacity:0;transform:translate3d(0,14px,0)}
+section.on.go .r{opacity:0;transform:translate3d(0,14px,0);
   animation:rise .62s cubic-bezier(.16,1,.3,1) forwards}
-section.on .r1{animation-delay:.09s} section.on .r2{animation-delay:.18s}
-section.on .r3{animation-delay:.27s} section.on .r4{animation-delay:.36s}
+section.on.go .r1{animation-delay:.09s} section.on.go .r2{animation-delay:.18s}
+section.on.go .r3{animation-delay:.27s} section.on.go .r4{animation-delay:.36s}
 @keyframes rise{to{opacity:1;transform:translate3d(0,0,0)}}
 @media (prefers-reduced-motion: reduce){
-  section.on .r{animation:none;opacity:1;transform:none}
+  section.on .r,section.on.go .r{animation:none;opacity:1;transform:none}
   #sky{transition:none}
 }
 
@@ -143,7 +148,7 @@ a{color:var(--clay)}
   <div class="brand">bilal</div>
 
   <!-- 1. choose -->
-  <section id="s1" class="on">
+  <section id="s1" class="on go">
     <div class="eyebrow r r1">Set up</div>
     <h1 class="r r2">Which mosque do you pray at?</h1>
     <p class="sub r r3">Bilal shows your mosque's own jama'ah times, and calls you when it's time to leave.</p>
@@ -231,10 +236,15 @@ a{color:var(--clay)}
   fetch('mosques.json').then(function(r){return r.json();}).then(function(d){ MOSQUES=d; });
 
   function show(id){
-    ['s1','s2','s3','s4','s5'].forEach(function(x){ $(x).classList.remove('on'); });
+    ['s1','s2','s3','s4','s5'].forEach(function(x){ $(x).classList.remove('on','go'); });
     var el=$(id);
-    void el.offsetWidth;            // restart the entrance rather than skipping it
+    /* Order matters. Forcing the reflow BEFORE the element is displayed meant the
+       animation was assigned to a display:none element and never ran — every step
+       after the first rendered at opacity 0. Display first, reflow, then animate. */
+    el.classList.remove('go');
     el.classList.add('on');
+    void el.offsetWidth;
+    el.classList.add('go');
     window.scrollTo(0,0);
   }
 

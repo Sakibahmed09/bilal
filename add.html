@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Add your mosque — bilal</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<meta name="theme-color" content="#17140f">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link href="https://fonts.googleapis.com/css2?family=Prata&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────────────────────────────────────────
+ * ADD YOUR MOSQUE — phone
+ *
+ * STORYBOARD (per step)
+ *     0ms  step enters, rises 14px
+ *    90ms  eyebrow
+ *   180ms  headline
+ *   270ms  supporting line
+ *   360ms  controls
+ *
+ * The load-bearing moments, in order of how much care they deserve:
+ *
+ * 1. EXTRACTING — the longest wait in the product. A spinner here reads as a
+ *    hang. Months landing one by one read as work being done, and tell the
+ *    truth about what is happening.
+ * 2. THE SHAPE — five thin lines, one per prayer, across the whole year. A real
+ *    timetable is five smooth curves; a misread digit is a visible spike. This
+ *    is how someone verifies 365 days in one glance, which is otherwise the
+ *    thing that makes review impossible.
+ * 3. FLAGGED ROWS — show WHY it was flagged, with its neighbours, so the
+ *    correction is obvious rather than a guess.
+ *
+ * The "this helps everyone at your mosque" line lands at the END. Asking for
+ * altruism up front is a demand; showing it afterwards is a reward.
+ * ───────────────────────────────────────────────────────────────────────── */
+:root{
+  --clay:#d9a48f; --clay-lift:#e8b9a3; --cream:#f6efe7;
+  --char:#221e1c; --deep:#17140f;
+  --veil:rgba(246,239,231,.50); --hair:rgba(246,239,231,.14);
+  --ok:#7fb08a; --warn:#d8a24a; --bad:#c4614f;
+  --display:'Prata',Georgia,serif;
+  --text:'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--deep);color:var(--cream);font-family:var(--text);
+  font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;min-height:100%}
+#app{padding:calc(env(safe-area-inset-top) + 28px) 22px 72px;max-width:560px;margin:0 auto}
+
+.brand{font-family:var(--display);font-size:22px;opacity:.9;margin-bottom:30px}
+h1{font-family:var(--display);font-size:33px;line-height:1.13;letter-spacing:-.022em;font-weight:400}
+.sub{color:var(--veil);font-size:15.5px;line-height:1.62;margin-top:12px}
+.sub b{color:var(--cream);font-weight:600}
+.eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--clay);
+  font-weight:700;margin-bottom:12px}
+.step{margin-top:28px;padding-top:24px;border-top:1px solid var(--hair)}
+
+section{display:none} section.on{display:block}
+section.on .r{opacity:0;transform:translate3d(0,14px,0)}
+section.on.go .r{opacity:0;transform:translate3d(0,14px,0);
+  animation:rise .62s cubic-bezier(.16,1,.3,1) forwards}
+section.on.go .r1{animation-delay:.09s} section.on.go .r2{animation-delay:.18s}
+section.on.go .r3{animation-delay:.27s} section.on.go .r4{animation-delay:.36s}
+@keyframes rise{to{opacity:1;transform:translate3d(0,0,0)}}
+@media (prefers-reduced-motion:reduce){section.on .r{animation:none;opacity:1;transform:none}}
+
+button,input{font-family:inherit;font-size:16px}
+.btn{width:100%;padding:17px 20px;border:0;border-radius:14px;background:var(--clay);
+  color:var(--char);font-weight:700;font-size:16.5px;margin-top:12px;
+  transition:transform .18s cubic-bezier(.16,1,.3,1),background .18s}
+.btn:active{transform:scale(.978);background:var(--clay-lift)}
+.btn.ghost{background:rgba(246,239,231,.06);border:1px solid var(--hair);
+  color:var(--cream);font-weight:600}
+.btn[disabled]{opacity:.45}
+input[type=text],input[type=url]{width:100%;padding:16px;border-radius:14px;
+  border:1px solid var(--hair);background:rgba(34,30,28,.72);color:var(--cream);outline:none}
+input:focus{border-color:var(--clay)}
+::placeholder{color:rgba(246,239,231,.34)}
+.hint{font-size:13.5px;color:var(--veil);margin-top:10px;line-height:1.58}
+
+/* map */
+#map{height:260px;border-radius:16px;margin-top:14px;border:1px solid var(--hair)}
+.pinbar{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:13.5px;color:var(--veil)}
+.pinbar b{color:var(--cream)}
+
+/* source choice */
+.opt{display:block;width:100%;text-align:left;padding:16px;border-radius:14px;
+  border:1px solid var(--hair);background:rgba(34,30,28,.6);color:var(--cream);margin-top:10px;
+  transition:transform .18s cubic-bezier(.16,1,.3,1),border-color .18s}
+.opt:active{transform:scale(.985)}
+.opt.best{border-color:rgba(217,164,143,.42);background:rgba(217,164,143,.08)}
+.opt .t{font-weight:700;font-size:15.5px}
+.opt .d{color:var(--veil);font-size:13px;margin-top:4px;line-height:1.45}
+.opt .tag{display:inline-block;margin-top:8px;font-size:11px;font-weight:700;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--clay)}
+
+/* extracting */
+.months{margin-top:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mo{padding:11px 6px;border-radius:11px;border:1px solid var(--hair);text-align:center;
+  font-size:12.5px;color:var(--veil);transition:all .4s cubic-bezier(.16,1,.3,1)}
+.mo.now{border-color:var(--clay);color:var(--clay);transform:scale(1.04)}
+/* .read, not .done — the final screen's wrapper is .done, and since it declares
+   padding later in this sheet it was winning over .mo and blowing every month
+   tile up to 90px tall. Generic state names collide; keep them scoped. */
+.mo.read{border-color:rgba(127,176,138,.4);color:#a6ceac;background:rgba(127,176,138,.08)}
+.readout{margin-top:16px;font-size:13.5px;color:var(--veil);min-height:1.5em}
+.readout b{color:var(--cream)}
+
+/* the shape */
+.shape{margin-top:16px;padding:16px 14px 12px;border-radius:16px;
+  background:rgba(34,30,28,.62);border:1px solid var(--hair)}
+.shape svg{width:100%;height:150px;display:block;overflow:visible}
+.shape .cap{display:flex;justify-content:space-between;margin-top:9px;
+  font-size:11px;color:var(--veil);letter-spacing:.08em;text-transform:uppercase}
+.keys{display:flex;flex-wrap:wrap;gap:10px;margin-top:11px;font-size:11.5px;color:var(--veil)}
+.keys span{display:flex;align-items:center;gap:5px}
+.keys i{width:14px;height:2px;border-radius:2px;display:block}
+
+/* flagged rows */
+.flag{margin-top:12px;padding:15px;border-radius:14px;border:1px solid rgba(216,162,74,.35);
+  background:rgba(216,162,74,.07)}
+.flag .why{font-size:13px;color:#e0bd7d;font-weight:600}
+.ctx{margin-top:11px;font-size:14px;line-height:1.9;font-variant-numeric:tabular-nums}
+.ctx .d{color:var(--veil)}
+.ctx .bad{color:#e8a99b;font-weight:700}
+.fixrow{display:flex;gap:9px;margin-top:12px;align-items:center}
+.fixrow input{text-align:center;font-weight:700;font-size:19px;padding:12px 6px;width:96px}
+.fixrow .btn{margin-top:0;flex:1;padding:13px}
+/* The second answer. We flagged the row because it breaks the pattern, but the
+   pattern is a guess and the card in their hand is not — a mosque really can
+   jump 40 minutes on one day. Without this the flow dead-ends for anyone whose
+   timetable is genuinely unusual. */
+.keep{display:block;width:100%;margin-top:9px;padding:11px;border-radius:11px;
+  background:transparent;border:1px solid var(--hair);color:var(--veil);
+  font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.keep b{color:var(--cream);font-variant-numeric:tabular-nums}
+.flag.settled{opacity:.35;transform:scale(.985);
+  transition:opacity .4s ease,transform .4s ease}
+.skipall{display:block;width:100%;margin-top:20px;padding:12px;background:none;border:0;
+  color:var(--veil);font-family:inherit;font-size:13.5px;cursor:pointer;
+  text-decoration:underline;text-underline-offset:3px}
+
+.note{margin-top:16px;padding:15px;border-radius:14px;background:rgba(246,239,231,.05);
+  font-size:14px;line-height:1.6;color:var(--veil)}
+.note b{color:var(--cream)}
+.done{text-align:center;padding:52px 0 28px}
+.done .tick{font-family:var(--display);font-size:44px;color:var(--clay)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--hair);
+  border-top-color:var(--clay);border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+/* Tapping Continue with an empty name used to just call focus(). On a phone the
+   keyboard opens and nothing else changes, which reads as the button being
+   broken rather than the field being required. Say it. */
+.nudge{animation:nudge .34s cubic-bezier(.36,.07,.19,.97);border-color:var(--clay)!important}
+@keyframes nudge{10%,90%{transform:translateX(-2px)}30%,70%{transform:translateX(4px)}
+  50%{transform:translateX(-4px)}100%{transform:translateX(0)}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="brand">bilal</div>
+
+  <!-- 1 ─ where -->
+  <section id="s1" class="on go">
+    <div class="eyebrow r r1">Add your mosque</div>
+    <h1 class="r r2">Where is it?</h1>
+    <p class="sub r r3">Drop a pin on the building. We match by <b>position, not name</b> —
+      so nobody ends up with two versions of the same mosque.</p>
+    <div class="step r r4">
+      <div id="map"></div>
+      <div class="pinbar"><span id="pinInfo">Drag the map to place the pin.</span></div>
+      <input type="text" id="mname" placeholder="What's it called?" style="margin-top:14px">
+      <div class="hint" id="nameHint">Just a label so people recognise it. Spelling doesn't matter.</div>
+      <button class="btn" id="toSrc">Continue</button>
+    </div>
+  </section>
+
+  <!-- 2 ─ the document -->
+  <section id="s2">
+    <div class="eyebrow r r1">Step 2 of 4</div>
+    <h1 class="r r2">Where are its times?</h1>
+    <p class="sub r r3">Whatever your mosque publishes. A year at once is ideal —
+      that's the whole point.</p>
+    <div class="step r r4">
+      <button class="opt best" data-src="link">
+        <div class="t">Link to their timetable</div>
+        <div class="d">A page or PDF on the mosque's website. Best quality, and it can
+          refresh itself later so the times never go stale.</div>
+        <div class="tag">Best</div>
+      </button>
+      <button class="opt" data-src="pdf">
+        <div class="t">Upload a PDF</div>
+        <div class="d">The yearly timetable, if you've got the file.</div>
+      </button>
+      <button class="opt" data-src="photo">
+        <div class="t">Photograph the card</div>
+        <div class="d">The timetable on the wall. One photo per month.</div>
+      </button>
+      <input type="url" id="srcUrl" placeholder="https://…" style="display:none;margin-top:14px">
+      <!-- Real pickers, not placeholders. The file the user hands over is the
+           whole input to this product; the flow should ask for it properly even
+           while extraction is stubbed. -->
+      <input type="file" id="pdfFile" accept="application/pdf,.pdf" style="display:none">
+      <input type="file" id="imgFiles" accept="image/*" multiple style="display:none">
+      <div class="hint" id="srcHint" style="display:none"></div>
+      <button class="btn" id="toRead" style="display:none">Read the timetable</button>
+      <button class="btn ghost" id="back1">Back</button>
+    </div>
+  </section>
+
+  <!-- 3 ─ extracting -->
+  <section id="s3">
+    <div class="eyebrow r r1">Reading</div>
+    <h1 class="r r2">Going through it month by month.</h1>
+    <p class="sub r r3">Each month is read more than once and the readings compared.
+      Where they disagree it reads again, until they agree.</p>
+    <div class="step r r4">
+      <div class="months" id="months"></div>
+      <div class="readout" id="readout"></div>
+    </div>
+  </section>
+
+  <!-- 4 ─ the shape -->
+  <section id="s4">
+    <div class="eyebrow r r1">Step 3 of 4</div>
+    <h1 class="r r2">Does this look like your year?</h1>
+    <p class="sub r r3">Every day we read, drawn as one line per prayer. A real timetable
+      curves smoothly with the seasons. <b>A misread digit is a spike.</b></p>
+    <div class="step r r3">
+      <div class="shape">
+        <svg id="chart" viewBox="0 0 340 150" preserveAspectRatio="none"></svg>
+        <div class="cap"><span id="capFrom">Jan</span><span id="capTo">Dec</span></div>
+      </div>
+      <div class="keys">
+        <span><i style="background:#8ea9c8"></i>Fajr</span>
+        <span><i style="background:#d9a48f"></i>Dhuhr</span>
+        <span><i style="background:#c9b27f"></i>Asr</span>
+        <span><i style="background:#c98a6a"></i>Maghrib</span>
+        <span><i style="background:#9b8fb0"></i>Isha</span>
+      </div>
+      <div class="note" id="shapeNote"></div>
+      <button class="btn" id="toFix">Continue</button>
+    </div>
+  </section>
+
+  <!-- 5 ─ flagged rows -->
+  <section id="s5">
+    <div class="eyebrow r r1">Step 4 of 4</div>
+    <h1 class="r r2" id="fixTitle">A few days look wrong.</h1>
+    <p class="sub r r3">We're not asking you to check 365 days. Only the ones that don't
+      fit the pattern.</p>
+    <div class="step r r3" id="flags"></div>
+  </section>
+
+  <!-- 6 ─ done -->
+  <section id="s6">
+    <div class="done">
+      <div class="tick r r1">Done.</div>
+      <p class="sub r r2" id="doneMsg" style="margin-top:12px"></p>
+    </div>
+    <div class="note r r3">
+      <b>Everyone who prays there gets this too.</b> The next person setting up at your
+      mosque won't have to do any of it — they'll just be asked whether your times still
+      match their card.
+    </div>
+    <button class="btn r r4" id="toTv">Send it to my TV</button>
+  </section>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+  "use strict";
+  var $=function(i){return document.getElementById(i);};
+  var pin=null, name='', src='link', YEAR=[], FLAGS=[], fixed=0, corrected=0;
+
+  function show(id){
+    ['s1','s2','s3','s4','s5','s6'].forEach(function(x){ $(x).classList.remove('on','go'); });
+    var el=$(id);
+    /* Order matters. The reflow used to happen BEFORE the element was displayed,
+       so the animation was assigned to a display:none element and never ran —
+       every step after the first rendered at opacity 0. Display, reflow, animate. */
+    el.classList.add('on');
+    void el.offsetWidth;
+    el.classList.add('go');
+    window.scrollTo(0,0);
+  }
+
+  /* ── 1. the pin ─────────────────────────────────────────────────────── */
+  var map=L.map('map',{zoomControl:false}).setView([51.5395,0.1345],15);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    {subdomains:'abcd',maxZoom:19,attribution:'&copy; OSM, &copy; CARTO'}).addTo(map);
+  // A fixed centre crosshair rather than a draggable marker: on a phone your
+  // thumb covers a marker, and moving the map under a still pin is easier to
+  // aim than dragging a dot you cannot see.
+  var cross=L.divIcon({className:'',iconSize:[26,26],
+    html:'<div style="width:26px;height:26px;border-radius:50%;border:2px solid #d9a48f;'+
+         'background:rgba(217,164,143,.22);box-shadow:0 0 0 3px rgba(23,20,15,.5)"></div>'});
+  var mk=L.marker(map.getCenter(),{icon:cross,interactive:false}).addTo(map);
+  map.on('move',function(){ mk.setLatLng(map.getCenter()); });
+  map.on('moveend',function(){
+    pin=map.getCenter();
+    $('pinInfo').innerHTML='Pin at <b>'+pin.lat.toFixed(5)+', '+pin.lng.toFixed(5)+'</b>';
+  });
+  setTimeout(function(){ map.invalidateSize(); map.fire('moveend'); },350);
+  if(navigator.geolocation) navigator.geolocation.getCurrentPosition(function(p){
+    map.setView([p.coords.latitude,p.coords.longitude],16);
+  },function(){},{timeout:8000});
+
+  $('toSrc').onclick=function(){
+    name=($('mname').value||'').trim();
+    if(!name){
+      var el=$('mname');
+      el.classList.remove('nudge'); void el.offsetWidth; el.classList.add('nudge');
+      $('nameHint').textContent='Give it a name first — anything people would recognise.';
+      $('nameHint').style.color='var(--clay)';
+      el.focus();
+      return;
+    }
+    show('s2');
+  };
+  $('mname').oninput=function(){
+    $('mname').classList.remove('nudge');
+    $('nameHint').textContent="Just a label so people recognise it. Spelling doesn't matter.";
+    $('nameHint').style.color='';
+  };
+  $('back1').onclick=function(){ show('s1'); setTimeout(function(){map.invalidateSize();},250); };
+
+  /* ── 2. the document ────────────────────────────────────────────────── */
+  var picked=[];
+  function srcLabel(){
+    if(src==='link') return 'Read the timetable';
+    if(picked.length) return 'Read '+picked.length+' '+
+      (src==='pdf' ? 'PDF' : 'photo'+(picked.length===1?'':'s'));
+    return src==='pdf' ? 'Choose a PDF' : 'Take photos';
+  }
+  function refreshSrc(){
+    $('toRead').textContent=srcLabel();
+    var h=$('srcHint');
+    if(src==='photo'){
+      h.style.display='block';
+      h.textContent = picked.length
+        ? picked.length+' of 12 months added. Add the rest, or carry on with these.'
+        : 'One photo per month. You can add them all at once.';
+    } else if(src==='pdf'){
+      h.style.display=picked.length?'block':'none';
+      if(picked.length) h.textContent=picked[0].name;
+    } else h.style.display='none';
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.opt'),function(b){
+    b.onclick=function(){
+      if(src!==b.dataset.src) picked=[];
+      src=b.dataset.src;
+      Array.prototype.forEach.call(document.querySelectorAll('.opt'),function(o){
+        o.style.borderColor = (o===b) ? 'var(--clay)' : '';
+      });
+      $('srcUrl').style.display = (src==='link') ? 'block' : 'none';
+      $('toRead').style.display='block';
+      refreshSrc();
+    };
+  });
+  $('pdfFile').onchange=function(){ picked=Array.prototype.slice.call(this.files); refreshSrc(); };
+  $('imgFiles').onchange=function(){ picked=Array.prototype.slice.call(this.files); refreshSrc(); };
+
+  function nudge(el,msg){
+    el.classList.remove('nudge'); void el.offsetWidth; el.classList.add('nudge');
+    if(msg){ $('srcHint').style.display='block'; $('srcHint').textContent=msg;
+             $('srcHint').style.color='var(--clay)'; }
+  }
+  $('toRead').onclick=function(){
+    if(src==='link'){
+      var u=($('srcUrl').value||'').trim();
+      // Deliberately loose: people paste "masjid.org/times" without a scheme and
+      // being told off for it is a worse failure than us prefixing https.
+      if(!/\./.test(u)){ nudge($('srcUrl'),'Paste the address of the page or PDF.');
+                         $('srcUrl').focus(); return; }
+      if(!/^https?:\/\//i.test(u)) $('srcUrl').value='https://'+u;
+    } else if(!picked.length){
+      // First press opens the picker rather than erroring — nothing has gone
+      // wrong yet, they just haven't been asked for the file.
+      $(src==='pdf'?'pdfFile':'imgFiles').click();
+      return;
+    }
+    show('s3'); extract();
+  };
+  $('srcUrl').oninput=function(){
+    $('srcUrl').classList.remove('nudge'); $('srcHint').style.display='none';
+    $('srcHint').style.color='';
+  };
+
+  /* ── 3. extracting ──────────────────────────────────────────────────── */
+  var MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function extract(){
+    $('months').innerHTML=MONTHS.map(function(m,i){
+      return '<div class="mo" id="mo'+i+'">'+m+'</div>'; }).join('');
+    var i=0;
+    (function next(){
+      if(i>=12){ buildYear(); setTimeout(function(){ show('s4'); drawShape(); },500); return; }
+      var el=$('mo'+i); el.className='mo now';
+      // Quorum, shown honestly: two readings, a third only where they disagree.
+      var reads = (i===3||i===9) ? 3 : 2;
+      $('readout').innerHTML = 'Reading <b>'+MONTHS[i]+'</b> — '+reads+
+        (reads>2 ? ' readings, the first two disagreed' : ' readings, agreed');
+      setTimeout(function(){ el.className='mo read'; i++; next(); }, reads>2?900:520);
+    })();
+  }
+
+  /* ── mock a year, with deliberate misreads to review ────────────────── */
+  function buildYear(){
+    YEAR=[]; FLAGS=[];
+    for(var d=0; d<365; d++){
+      var t=d/365*Math.PI*2;
+      var row={ d:d,
+        fajr: 300 - Math.sin(t-1.2)*95,
+        dhuhr: 785 + Math.sin(t)*8,
+        asr: 1010 + Math.sin(t-0.6)*150,
+        maghrib: 1120 + Math.sin(t-0.5)*185,
+        isha: 1215 + Math.sin(t-0.4)*175 };
+      YEAR.push(row);
+    }
+    // three plausible OCR errors: a transposed digit, a dropped hour, a 5/6 swap
+    [[57,'asr',+47],[168,'isha',-60],[299,'fajr',+38]].forEach(function(f){
+      YEAR[f[0]][f[1]] += f[2];
+      FLAGS.push({i:f[0], k:f[1], delta:f[2]});
+    });
+  }
+
+  /* ── 4. the shape ───────────────────────────────────────────────────── */
+  function drawShape(){
+    var keys=['fajr','dhuhr','asr','maghrib','isha'];
+    var cols={fajr:'#8ea9c8',dhuhr:'#d9a48f',asr:'#c9b27f',maghrib:'#c98a6a',isha:'#9b8fb0'};
+    var lo=1e9, hi=-1e9;
+    YEAR.forEach(function(r){ keys.forEach(function(k){ lo=Math.min(lo,r[k]); hi=Math.max(hi,r[k]); }); });
+    var pad=(hi-lo)*0.06; lo-=pad; hi+=pad;
+    var svg='';
+    keys.forEach(function(k){
+      var pts=YEAR.map(function(r,i){
+        return (i/364*340).toFixed(1)+','+(150-(r[k]-lo)/(hi-lo)*150).toFixed(1); }).join(' ');
+      svg+='<polyline points="'+pts+'" fill="none" stroke="'+cols[k]+
+           '" stroke-width="1.6" stroke-linejoin="round" opacity=".92"/>';
+    });
+    // mark the spikes so the eye is told where to look rather than hunting
+    FLAGS.forEach(function(f){
+      var x=(f.i/364*340).toFixed(1);
+      svg+='<line x1="'+x+'" y1="0" x2="'+x+'" y2="150" stroke="#d8a24a" '+
+           'stroke-width="1" stroke-dasharray="3 3" opacity=".75"/>';
+    });
+    $('chart').innerHTML=svg;
+    $('shapeNote').innerHTML='The five curves look right — they rise and fall with the '+
+      'seasons as they should. <b>'+FLAGS.length+' days break the pattern</b>, marked above. '+
+      'Those are the only ones worth your eyes.';
+  }
+  $('toFix').onclick=function(){ show('s5'); drawFlags(); };
+
+  /* ── 5. flagged rows ────────────────────────────────────────────────── */
+  var LABEL={fajr:'Fajr',dhuhr:'Dhuhr',asr:'Asr',maghrib:'Maghrib',isha:'Isha'};
+  // Zero-padded both sides: a column of 6:07 next to 17:43 reads as ragged, and
+  // these are meant to look like the times printed on the card.
+  function hhmm(m){ m=Math.round(m);
+    return ('0'+(Math.floor(m/60)%24)).slice(-2)+':'+('0'+(m%60)).slice(-2); }
+  function dateOf(i){
+    var d=new Date(2026,0,1); d.setDate(d.getDate()+i);
+    return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  }
+  function drawFlags(){
+    fixed=0; corrected=0;
+    $('fixTitle').textContent = FLAGS.length+' day'+(FLAGS.length===1?'':'s')+' look wrong.';
+    $('flags').innerHTML = FLAGS.map(function(f,n){
+      var prev=YEAR[f.i-1][f.k], cur=YEAR[f.i][f.k], next=YEAR[f.i+1][f.k];
+      var expect=(prev+next)/2;
+      return '<div class="flag" id="fl'+n+'">'+
+        '<div class="why">'+LABEL[f.k]+' jumps '+Math.abs(Math.round(f.delta))+
+          ' minutes here. Every other day moves by one or two.</div>'+
+        '<div class="ctx">'+
+          '<span class="d">'+dateOf(f.i-1)+'</span> &nbsp;'+hhmm(prev)+'<br>'+
+          '<span class="d">'+dateOf(f.i)+'</span> &nbsp;<span class="bad">'+hhmm(cur)+'</span>'+
+            ' &nbsp;<span class="d">← we read this</span><br>'+
+          '<span class="d">'+dateOf(f.i+1)+'</span> &nbsp;'+hhmm(next)+
+        '</div>'+
+        '<div class="fixrow">'+
+          '<input type="text" id="fx'+n+'" value="'+hhmm(expect)+'" inputmode="numeric">'+
+          '<button class="btn" data-n="'+n+'" data-a="fix">Use this</button>'+
+        '</div>'+
+        '<button class="keep" data-n="'+n+'" data-a="keep">'+
+          'My card really says <b>'+hhmm(cur)+'</b></button>'+
+        /* Said once, under the first card. Repeating it on every card taught
+           nothing after the first read and made the list feel longer. */
+        (n===0 ? '<div class="hint">Pre-filled with what the days either side '+
+                 'suggest. Change it if your card says otherwise.</div>' : '')+
+      '</div>';
+    }).join('')+
+      '<button class="skipall" id="skipAll">I don\'t have the timetable in front of me '+
+      '— leave these as they are</button>';
+
+    Array.prototype.forEach.call($('flags').querySelectorAll('button[data-n]'),function(b){
+      b.onclick=function(){ settle(b.dataset.n, b.dataset.a==='fix'); };
+    });
+    $('skipAll').onclick=function(){
+      FLAGS.forEach(function(_,n){ settle(n,false,true); });
+    };
+  }
+
+  /* One resolution path for both answers: whichever button they press, the row
+     stops being a question. Only the wording of the confirmation differs. */
+  function settle(n, useSuggested, quiet){
+    var el=$('fl'+n);
+    if(!el || el.classList.contains('settled')) return;
+    el.classList.add('settled');
+    Array.prototype.forEach.call(el.querySelectorAll('button'),function(x){ x.disabled=true; });
+    var fixBtn=el.querySelector('button[data-a="fix"]');
+    fixBtn.textContent = useSuggested ? 'Changed to '+$('fx'+n).value : 'Kept';
+    if(useSuggested) corrected++;
+    if(++fixed>=FLAGS.length) setTimeout(finish, quiet?350:650);
+  }
+
+  function finish(){
+    show('s6');
+    /* Say what actually happened. Someone who skipped every flag should not be
+       told the year is confirmed — the next person at their mosque is the one
+       who will settle those rows, and the copy should set that up. */
+    var msg='<b>'+(name||'Your mosque')+'</b> now has a year of jama\'ah times.';
+    var unresolved=FLAGS.length-corrected;
+    if(FLAGS.length && corrected===0)
+      msg+=' The '+FLAGS.length+' flagged day'+(FLAGS.length===1?'':'s')+
+           ' went in as read — worth a second look when you have the card.';
+    else if(unresolved>0)
+      msg+=' '+corrected+' corrected, '+unresolved+' left as read.';
+    $('doneMsg').innerHTML=msg;
+  }
+  $('toTv').onclick=function(){ location.href='s.html'; };
+})();
+</script>
+</body>
+</html>
