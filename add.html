@@ -155,7 +155,7 @@ input:focus{border-color:var(--clay)}
 
   <!-- 1 ─ where -->
   <section id="s1" class="on go">
-    <div class="eyebrow r r1">Add your mosque</div>
+    <div class="eyebrow r r1">Step 1 of 2</div>
     <h1 class="r r2">Where is it?</h1>
     <p class="sub r r3">Drop a pin on the building. We match by <b>position, not name</b>, so nobody
       ends up with two versions of the same mosque.</p>
@@ -170,32 +170,21 @@ input:focus{border-color:var(--clay)}
 
   <!-- 2 ─ the document -->
   <section id="s2">
-    <div class="eyebrow r r1">Step 2 of 3</div>
-    <h1 class="r r2">Where are its times?</h1>
-    <p class="sub r r3">Whatever your mosque publishes. One document covering the whole year is best.</p>
+    <div class="eyebrow r r1">Step 2 of 2</div>
+    <h1 class="r r2">That's nearly it.</h1>
+    <p class="sub r r3">We take it from the pin: we find the mosque, then its website, then
+      the timetable on it.</p>
     <div class="step r r4">
-      <button class="opt best" data-src="link">
-        <div class="t">Link to their timetable</div>
-        <div class="d">A page or PDF on the mosque's website. Best quality, and it can
-          refresh itself later so the times never go stale.</div>
-        <div class="tag">Best</div>
-      </button>
-      <button class="opt" data-src="pdf">
-        <div class="t">Upload a PDF</div>
-        <div class="d">The yearly timetable, if you've got the file.</div>
-      </button>
-      <button class="opt" data-src="photo">
-        <div class="t">Photograph the card</div>
-        <div class="d">The timetable on the wall. One photo per month.</div>
-      </button>
-      <input type="url" id="srcUrl" placeholder="https://…" style="display:none;margin-top:14px">
-      <!-- Real pickers, not placeholders. The file the user hands over is the
-           whole input to this product; the flow should ask for it properly even
-           while extraction is stubbed. -->
-      <input type="file" id="pdfFile" accept="application/pdf,.pdf" style="display:none">
-      <input type="file" id="imgFiles" accept="image/*" multiple style="display:none">
-      <div class="hint" id="srcHint" style="display:none"></div>
-      <button class="btn" id="toRead" style="display:none">Read the timetable</button>
+      <!-- One optional field, not a choice of three.
+           The pin is the whole input: the backend finds the mosque from it, then
+           its website, then the timetable on that website. A link only helps
+           when the mosque's site hides it somewhere a crawler will not look, so
+           it sits here quietly rather than as one of three routes the person has
+           to choose between before they know what any of them mean. -->
+      <input type="url" id="srcUrl" placeholder="Link to their timetable (optional)">
+      <div class="hint" id="srcHint">Only if you already know it. Otherwise leave it,
+        we look for it ourselves.</div>
+      <button class="btn" id="toRead">Add this mosque</button>
       <button class="btn ghost" id="back1">Back</button>
     </div>
   </section>
@@ -238,7 +227,7 @@ input:focus{border-color:var(--clay)}
       <p class="sub r r2" id="doneMsg" style="margin-top:12px"></p>
     </div>
     <div class="note r r3">
-      Reading a timetable is still done by hand, so it will not be on your TV today.
+      Reading the timetable takes a little while, so it will not be on your TV today.
       Once it is in, <b>everyone who prays there gets it</b>, and nobody at your mosque
       has to do this again.
     </div>
@@ -332,127 +321,81 @@ input:focus{border-color:var(--clay)}
   };
   $('back1').onclick=function(){ show('s1'); setTimeout(function(){map.invalidateSize();},250); };
 
-  /* ── 2. the document ────────────────────────────────────────────────── */
-  var picked=[];
-  function srcLabel(){
-    if(src==='link') return 'Read the timetable';
-    if(picked.length) return 'Read '+picked.length+' '+
-      (src==='pdf' ? 'PDF' : 'photo'+(picked.length===1?'':'s'));
-    return src==='pdf' ? 'Choose a PDF' : 'Take photos';
-  }
-  function refreshSrc(){
-    $('toRead').textContent=srcLabel();
-    var h=$('srcHint');
-    if(src==='photo'){
-      h.style.display='block';
-      h.textContent = picked.length
-        ? picked.length+' of 12 months added. Add the rest, or carry on with these.'
-        : 'One photo per month. You can add them all at once.';
-    } else if(src==='pdf'){
-      h.style.display=picked.length?'block':'none';
-      if(picked.length) h.textContent=picked[0].name;
-    } else h.style.display='none';
-  }
-  Array.prototype.forEach.call(document.querySelectorAll('.opt'),function(b){
-    b.onclick=function(){
-      if(src!==b.dataset.src) picked=[];
-      src=b.dataset.src;
-      Array.prototype.forEach.call(document.querySelectorAll('.opt'),function(o){
-        o.style.borderColor = (o===b) ? 'var(--clay)' : '';
-      });
-      $('srcUrl').style.display = (src==='link') ? 'block' : 'none';
-      $('toRead').style.display='block';
-      refreshSrc();
-    };
-  });
-  $('pdfFile').onchange=function(){ picked=Array.prototype.slice.call(this.files); refreshSrc(); };
-  $('imgFiles').onchange=function(){ picked=Array.prototype.slice.call(this.files); refreshSrc(); };
+  /* ── 2. the timetable ────────────────────────────────────────────────
+     There used to be three routes here: paste a link, upload a PDF, or
+     photograph the card month by month. The photo route had nothing behind it
+     that could read an image, and asking someone to choose between three
+     options before they know what any of them do is a decision we were pushing
+     onto them to avoid making ourselves. The pin does the work now. */
+  var src='pin', picked=[];
 
   function nudge(el,msg){
     el.classList.remove('nudge'); void el.offsetWidth; el.classList.add('nudge');
-    if(msg){ $('srcHint').style.display='block'; $('srcHint').textContent=msg;
-             $('srcHint').style.color='var(--clay)'; }
+    if(msg){ $('srcHint').textContent=msg; $('srcHint').style.color='var(--clay)'; }
   }
+
   $('toRead').onclick=function(){
-    if(src==='link'){
-      var u=($('srcUrl').value||'').trim();
-      // Deliberately loose: people paste "masjid.org/times" without a scheme and
-      // being told off for it is a worse failure than us prefixing https.
-      if(!/\./.test(u)){ nudge($('srcUrl'),'Paste the address of the page or PDF.');
-                         $('srcUrl').focus(); return; }
+    var u=($('srcUrl').value||'').trim();
+    if(u){
+      // Loose on purpose: people paste "masjid.org/times" and being told off for
+      // a missing scheme is a worse failure than us adding one.
+      if(!/\./.test(u)){ nudge($('srcUrl'),'That does not look like a web address. '+
+                          'Clear it if you do not have one.'); $('srcUrl').focus(); return; }
       if(!/^https?:\/\//i.test(u)) $('srcUrl').value='https://'+u;
-    } else if(!picked.length){
-      // First press opens the picker rather than erroring — nothing has gone
-      // wrong yet, they just haven't been asked for the file.
-      $(src==='pdf'?'pdfFile':'imgFiles').click();
-      return;
+      src='link';
     }
     if(PREVIEW){ show('s3'); extract(); return; }
     submit(this);
   };
 
+  $('srcUrl').oninput=function(){
+    $('srcUrl').classList.remove('nudge');
+    $('srcHint').textContent='Only if you already know it. Otherwise leave it, '+
+      'we look for it ourselves.';
+    $('srcHint').style.color='';
+  };
+
   /* ── send it ─────────────────────────────────────────────────────────────
-     Files first, then the row, so a row never points at an upload that failed.
-     Everything is insert-only: this page can add to the queue and cannot read a
-     single thing back out of it. */
+     The pin and, if they had one, the link. Insert-only: this page can add to
+     the queue and cannot read a row back out of it.
+
+     This is the seam where Jawad's backend goes. Its search endpoint takes
+     exactly what we collect here (lat, lng), finds the mosque, crawls its site
+     and extracts the timetable including jama'ah times. Point API_BASE at a
+     deployed instance and this stops being a queue and starts being an answer. */
+  var API_BASE = '';   // no instance yet: needs a host plus Maps and Gemini keys
+
   function submit(btn){
     var label=btn.innerHTML;
     btn.innerHTML='<span class="spin"></span> Sending…'; btn.disabled=true;
-    show('s3');
-    $('months').innerHTML='';
-    $('readout').innerHTML='<span class="spin"></span> Sending your timetable…';
-    $('readHead').textContent='Sending it over.';
-    $('readSub').textContent='Hold on, this takes a moment on a phone connection.';
+    var q=new URLSearchParams(location.search);
 
-    var stamp=String(Date.now())+'-'+Math.floor(Math.random()*1e6);
-    var uploads=picked.map(function(f,i){
-      var ext=(f.name.match(/\.[a-z0-9]+$/i)||[''])[0].toLowerCase();
-      var path=stamp+'/'+(i+1)+ext;
-      return fetch(SB+'/storage/v1/object/bilal-timetables/'+path,{
-        method:'POST',
-        headers:{'apikey':SBK,'Authorization':'Bearer '+SBK,
-                 'Content-Type':f.type||'application/octet-stream'},
-        body:f
-      }).then(function(r){ if(!r.ok) throw new Error('upload'); return path; });
-    });
-
-    Promise.all(uploads).then(function(paths){
-      var q=new URLSearchParams(location.search);
-      return fetch(SB+'/rest/v1/bilal_submissions',{
-        method:'POST',
-        headers:{'apikey':SBK,'Authorization':'Bearer '+SBK,
-                 'Content-Type':'application/json','Prefer':'return=minimal'},
-        body:JSON.stringify({
-          name:name, lat:pin.lat, lng:pin.lng, source:src,
-          url: src==='link' ? ($('srcUrl').value||'').trim() : null,
-          files: paths, pair_code: q.get('c')||null
-        })
-      });
+    fetch(SB+'/rest/v1/bilal_submissions',{
+      method:'POST',
+      headers:{'apikey':SBK,'Authorization':'Bearer '+SBK,
+               'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({
+        name:name, lat:pin.lat, lng:pin.lng, source:src,
+        url: src==='link' ? ($('srcUrl').value||'').trim() : null,
+        files: [], pair_code: q.get('c')||null
+      })
     }).then(function(r){
       if(!r.ok) throw new Error('insert');
       done();
     }).catch(function(){
       btn.innerHTML=label; btn.disabled=false;
-      show('s2');
-      $('srcHint').style.display='block';
-      $('srcHint').style.color='var(--clay)';
-      $('srcHint').textContent='That did not send. Check your connection and try again.';
+      nudge($('srcUrl'),'That did not send. Check your connection and try again.');
     });
   }
 
   function done(){
     show('s5');
-    $('doneMsg').innerHTML='We have <b>'+esc(name)+'</b> and its timetable.';
+    $('doneMsg').innerHTML='We have <b>'+esc(name)+'</b>.';
     $('chase').href='https://x.com/intent/tweet?in_reply_to=2086140712693764552&text='+
-      encodeURIComponent('Just sent you '+name+"'s timetable for bilal");
+      encodeURIComponent('Just added '+name+' to bilal');
   }
   function esc(s){return (s||'').replace(/[&<>"]/g,function(c){
     return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});}
-
-  $('srcUrl').oninput=function(){
-    $('srcUrl').classList.remove('nudge'); $('srcHint').style.display='none';
-    $('srcHint').style.color='';
-  };
 
   /* ── 3. extracting ──────────────────────────────────────────────────── */
   var MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
