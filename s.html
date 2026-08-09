@@ -302,13 +302,20 @@ a{color:var(--clay)}
   $('q').addEventListener('input', function(){
     var v=this.value.trim().toLowerCase();
     if(v.length<2){ $('results').innerHTML=''; return; }
+    /* Every word has to appear, but not next to each other. People type the
+       name they know plus the town, "abu bakr reading", and the real listing is
+       "Abu Bakr Islamic Centre Reading". A contiguous substring match finds
+       nothing there and looks like we don't have the mosque at all. */
+    var words=v.split(/\s+/).filter(Boolean);
     var hits=[];
     MOSQUES.forEach(function(m){
-      var n=m.n.toLowerCase(), a=(m.a||'').toLowerCase(), rank;
-      if(n.indexOf(v)===0)          rank=0;
-      else if(n.indexOf(v)>-1)      rank=1;
-      else if(a.indexOf(v)>-1)      rank=2;
-      else return;
+      var n=m.n.toLowerCase(), a=(m.a||'').toLowerCase(), hay=n+' '+a;
+      for(var i=0;i<words.length;i++) if(hay.indexOf(words[i])===-1) return;
+      var rank;
+      if(n.indexOf(v)===0)                              rank=0;  // typed its name
+      else if(n.indexOf(v)>-1)                          rank=1;
+      else if(words.every(function(w){return n.indexOf(w)>-1;})) rank=2;  // all in the name
+      else                                              rank=3;  // town came from the address
       hits.push({m:m, rank:rank});
     });
     hits.sort(function(a,b){
