@@ -114,6 +114,33 @@
     });
   } catch (e) {}
 
+  /* ── "the screen flickers" ──────────────────────────────────────────────
+     Flicker is a report, not a measurement, and the device it happens on is one
+     nobody can attach a profiler to. So the screen times its own frames and
+     says how bad it was, which turns somebody squinting at a wall into a number
+     per device that can be compared before and after a change.
+
+     Sampled in bursts rather than continuously: a permanent requestAnimationFrame
+     loop on a low-power device would be measuring something it had itself made
+     worse. Five seconds every five minutes is representative and close to free. */
+  var frames = { samples: 0, long: 0, worstMs: 0 };
+  function sampleFrames() {
+    var last = 0, seen = 0;
+    function tick(t) {
+      if (last) {
+        var d = t - last;
+        frames.samples++;
+        if (d > 100) frames.long++;                 // a visible stutter
+        if (d > frames.worstMs) frames.worstMs = Math.round(d);
+      }
+      last = t;
+      if (++seen < 300) requestAnimationFrame(tick);
+    }
+    try { requestAnimationFrame(tick); } catch (e) {}
+  }
+  setTimeout(sampleFrames, 30000);
+  setInterval(sampleFrames, 5 * 60 * 1000);
+
   /* ── "I can't hear the athan" ───────────────────────────────────────────
      The distinction that decides who has the problem: did the browser REFUSE
      to play, or did it play and nobody heard it. The first is ours. The second
@@ -179,6 +206,12 @@
     return {
       audio: audio(),
       times: times(),
+      /* longPct is the number to watch: what share of frames took over 100ms.
+         A healthy screen is near zero. Anything in double figures is visible
+         as stutter from across a room. */
+      frames: { samples: frames.samples, long: frames.long, worstMs: frames.worstMs,
+                longPct: frames.samples ? Math.round(100 * frames.long / frames.samples) : null,
+                lite: /[?&]lite=1/.test(location.search) },
       asleep: { gaps: gaps.slice(), timesHidden: hides,
                 uptimeMin: Math.round((Date.now() - started) / 60000) },
       at: new Date().toISOString(),
