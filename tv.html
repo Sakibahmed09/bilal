@@ -58,6 +58,14 @@
   ol.flow{margin-top:14px;padding-left:1.35em}
   ol.flow li{margin-bottom:11px;font-size:15.5px;color:var(--veil)}
   ol.flow li b{color:var(--cream)}
+  .card.hero{border-color:rgba(217,164,143,.42);background:rgba(217,164,143,.07)}
+  .card.hero h3{font-size:24px}
+  details.more{margin-top:30px}
+  details.more summary{cursor:pointer;font-size:12px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--clay);font-weight:700;padding:6px 0}
+  details.more summary::-webkit-details-marker{color:var(--clay)}
+  details.more .why{color:var(--veil);font-size:14px;margin-top:10px}
+  details.more .note b{color:var(--cream)}
   footer{margin-top:34px;color:var(--veil);font-size:13px;border-top:1px solid var(--hair);
     padding-top:18px}
 </style>
@@ -86,56 +94,64 @@
     <li><b>One press for sound.</b> The screen reloads itself and asks once. After that
         it can call you to jama'ah for as long as it stays on.</li>
   </ol>
-  <p class="lede" style="margin-top:14px;font-size:14.5px">Same three moments on every
-     device. The cards below are only about getting a browser open.</p>
+  <p class="lede" style="margin-top:14px;font-size:14.5px">Same three moments whatever
+     screen you use. All that changes below is how you get a browser open on it.</p>
 
-  <h2>Pick your screen</h2>
+  <h2>The one that just works</h2>
 
-  <div class="card">
-    <h3>Amazon Echo Show<span class="best">easiest</span></h3>
+  <div class="card hero">
+    <h3>Amazon Echo Show</h3>
     <ol>
       <li>Say <b>"Alexa, open Silk browser"</b></li>
       <li>Go to <b>bilalathan.co.uk</b>, then follow the three steps above</li>
     </ol>
-    <p class="note">Nothing else to configure, and the Show is a touchscreen so the sound
-       press is just a tap. Echo Shows normally close the browser after about ten minutes,
-       but <b>the site keeps itself awake</b>, so it stays put.</p>
+    <p class="note"><b>Nothing to configure and nothing to work around.</b> It's a
+       touchscreen, so the sound step is just a tap. Echo Shows normally close the browser
+       after about ten minutes, but the site keeps itself awake, so it stays put.</p>
   </div>
 
-  <div class="card">
-    <h3>Fire TV Stick</h3>
-    <ol>
-      <li>Open the <b>Silk browser</b>. If it isn't installed, search Silk in Find. It's free</li>
-      <li>Go to <b>bilalathan.co.uk</b>, then follow the three steps above</li>
-      <li>Settings → Display &amp; Sounds → <b>Screensaver → Never</b></li>
-    </ol>
-    <p class="note">Be warned: Fire TV also has a <b>separate sleep timer, around 14 minutes,
-       that Amazon hide completely</b>. Turning the screensaver off does not stop it, and there is no setting for it. A proper Fire TV app is the real fix and it's the next thing
-       being built.</p>
-  </div>
+  <details class="more">
+    <summary>No Echo Show? Three other ways</summary>
+    <p class="why">All three work. Each one asks something of you first, which is the only
+       reason the Show is above them.</p>
 
-  <div class="card">
-    <h3>A spare phone or tablet</h3>
-    <ol>
-      <li>Open <b><a href="?display=1" style="color:var(--clay)">bilalathan.co.uk/?display=1</a></b>
-          <span style="opacity:.72">(the <b>?display=1</b> tells a phone to show the
-          screen rather than this page)</span></li>
-      <li>Scan the code it shows <b>with your main phone</b>, then follow the steps above</li>
-      <li>Leave it on charge where you'll walk past it</li>
-    </ol>
-    <p class="note">The cheapest way to cover a second room. An old handset on a kitchen
-       shelf works, and each screen calls its own athan.</p>
-  </div>
+    <div class="card">
+      <h3>Fire TV Stick</h3>
+      <ol>
+        <li>Open the <b>Silk browser</b>. If it isn't installed, search Silk in Find. It's free</li>
+        <li>Go to <b>bilalathan.co.uk</b>, then follow the three steps above</li>
+        <li>Settings → Display &amp; Sounds → <b>Screensaver → Never</b></li>
+      </ol>
+      <p class="note"><b>The catch:</b> Fire TV has a second sleep timer, around 14 minutes,
+         that Amazon hide completely. Turning the screensaver off does not stop it and there
+         is no setting for it, so the screen goes dark on its own. We're testing a fix and a
+         Fire TV app is the proper answer.</p>
+    </div>
 
-  <div class="card">
-    <h3>A smart TV with a browser</h3>
-    <ol>
-      <li>Open the TV's built-in browser. Most Samsung and LG sets have one</li>
-      <li>Go to <b>bilalathan.co.uk</b>, then follow the three steps above</li>
-    </ol>
-    <p class="note">Whether it stays on depends entirely on the make. Worth ten minutes
-       of testing before you rely on it.</p>
-  </div>
+    <div class="card">
+      <h3>A spare phone or tablet</h3>
+      <ol>
+        <li>Open <b><a href="?display=1">bilalathan.co.uk/?display=1</a></b>
+            <span style="opacity:.72">(the <b>?display=1</b> tells a phone to show the
+            screen rather than this page)</span></li>
+        <li>Scan the code it shows <b>with your main phone</b>, then follow the steps above</li>
+        <li>Leave it on charge where you'll walk past it</li>
+      </ol>
+      <p class="note"><b>The catch:</b> you have to remember that parameter, or the phone
+         shows you this page again. Otherwise it's the cheapest way to cover a second room,
+         and each screen calls its own athan.</p>
+    </div>
+
+    <div class="card">
+      <h3>A smart TV with a browser</h3>
+      <ol>
+        <li>Open the TV's built-in browser. Most Samsung and LG sets have one</li>
+        <li>Go to <b>bilalathan.co.uk</b>, then follow the three steps above</li>
+      </ol>
+      <p class="note"><b>The catch:</b> whether it stays on depends entirely on the make,
+         and we can't test every set. Give it ten minutes before you rely on it.</p>
+    </div>
+  </details>
 
   <a class="cta" href="s.html">Already on a screen? Set your mosque
      <span>Choose your masjid and your walking time</span></a>
