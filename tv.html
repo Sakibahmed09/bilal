@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>bilal — put it on a screen</title>
+<meta name="theme-color" content="#17140f">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prata&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --clay:#d9a48f; --cream:#f6efe7; --char:#221e1c; --deep:#17140f;
+    --veil:rgba(246,239,231,.5); --hair:rgba(246,239,231,.12);
+    --display:'Prata',Georgia,serif;
+    --text:'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{background:var(--deep);color:var(--cream);font-family:var(--text);
+    -webkit-font-smoothing:antialiased;line-height:1.55;
+    padding:max(28px,env(safe-area-inset-top)) 22px calc(64px + env(safe-area-inset-bottom))}
+  .wrap{max-width:34rem;margin:0 auto}
+
+  .mark{font-family:var(--display);font-size:26px;letter-spacing:-.01em}
+  h1{font-family:var(--display);font-size:34px;line-height:1.1;letter-spacing:-.025em;
+     margin-top:26px;font-weight:400}
+  .lede{color:var(--veil);margin-top:14px;font-size:16px}
+  .lede b{color:var(--cream);font-weight:600}
+
+  .url{display:flex;align-items:center;gap:10px;margin-top:22px;padding:14px 16px;
+    background:var(--char);border:1px solid var(--hair);border-radius:12px}
+  .url code{font-family:inherit;font-size:17px;font-weight:700;letter-spacing:-.01em;flex:1}
+  .url button{border:0;background:var(--clay);color:var(--char);font-family:inherit;
+    font-weight:700;font-size:13px;padding:9px 14px;border-radius:999px;cursor:pointer}
+  .url button:active{background:#f0c4ad}
+
+  h2{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--clay);
+     font-weight:700;margin:38px 0 0}
+
+  .card{margin-top:14px;background:var(--char);border:1px solid var(--hair);
+    border-radius:14px;padding:18px 18px 6px}
+  .card h3{font-family:var(--display);font-size:21px;font-weight:400;letter-spacing:-.015em}
+  .card .best{display:inline-block;margin-left:8px;font-family:var(--text);font-size:10.5px;
+    font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--char);
+    background:var(--clay);padding:3px 8px;border-radius:999px;vertical-align:2px}
+  ol{margin:12px 0 0;padding-left:1.3em}
+  li{margin-bottom:9px;font-size:15.5px}
+  li b{font-weight:700}
+  .note{font-size:13.5px;color:var(--veil);border-top:1px solid var(--hair);
+    margin-top:14px;padding:12px 0 14px}
+  .note b{color:var(--clay)}
+
+  .cta{display:block;margin-top:34px;padding:17px;border-radius:14px;background:var(--clay);
+    color:var(--char);text-decoration:none;text-align:center;font-weight:700;font-size:16.5px}
+  .cta span{display:block;font-weight:500;font-size:13px;opacity:.72;margin-top:3px}
+  footer{margin-top:34px;color:var(--veil);font-size:13px;border-top:1px solid var(--hair);
+    padding-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="mark">bilal</div>
+
+  <h1>Put it on a screen in your house.</h1>
+  <p class="lede">Bilal is built for a screen you walk past, not a phone in your pocket.
+     It calls you at the moment you need to <b>leave for jama'ah</b>, not when the prayer
+     has already started.</p>
+
+  <div class="url">
+    <code id="u">bilalathan.co.uk</code>
+    <button id="copy">Copy</button>
+  </div>
+
+  <h2>Pick your screen</h2>
+
+  <div class="card">
+    <h3>Amazon Echo Show<span class="best">easiest</span></h3>
+    <ol>
+      <li>Say <b>"Alexa, open Silk browser"</b></li>
+      <li>Go to <b>bilalathan.co.uk</b></li>
+      <li><b>Tap the screen once</b> so the athan is allowed to play</li>
+    </ol>
+    <p class="note">Nothing else to configure. Echo Shows normally close the browser after
+       about ten minutes — <b>the site keeps itself awake</b>, so it stays put.</p>
+  </div>
+
+  <div class="card">
+    <h3>Fire TV Stick</h3>
+    <ol>
+      <li>Open the <b>Silk browser</b>. If it isn't installed, search Silk in Find — it's free</li>
+      <li>Go to <b>bilalathan.co.uk</b></li>
+      <li><b>Press OK once</b> so the athan is allowed to play</li>
+      <li>Settings → Display &amp; Sounds → <b>Screensaver → Never</b></li>
+    </ol>
+    <p class="note">Be warned: Fire TV also has a <b>separate sleep timer, around 14 minutes,
+       that Amazon hide completely</b> — turning the screensaver off does not stop it. There
+       is no setting for it. A proper Fire TV app is the real fix and it's the next thing
+       being built.</p>
+  </div>
+
+  <div class="card">
+    <h3>A spare phone or tablet</h3>
+    <ol>
+      <li>Open <b>bilalathan.co.uk</b></li>
+      <li><b>Tap once</b> for sound</li>
+      <li>Leave it on charge where you'll walk past it</li>
+    </ol>
+    <p class="note">The cheapest way to cover a second room. An old handset on a kitchen
+       shelf works, and each screen calls its own athan.</p>
+  </div>
+
+  <div class="card">
+    <h3>A smart TV with a browser</h3>
+    <ol>
+      <li>Open the TV's built-in browser — most Samsung and LG sets have one</li>
+      <li>Go to <b>bilalathan.co.uk</b> and press OK once for sound</li>
+    </ol>
+    <p class="note">Whether it stays on depends entirely on the make. Worth ten minutes
+       of testing before you rely on it.</p>
+  </div>
+
+  <a class="cta" href="s.html">Already on a screen? Set your mosque
+     <span>Choose your masjid and your walking time</span></a>
+
+  <footer>Times come straight from your mosque's own timetable, so the jama'ah times are
+     the ones they actually pray — not a calculation.</footer>
+</div>
+
+<script>
+  // Show the real host, so this reads correctly on a preview domain too.
+  (function(){
+    var h = location.host.replace(/^www\./,'');
+    if(h && h.indexOf('localhost')!==0) document.getElementById('u').textContent = h;
+  })();
+
+  document.getElementById('copy').addEventListener('click', function(){
+    var url = location.protocol + '//' + location.host + '/';
+    var btn = this;
+    function done(){ btn.textContent='Copied'; setTimeout(function(){ btn.textContent='Copy'; },1600); }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(done).catch(fallback);
+    } else fallback();
+    function fallback(){
+      // older webviews: a hidden field and execCommand still works
+      var t=document.createElement('textarea');
+      t.value=url; t.setAttribute('readonly','');
+      t.style.position='fixed'; t.style.left='-9999px';
+      document.body.appendChild(t); t.select();
+      try{ document.execCommand('copy'); done(); }catch(e){}
+      document.body.removeChild(t);
+    }
+  });
+</script>
+</body>
+</html>
