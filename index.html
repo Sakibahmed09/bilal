@@ -995,6 +995,26 @@ body.compact #driftWrap{
     if('wakeLock' in navigator){ try{ navigator.wakeLock.request('screen').catch(function(){}); }catch(e){} }
   }
 
+  /* Echo Show: Silk closes the browser after roughly ten minutes of what it
+     judges to be inactivity, and Amazon offer no setting to turn that off.
+     The known workaround (mehowq/keep-silk-open) is a silent track RELOADED
+     every minute — a loop is not enough, because a continuously-looping element
+     never re-registers as fresh activity. We already had the silent track for
+     the Fire Stick; this adds the part that was missing.
+
+     Harmless everywhere else: it is 48KB from cache and inaudible. Needs the
+     gesture first, same as everything else that makes sound. */
+  function nudgeSilk(){
+    if(!armed || !hum) return;
+    try{
+      hum.load();                       // a genuine reload, not just a rewind
+      hum.volume=0.02;
+      var p=hum.play();
+      if(p&&p.catch) p.catch(function(){});
+      if(window.__bilal) window.__bilal.silkNudges=(window.__bilal.silkNudges||0)+1;
+    }catch(e){}
+  }
+
   // ---------- pairing ----------
   /* The phone does the thinking; this screen only holds a code and waits.
      Alphabet excludes O/0 and I/1 — somebody is reading this off a TV from a
@@ -1088,6 +1108,7 @@ body.compact #driftWrap{
   setInterval(function(){ paint(); if(Date.now()-lastFetch>3*3600*1000) load(); },1000);
   setInterval(drift,60000);
   setInterval(keepAwake,240000);
+  setInterval(nudgeSilk,55000);   // under Silk's ~10 min idle timer
   keepAwake();
 })();
 </script>
