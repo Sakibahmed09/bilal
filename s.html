@@ -272,16 +272,24 @@ a{color:var(--clay)}
 
   // ---------- search ----------
   function render(list, withDist){
+    /* An empty result is not "try again", it is the moment the self-serve route
+       exists for. Offering a softer version of the same search is how somebody
+       leaves; naming what happens next is how they stay. */
     if(!list.length){
-      $('results').innerHTML='<button class="item" id="none"><div class="n">Not finding it?</div>'+
-        '<div class="a">Bilal only covers mosques that publish their own jama\'ah times.</div></button>';
+      $('results').innerHTML='<button class="item" id="none">'+
+        '<div class="n">We don\'t have that one</div>'+
+        '<div class="a">You can add its times yourself from the timetable on the wall. '+
+        'It takes a couple of minutes and fixes it for everyone who prays there.</div></button>';
       $('none').onclick=function(){ notListed($('q').value); };
       return;
     }
     $('results').innerHTML=list.map(function(m,i){
       return '<button class="item" data-i="'+i+'" style="animation-delay:'+Math.min(i*45,360)+'ms">'+
         '<div class="n">'+esc(m.n)+'</div><div class="a">'+esc(m.a)+'</div>'+
-        (withDist&&m._d!=null?'<div class="m">'+dist(m._d)+'</div>':'')+
+        /* Beyond about an hour's drive the distance stops being information and
+           starts being noise: "811.8 km away" on a name search only means the
+           last postcode you typed was somewhere else. */
+        (withDist&&m._d!=null&&m._d<100?'<div class="m">'+dist(m._d)+'</div>':'')+
       '</button>';
     }).join('') +
     '<button class="item" id="none"><div class="n">Mine isn\'t here</div>'+
@@ -299,9 +307,66 @@ a{color:var(--clay)}
      what you typed beats one that merely contains it, and once we know where you
      are, distance breaks every remaining tie. Someone who has already tapped
      "near me" and then searches should see their own neighbourhood first. */
+  /* A postcode is not a name, so matching it against names finds nothing and
+     looks like we have no mosques there. It is also the most natural thing to
+     type when you are setting up a screen for a house that is not the one you
+     are standing in, or when the phone will not share a location. So a postcode
+     resolves to a point and sorts every mosque we hold by distance from it. */
+  var PC_FULL = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
+  // Outcode alone (E1, RM8, IV27) and outcode plus sector digit (IV27 4), which
+  // is what people type when they know the area but not the whole thing.
+  var PC_OUT  = /^[A-Z]{1,2}\d[A-Z\d]?(\s*\d)?$/i;
+  var pcSeq = 0;
+
+  function postcodeLookup(raw){
+    var trimmed = raw.trim().toUpperCase();
+    var q = trimmed.replace(/\s+/g,''), mine = ++pcSeq;
+    var outcode = (trimmed.match(/^[A-Z]{1,2}\d[A-Z\d]?/) || [q])[0];
+    $('hint').textContent = 'Looking up ' + trimmed + '…';
+
+    function ask(url){ return fetch(url).then(function(r){ return r.json(); }); }
+
+    /* Try the full postcode, then fall back to its outcode. A postcode with a
+       typo in the last two letters is not found at all, and giving up there
+       sends someone away when we can still place them inside a couple of
+       kilometres, which is more than close enough to list nearby mosques. */
+    var first = PC_FULL.test(trimmed)
+      ? ask('https://api.postcodes.io/postcodes/' + encodeURIComponent(q))
+      : Promise.resolve(null);
+
+    first.then(function(j){
+      if(j && j.result && j.result.latitude != null) return j;
+      return ask('https://api.postcodes.io/outcodes/' + encodeURIComponent(outcode));
+    }).then(function(j){
+      if(mine !== pcSeq) return;                    // a newer keystroke won
+      var r = j && j.result;
+      if(!r || r.latitude == null) throw 0;
+      here = { lat: r.latitude, lng: r.longitude };
+      var located = MOSQUES.filter(function(m){ return m.y != null; });
+      located.forEach(function(m){ m._d = hav(here.lat, here.lng, m.y, m.x); });
+      var near = located.sort(function(a,b){ return a._d - b._d; }).slice(0, 8);
+      /* Nothing within a sensible distance is not an empty result, it is a
+         different answer: we have nothing near you, so add it yourself. */
+      if(!near.length || near[0]._d > 12){
+        $('hint').textContent = 'Nothing we know of near ' + trimmed + '.';
+        notListed(trimmed);
+        return;
+      }
+      $('hint').innerHTML = 'Nearest to <b>' + esc(trimmed) + '</b>.';
+      render(near, true);
+    }).catch(function(){
+      if(mine !== pcSeq) return;
+      $('hint').textContent = "Couldn't look that postcode up. Try the mosque's name.";
+    });
+  }
+
   $('q').addEventListener('input', function(){
-    var v=this.value.trim().toLowerCase();
+    var raw=this.value.trim();
+    var v=raw.toLowerCase();
     if(v.length<2){ $('results').innerHTML=''; return; }
+    if(PC_FULL.test(raw) || PC_OUT.test(raw)){ postcodeLookup(raw); return; }
+    // A postcode leaves its own hint behind; a name search must not inherit it.
+    $('hint').textContent = 'Search works for every mosque we have. Nearby needs a location.';
     /* Every word has to appear, but not next to each other. People type the
        name they know plus the town, "abu bakr reading", and the real listing is
        "Abu Bakr Islamic Centre Reading". A contiguous substring match finds
