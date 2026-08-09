@@ -1189,7 +1189,25 @@ body.compact #driftWrap{
   $('starMid').style.backgroundImage="url('sky/stars.png')";
   $('cloud').style.backgroundImage="url('sky/clouds.png')";
 
-  load().then(function(){ paint(); choreograph(); });
+  /* Everything in the shell is .rise, which is opacity:0 until .go lands, and
+     choreograph() is the only thing that ever adds it. That makes one function
+     call the difference between a display and a black rectangle on a wall, and
+     a black rectangle is indistinguishable from the television being off, so
+     nobody would ever report it as a bug.
+
+     Two ways it can happen. paint() throwing takes choreograph() down with it,
+     which is what `finally` is for. The live one is slower: fetch has no
+     timeout, so a Fire Stick that wakes and starts loading before its wifi has
+     associated sits on an unsettled promise, and every second of that is spent
+     black rather than merely empty. The failsafe reveals the shell regardless.
+     choreograph() removes and re-adds .go, so a later real one still plays. */
+  var revealed = false;
+  function reveal(){ if(revealed) return; revealed = true; $('shell').classList.add('go'); }
+  setTimeout(reveal, 4000);
+
+  load().then(function(){
+    try{ paint(); } finally { revealed = true; choreograph(); }
+  });
   setInterval(function(){ paint(); if(Date.now()-lastFetch>3*3600*1000) load(); },1000);
   setInterval(drift,60000);
   setInterval(keepAwake,240000);
