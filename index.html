@@ -1285,6 +1285,11 @@ body.compact #driftWrap{
   var sickSince = 0, faultShown = false;
 
   function ailment(){
+    /* Never while pairing. That screen has an empty rail and no mosque by
+       design, which is indistinguishable from "up but broken" to a naive check,
+       and telling somebody their screen is faulty while they are in the middle
+       of setting it up would be a worse bug than any it could report. */
+    if(document.body.classList.contains('pairing')) return null;
     var rail = $('rail'), status = ($('statText').textContent || '').toLowerCase();
     var times = rail ? (rail.textContent.match(/\d{1,2}:\d{2}/g) || []).length : 0;
     if(status.indexOf('run out') > -1)     return 'Its prayer times have run out.';
