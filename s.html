@@ -162,7 +162,7 @@ a{color:var(--clay)}
 
   <!-- 2. confirm + walk -->
   <section id="s2">
-    <div class="eyebrow r r1">Step 2 of 3</div>
+    <div class="eyebrow r r1" id="walkStep">Step 2 of 3</div>
     <h1 class="r r2">How far is it?</h1>
     <div class="step r r3">
       <div class="picked"><div class="n" id="pName"></div><div class="a" id="pAddr"></div>
@@ -199,8 +199,8 @@ a{color:var(--clay)}
            is broken overnight and blames us for the television's setting. -->
       <div class="note r r3" style="text-align:left">
         <b>One thing on the TV itself.</b> Nearly every television switches off
-        after about four hours with no button pressed — it's an energy-saving
-        rule, and it's a setting on the TV, not on the streaming stick.
+        after about four hours with no button pressed. That is an energy-saving
+        rule, and the setting lives on the TV rather than on the streaming stick.
         <br><br>
         Turn it off under <b>Eco</b>, <b>Energy Saving</b>, or
         <b>no-operation off timer</b> in your TV's own menu. Otherwise Bilal
@@ -338,7 +338,7 @@ a{color:var(--clay)}
 
     if(m._d!=null){
       $('walk').value=walkMins(m._d);
-      $('walkNote').textContent='Estimated from the distance. Change it if you know better — this is the number everything hangs on.';
+      $('walkNote').textContent='Estimated from the distance. Change it if you know better. Everything hangs on this number.';
     } else {
       $('walkNote').textContent='Set how long it takes you to walk there.';
     }
@@ -358,7 +358,7 @@ a{color:var(--clay)}
         var uniq={}; offs.forEach(function(o){uniq[o]=1;});
         var n=Object.keys(uniq).length;
         if(offs.length<5)          badge('bad','No jama\'ah times published');
-        else if(offs.every(function(o){return o===0;})) badge('bad','No jama\'ah times — these are start times');
+        else if(offs.every(function(o){return o===0;})) badge('bad','No jama\'ah times, only start times');
         else if(n===1)             badge('bad','Times look automatic, not set by the mosque');
         else if(n===2)             badge('warn','Times not confirmed by the mosque');
         else                       badge('ok','Real jama\'ah times, set by the mosque');
@@ -390,34 +390,78 @@ a{color:var(--clay)}
 
   $('back').onclick=function(){ show('s1'); };
   $('back2').onclick=function(){ show('s1'); };
-  $('toCode').onclick=function(){ show('s3'); $('code').focus(); };
 
-  // ---------- send to TV ----------
-  $('send').onclick=function(){
-    var code=($('code').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
-    if(code.length!==6){ $('sendMsg').textContent='That code should be six characters.'; return; }
-    var walk=parseInt($('walk').value,10); if(!(walk>0&&walk<120)) walk=15;
-    this.innerHTML='<span class="spin"></span> Sending…'; this.disabled=true;
-    var btn=this;
+  /* ---------- the code ----------
+     Scanning the QR on the television lands here with ?c=. That is the whole
+     reason the QR is worth having: without it a scan only opens this page and
+     the six characters still have to be read off a TV and typed in by thumb.
+     With it, this step disappears and setting up is choose a mosque, set a walk,
+     done. Typing the code by hand is still supported for anyone whose camera
+     will not oblige. */
+  var CODE=(new URLSearchParams(location.search).get('c')||'')
+             .toUpperCase().replace(/[^A-Z0-9]/g,'');
+  var SCANNED = CODE.length===6;
 
-    fetch(SB+'?code=eq.'+code,{
+  function patch(code, body){
+    return fetch(SB+'?code=eq.'+encodeURIComponent(code),{
       method:'PATCH',
       headers:{'apikey':SBK,'Authorization':'Bearer '+SBK,
                'Content-Type':'application/json','Prefer':'return=representation'},
-      body:JSON.stringify({config:{slug:picked.g,walk:walk,name:picked.n},claimed_at:new Date().toISOString()})
-    }).then(function(r){return r.json();}).then(function(rows){
-      btn.innerHTML='Send to my TV'; btn.disabled=false;
-      if(!rows||!rows.length){
-        $('sendMsg').textContent='No TV is waiting on that code. Check it, or reload the TV to get a new one.';
-        return;
-      }
-      $('doneMsg').textContent=picked.n+' is on your TV. It will remember, so you only do this once.';
-      show('s4');
-    }).catch(function(){
-      btn.innerHTML='Send to my TV'; btn.disabled=false;
-      $('sendMsg').textContent='Could not reach your TV. Check your connection and try again.';
-    });
+      body:JSON.stringify(body)
+    }).then(function(r){return r.json();});
+  }
+
+  if(SCANNED){
+    $('walkStep').textContent='Step 2 of 2';
+    $('toCode').textContent='Send to my TV';
+    /* Tell the television the scan landed, so it can stop saying "waiting for
+       your phone" while the person is already choosing a mosque. A config with
+       no slug was already ignored by the TV's poll, so this needs no new column
+       and cannot be mistaken for a finished setup. */
+    patch(CODE, {config:{claimed:true}}).catch(function(){});
+  }
+
+  $('toCode').onclick=function(){
+    if(SCANNED){ sendTo(CODE, this); return; }
+    show('s3'); $('code').focus();
   };
+
+  $('send').onclick=function(){
+    var code=($('code').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+    if(code.length!==6){ $('sendMsg').textContent='That code should be six characters.'; return; }
+    sendTo(code, this);
+  };
+
+  function sendTo(code, btn){
+    var walk=parseInt($('walk').value,10); if(!(walk>0&&walk<120)) walk=15;
+    var label=btn.innerHTML;
+    btn.innerHTML='<span class="spin"></span> Sending…'; btn.disabled=true;
+
+    patch(code, {config:{slug:picked.g,walk:walk,name:picked.n},
+                 claimed_at:new Date().toISOString()})
+      .then(function(rows){
+        btn.innerHTML=label; btn.disabled=false;
+        if(!rows||!rows.length){ stale(code); return; }
+        $('doneMsg').textContent=picked.n+' is on your TV. It will remember, so you only do this once.';
+        show('s4');
+      }).catch(function(){
+        btn.innerHTML=label; btn.disabled=false;
+        var msg='Could not reach your TV. Check your connection and try again.';
+        if(SCANNED){ $('walkNote').textContent=msg; } else { $('sendMsg').textContent=msg; }
+      });
+  }
+
+  /* A code goes stale when the TV reloads and draws a new one, which it does
+     every fifteen minutes. Someone who scanned an hour ago has to be handed a
+     way forward rather than an error, so they get the manual step. */
+  function stale(code){
+    SCANNED=false;
+    show('s3');
+    $('code').value='';
+    $('sendMsg').textContent='That code has expired. Your TV shows a new one, and it is '+
+      'underneath the square you scanned.';
+    $('code').focus();
+  }
 })();
 </script>
 </body>

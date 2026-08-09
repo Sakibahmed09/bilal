@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Add your mosque — bilal</title>
+<title>Add your mosque to bilal</title>
 <link rel="icon" href="favicon.ico" sizes="any">
 <meta name="theme-color" content="#17140f">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -178,8 +178,8 @@ input:focus{border-color:var(--clay)}
   <section id="s1" class="on go">
     <div class="eyebrow r r1">Add your mosque</div>
     <h1 class="r r2">Where is it?</h1>
-    <p class="sub r r3">Drop a pin on the building. We match by <b>position, not name</b> —
-      so nobody ends up with two versions of the same mosque.</p>
+    <p class="sub r r3">Drop a pin on the building. We match by <b>position, not name</b>, so nobody
+      ends up with two versions of the same mosque.</p>
     <div class="step r r4">
       <div id="map"></div>
       <div class="pinbar"><span id="pinInfo">Drag the map to place the pin.</span></div>
@@ -193,8 +193,7 @@ input:focus{border-color:var(--clay)}
   <section id="s2">
     <div class="eyebrow r r1">Step 2 of 3</div>
     <h1 class="r r2">Where are its times?</h1>
-    <p class="sub r r3">Whatever your mosque publishes. A year at once is ideal —
-      that's the whole point.</p>
+    <p class="sub r r3">Whatever your mosque publishes. One document covering the whole year is best.</p>
     <div class="step r r4">
       <button class="opt best" data-src="link">
         <div class="t">Link to their timetable</div>
@@ -257,7 +256,7 @@ input:focus{border-color:var(--clay)}
     </div>
     <div class="note r r3">
       <b>Everyone who prays there gets this too.</b> The next person setting up at your
-      mosque won't have to do any of it — they'll just be asked whether your times still
+      mosque won't have to do any of it. They'll just be asked whether your times still
       match their card.
     </div>
     <button class="btn r r4" id="toTv">Send it to my TV</button>
@@ -292,14 +291,23 @@ input:focus{border-color:var(--clay)}
 
   /* ── 1. the pin ─────────────────────────────────────────────────────── */
   var map=L.map('map',{zoomControl:false}).setView([51.5395,0.1345],15);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    {subdomains:'abcd',maxZoom:19,attribution:'&copy; OSM, &copy; CARTO'}).addTo(map);
+  /* Voyager, not the dark basemap the rest of Bilal uses. The dark tiles match
+     the brand and are almost unreadable for the one job this map has: finding a
+     specific building. They render streets as faint grey on near-black, no
+     building footprints worth the name, and no place-of-worship labels. Voyager
+     shows all three, and mosques are frequently labelled outright. A map you
+     cannot read is not on brand, it is broken. */
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    {subdomains:'abcd',maxZoom:20,attribution:'&copy; OSM, &copy; CARTO'}).addTo(map);
   // A fixed centre crosshair rather than a draggable marker: on a phone your
   // thumb covers a marker, and moving the map under a still pin is easier to
   // aim than dragging a dot you cannot see.
-  var cross=L.divIcon({className:'',iconSize:[26,26],
-    html:'<div style="width:26px;height:26px;border-radius:50%;border:2px solid #d9a48f;'+
-         'background:rgba(217,164,143,.22);box-shadow:0 0 0 3px rgba(23,20,15,.5)"></div>'});
+  /* Dark ring on a light map. The old clay-on-charcoal ring was tuned for the
+     dark basemap and vanishes against Voyager's pale streets. */
+  var cross=L.divIcon({className:'',iconSize:[28,28],
+    html:'<div style="width:28px;height:28px;border-radius:50%;'+
+         'border:3px solid #221e1c;background:rgba(217,164,143,.55);'+
+         'box-shadow:0 0 0 2px rgba(246,239,231,.9),0 2px 6px rgba(0,0,0,.35)"></div>'});
   var mk=L.marker(map.getCenter(),{icon:cross,interactive:false}).addTo(map);
   map.on('move',function(){ mk.setLatLng(map.getCenter()); });
   map.on('moveend',function(){
@@ -316,7 +324,7 @@ input:focus{border-color:var(--clay)}
     if(!name){
       var el=$('mname');
       el.classList.remove('nudge'); void el.offsetWidth; el.classList.add('nudge');
-      $('nameHint').textContent='Give it a name first — anything people would recognise.';
+      $('nameHint').textContent='Give it a name first. Anything people would recognise.';
       $('nameHint').style.color='var(--clay)';
       el.focus();
       return;
@@ -412,7 +420,7 @@ input:focus{border-color:var(--clay)}
       var el=$('mo'+i); el.className='mo now';
       // Quorum, shown honestly: two readings, a third only where they disagree.
       var reads = (i===3||i===9) ? 3 : 2;
-      $('readout').innerHTML = 'Reading <b>'+MONTHS[i]+'</b> — '+reads+
+      $('readout').innerHTML = 'Reading <b>'+MONTHS[i]+'</b>, '+reads+
         (reads>2 ? ' readings, the first two disagreed' : ' readings, agreed');
       setTimeout(function(){ el.className='mo read'; i++; next(); }, reads>2?900:520);
     })();
@@ -483,7 +491,7 @@ input:focus{border-color:var(--clay)}
       '</div>';
     }).join('')+
       '<button class="skipall" id="skipAll">I don\'t have the timetable in front of me '+
-      '— leave these as they are</button>';
+      'and cannot check these</button>';
 
     Array.prototype.forEach.call($('flags').querySelectorAll('button[data-n]'),function(b){
       b.onclick=function(){ settle(b.dataset.n, b.dataset.a==='fix'); };
@@ -515,7 +523,7 @@ input:focus{border-color:var(--clay)}
     var unresolved=FLAGS.length-corrected;
     if(FLAGS.length && corrected===0)
       msg+=' The '+FLAGS.length+' flagged day'+(FLAGS.length===1?'':'s')+
-           ' went in as read — worth a second look when you have the card.';
+           ' went in as read. Worth a second look when you have the card.';
     else if(unresolved>0)
       msg+=' '+corrected+' corrected, '+unresolved+' left as read.';
     $('doneMsg').innerHTML=msg;

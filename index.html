@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>bilal — Darul Ummah Goresbrook</title>
+<title>bilal</title>
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -276,8 +276,13 @@ footer{display:flex;justify-content:space-between;align-items:center;
 /* ── pairing ──────────────────────────────────────────────────────────────
    The first screen a stranger ever sees, so it is the product rather than a
    utility page: same sky for the actual hour, same Prata, same terracotta.
-   The CODE is the hero because the code is the thing they must carry to their
-   phone; the QR is the shortcut, not the instruction. */
+
+   The QR is the hero, and that is a change. It used to be a small square beside
+   a large code, because the QR was built at deploy time and could only point at
+   the setup page: you scanned it and then still had to read six characters off
+   a television and thumb them into a phone. The code is now inside the QR, so
+   scanning is the whole of pairing and the characters are what you fall back on
+   when the camera will not play. Hero what does the work. */
 #pair{position:fixed;top:0;right:0;bottom:0;left:0;z-index:70;display:none;
   padding:var(--safe-y) var(--safe-x)}
 /* The sky stays — it is the best first impression we have — but the prayer data
@@ -287,22 +292,36 @@ body.pairing #shell{display:none}
 #pair .eyebrow{color:var(--clay)}
 #pair .head{font-family:var(--display);font-size:calc(var(--u)*5.4);line-height:1.02;
   letter-spacing:-.032em;margin:calc(var(--u)*.5) 0 calc(var(--u)*.9);max-width:17ch}
-#pair .cols{display:flex;align-items:flex-end;gap:calc(var(--u)*4)}
-#pair .step{font-size:calc(var(--u)*1.3);color:var(--veil);line-height:1.65;max-width:30ch}
+#pair .cols{display:flex;align-items:center;gap:calc(var(--u)*3.4)}
+#pair .step{font-size:calc(var(--u)*1.3);color:var(--veil);line-height:1.65;max-width:26ch}
 #pair .step b{color:var(--cream);font-weight:600}
-#pair .code{font-family:var(--text);font-size:calc(var(--u)*5.2);font-weight:700;
-  letter-spacing:.14em;line-height:1;margin-top:calc(var(--u)*1.1);color:var(--clay);
+/* Demoted from 5.2u to 2.9u. Still readable across a room, no longer competing
+   with the QR for the eye of someone who can just point their camera. */
+#pair .code{font-family:var(--text);font-size:calc(var(--u)*2.9);font-weight:700;
+  letter-spacing:.14em;line-height:1;margin-top:calc(var(--u)*.5);color:var(--clay);
   font-variant-numeric:tabular-nums}
-#pair .code i{font-style:normal;opacity:.30;margin:0 calc(var(--u)*.5);letter-spacing:0}
-#pair .qr{width:calc(var(--u)*11);height:calc(var(--u)*11);border-radius:calc(var(--u)*.5);
-  background:#f6efe7;padding:calc(var(--u)*.5);flex:none}
-#pair .qr img{width:100%;height:100%;display:block;image-rendering:pixelated}
+#pair .code i{font-style:normal;opacity:.30;margin:0 calc(var(--u)*.4);letter-spacing:0}
+/* 16u, up from 11u. This is scanned from a sofa, and the quiet zone is drawn
+   into the canvas so the light padding here is presentation only. */
+#pair .qr{width:calc(var(--u)*16);height:calc(var(--u)*16);border-radius:calc(var(--u)*.6);
+  background:#f6efe7;padding:calc(var(--u)*.45);flex:none;
+  box-shadow:0 calc(var(--u)*.5) calc(var(--u)*2) rgba(0,0,0,.28)}
+#pair .qr canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
+#pair .fallback{margin-top:calc(var(--u)*1.5);padding-top:calc(var(--u)*1.2);
+  border-top:1px solid rgba(246,239,231,.16)}
+#pair .fallback .lead{font-size:calc(var(--u)*1.12);color:var(--veil);line-height:1.6}
+#pair .fallback .lead b{color:var(--cream);font-weight:600}
 #pair .wait{display:flex;align-items:center;margin-top:calc(var(--u)*1.6);
   font-size:calc(var(--u)*1.05);color:var(--veil);letter-spacing:.1em;text-transform:uppercase}
 #pair .wait i{width:calc(var(--u)*.5);height:calc(var(--u)*.5);border-radius:50%;
   background:var(--clay);margin-right:calc(var(--u)*.6);font-style:normal;
   -webkit-animation:breathe 2.6s ease-in-out infinite;animation:breathe 2.6s ease-in-out infinite}
 #pair.done .head{color:var(--clay)}
+/* Connected: the QR and the instructions have done their job. They fade rather
+   than vanish, so the screen reads as one thing progressing. */
+body.claimed #pair .step,
+body.claimed #pair .fallback{opacity:0;transition:opacity .5s ease}
+body.claimed #pair .qr{opacity:.18;transition:opacity .7s ease}
 
 #gate{position:fixed;top:0;right:0;bottom:0;left:0;z-index:60;display:none;
   align-items:center;justify-content:center;background:rgba(23,20,15,.97);
@@ -414,7 +433,7 @@ body.compact #driftWrap{
   <main>
     <div id="hero">
       <div class="eyebrow rise d2">next jama'ah</div>
-      <div class="prayer rise d2" id="prayerName">—</div>
+      <div class="prayer rise d2" id="prayerName">&nbsp;</div>
       <div class="line rise d3">
         <span class="t" id="prayerTime">--:--</span>
         <span class="c" id="countdown"></span>
@@ -442,12 +461,17 @@ body.compact #driftWrap{
   <div class="eyebrow">Set up</div>
   <div class="head" id="pairHead">Point your phone at this screen.</div>
   <div class="cols">
+    <div class="qr"><canvas id="pairQr"></canvas></div>
     <div>
-      <div class="step">Open <b id="setupUrl">bilalathan.co.uk/s</b> on your phone,<br>or scan the code, then enter:</div>
-      <div class="code" id="pairCode">– – –<i>·</i>– – –</div>
+      <div class="step">Open the camera and hold it up to the code. Everything
+        it needs is in there.</div>
+      <div class="fallback">
+        <div class="lead">No camera? Go to <b id="setupUrl">bilalathan.co.uk/s</b>
+          and type</div>
+        <div class="code" id="pairCode">&nbsp;</div>
+      </div>
       <div class="wait" id="pairWait"><i></i><span>waiting for your phone</span></div>
     </div>
-    <div class="qr"><img src="pair-qr.png" alt=""></div>
   </div>
 </div>
 
@@ -457,6 +481,7 @@ body.compact #driftWrap{
   <button id="gateBtn">Press OK</button>
 </div></div>
 
+<script src="qr.js"></script>
 <script>
 (function(){
   "use strict";
@@ -802,7 +827,7 @@ body.compact #driftWrap{
     // NOT a permission failure and must never be shown as one — that false alarm
     // is exactly what made a working screen look broken.
     if(u&&u.indexOf('BLOCKED')===0){ $('audioState').textContent='athan blocked by browser'; return; }
-    if(!athanReady && u!=='unproven'){ $('audioState').textContent='no athan.mp3 — tone only'; return; }
+    if(!athanReady && u!=='unproven'){ $('audioState').textContent='no athan.mp3, tone only'; return; }
     var played=window.__bilal&&window.__bilal.calls>0;
     $('audioState').textContent=played?'athan played':'athan ready';
   }
@@ -1041,9 +1066,10 @@ body.compact #driftWrap{
 
   function startPairing(){
     // show the host we are actually on: staging must not point at production
+    var origin = location.origin + location.pathname.replace(/\/[^/]*$/, '');
     try{
-      var base=location.host+location.pathname.replace(/\/[^/]*$/,'');
-      $('setupUrl').textContent=(base+'/s').replace(/\/+$/,'').replace(/\/\//g,'/');
+      $('setupUrl').textContent=(location.host+location.pathname.replace(/\/[^/]*$/,'')+'/s')
+        .replace(/\/+$/,'').replace(/\/\//g,'/');
     }catch(e){}
     document.body.setAttribute('data-state','idle');
     document.body.classList.add('pairing');
@@ -1051,12 +1077,21 @@ body.compact #driftWrap{
     var code = newCode();
     showCode(code);
 
+    /* The code travels inside the QR, so a scan lands on the setup page already
+       knowing which television it is talking to. If drawing fails for any
+       reason the printed code below it still works, which is why this is
+       allowed to fail quietly rather than take the screen down. */
+    try{
+      window.BilalQR.draw($('pairQr'), origin + '/s.html?c=' + code,
+        { size: 640, dark: '#221E1C', light: '#F6EFE7', quiet: 3 });
+    }catch(e){}
+
     fetch(SB, {method:'POST',
       headers: sbHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),
       body: JSON.stringify({code: code})
     }).catch(function(){});
 
-    var tries = 0;
+    var tries = 0, claimed = false;
     var poll = setInterval(function(){
       tries++;
       if (tries > 450) { clearInterval(poll); location.reload(); return; }  // code expired, get a fresh one
@@ -1065,6 +1100,21 @@ body.compact #driftWrap{
         .then(function(r){ return r.json(); })
         .then(function(rows){
           var cfg = rows && rows[0] && rows[0].config;
+          /* The phone writes {claimed:true} the moment it opens with this code,
+             before it knows the mosque. Saying so closes the loop on the scan:
+             otherwise the television sits on "waiting for your phone" while the
+             person holding the phone is already three taps in, wondering
+             whether the scan registered at all. No schema change for it, since
+             a config without a slug was already being ignored here. */
+          if (cfg && cfg.claimed && !cfg.slug && !claimed) {
+            claimed = true;
+            $('pairWait').innerHTML = '<i></i><span>phone connected</span>';
+            $('pairHead').textContent = 'Now pick your mosque on your phone.';
+            /* Retire the scan instructions. Leaving "open the camera" and a code
+               to type on screen after the phone is already connected asks for
+               work that is done, and makes the person wonder whether it took. */
+            document.body.classList.add('claimed');
+          }
           if (!cfg || !cfg.slug) return;
           clearInterval(poll);
           try{ localStorage.setItem('bilal.config', JSON.stringify(cfg)); }catch(e){}
