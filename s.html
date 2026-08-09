@@ -402,15 +402,33 @@ a{color:var(--clay)}
       .then(function(r){return r.json();})
       .then(function(j){
         var row=j.timetable&&j.timetable[0]; if(!row) throw 0;
-        var P=['fajr','dhuhr','asr','maghrib','isha'], offs=[];
+        var P=['fajr','dhuhr','asr','maghrib','isha'], offs=[], mins=[];
         P.forEach(function(k){
           var b=row[k], q=(row.iqamah||{})[k];
           if(b&&q) offs.push(Math.round((new Date(q)-new Date(b))/60000));
+          if(b) mins.push(new Date(b).getMinutes());
         });
         var uniq={}; offs.forEach(function(o){uniq[o]=1;});
         var n=Object.keys(uniq).length;
+        /* A zero offset everywhere has two opposite meanings and calling them
+           both bad is wrong about most of them.
+
+           Astronomical times land on any minute. Jama'ah times land on :00 :15
+           :30 :45, because a human chose them. So a mosque whose "begins" are
+           all round has entered its jama'ah times into both fields: the times
+           are real and usable, it just has not filled in the start times.
+           A mosque whose "begins" are irregular and whose iqamah merely mirrors
+           them has set no jama'ah times at all, and that one is unusable.
+
+           Measured on 26 random UK mosques: of the zero-offset ones, two in
+           three were round, i.e. perfectly usable. Romford Mosque is one of
+           them (05:00 13:30 19:00 20:50 22:00), so the old wording called its
+           genuine jama'ah times "start times" and warned people off. */
+        var round = mins.length===5 && mins.filter(function(m){return m%5===0;}).length>=4;
         if(offs.length<5)          badge('bad','No jama\'ah times published');
-        else if(offs.every(function(o){return o===0;})) badge('bad','No jama\'ah times, only start times');
+        else if(offs.every(function(o){return o===0;}))
+          round ? badge('warn','Jama\'ah times, but no separate start times')
+                : badge('bad','No jama\'ah times, only start times');
         else if(n===1)             badge('bad','Times look automatic, not set by the mosque');
         else if(n===2)             badge('warn','Times not confirmed by the mosque');
         else                       badge('ok','Real jama\'ah times, set by the mosque');
