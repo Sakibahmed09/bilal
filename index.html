@@ -438,15 +438,36 @@ body.compact .eyebrow{font-size:calc(var(--u)*.82);letter-spacing:.16em}
 body.compact .prayer{font-size:calc(var(--u)*5.6);margin:calc(var(--u)*.2) 0 calc(var(--u)*.1)}
 body.compact .line .t{font-size:calc(var(--u)*1.9)}
 body.compact .line .c{font-size:calc(var(--u)*1.9)}
-body.compact .leave{font-size:calc(var(--u)*1.15);margin-top:calc(var(--u)*.6)}
+body.compact .leave{font-size:calc(var(--u)*1.15);margin-top:calc(var(--u)*.5)}
 body.compact .big{font-size:calc(var(--u)*4.4)}
 body.compact .big-sub{font-size:calc(var(--u)*1.4)}
 body.compact .rail{padding-top:calc(var(--u)*.7)}
-body.compact .stop .bg{display:none}
+/* The begins times come BACK on small screens, which is the opposite of what I
+   first assumed. A TV is 3m away, an Echo Show is 60cm. Angular size is what
+   governs legibility, so the Show can carry MORE detail than the TV, not less.
+   Hiding them was treating "small screen" as "less room for content" when the
+   real constraint at 960x480 is vertical space, not information. */
+body.compact .stop .bg{display:block;font-size:calc(var(--u)*.72);
+  margin-top:calc(var(--u)*.12);opacity:.8}
 body.compact .stop .nm{font-size:calc(var(--u)*.78);letter-spacing:.1em}
 body.compact .stop .jm{font-size:calc(var(--u)*1.7)}
 body.compact .stop{padding:calc(var(--u)*.3) calc(var(--u)*.3)}
-body.compact footer{font-size:calc(var(--u)*.7);margin-top:calc(var(--u)*.5)}
+body.compact footer{font-size:calc(var(--u)*.7);margin-top:calc(var(--u)*.45)}
+/* 960x480 is a cinema strip, not a small television. Centring the hero in a
+   flex:1 column left a dead band through the middle of the screen; pushing it
+   down against the rail closes that and gives the sky the top third, which is
+   where the sky is actually worth looking at. */
+body.compact main{justify-content:flex-end;padding-bottom:calc(var(--u)*1.15)}
+body.compact .eyebrow{margin-bottom:calc(var(--u)*.1)}
+body.compact .prayer{font-size:calc(var(--u)*5.2);margin:calc(var(--u)*.12) 0 calc(var(--u)*.18)}
+body.compact .rail{padding-top:calc(var(--u)*.85)}
+/* a bright grade (dhuhr) put cream on near-white sky in Sakib's photo, so the
+   local darkening behind type is stronger here than on the TV, not weaker */
+body.compact #scrim{background:
+  radial-gradient(ellipse 66% 52% at 22% 62%, rgba(23,20,15,.62) 0%, rgba(23,20,15,.26) 54%, rgba(23,20,15,0) 80%),
+  linear-gradient(to bottom, rgba(23,20,15,.58) 0%, rgba(23,20,15,.2) 16%, rgba(23,20,15,0) 36%),
+  linear-gradient(to top,    rgba(23,20,15,.92) 0%, rgba(23,20,15,.58) 30%, rgba(23,20,15,0) 62%),
+  linear-gradient(to right,  rgba(23,20,15,.62) 0%, rgba(23,20,15,.3) 58%, rgba(23,20,15,.08) 100%)}
 /* the scrim was tuned to protect type on a wide frame; on a narrow one the
    type fills the width, so it needs to be flatter and more even */
 body.compact #scrim{background:
@@ -624,9 +645,18 @@ body.compact #driftWrap{
     var u=Math.min(w*0.0122,h*0.0215);
     if(u<9) u=9;
     document.documentElement.style.setProperty('--u',u.toFixed(2)+'px');
-    // Echo Show and similar. Judged on the real viewport rather than a user
-    // agent string, so it also catches a browser window someone shrank.
-    var small = (w < 820) || (h < 460);
+    /* Echo Show and similar.
+       I originally wrote this on viewport alone and noted, with some
+       satisfaction, that it avoided sniffing the user agent. That is exactly
+       why it failed: an Echo Show 5 is 960x480, so `h < 460` missed it by
+       twenty pixels and Sakib's Show ran the full TV layout squeezed into five
+       inches for a day. A generic size rule cannot tell a 960x480 Echo from a
+       window someone shrank, because they are the same size.
+       So: viewport for the generic case, AND the Amazon UA for the devices
+       whose size lies about how far away they are. */
+    var ua = navigator.userAgent || '';
+    var isEcho = /Echo|AEO[A-Z0-9]*/i.test(ua);
+    var small = (w < 820) || (h < 620) || (isEcho && h < 1000);
     document.body.classList[small?'add':'remove']('compact');
     if(small) document.documentElement.style.setProperty('--u',
       Math.max(10, Math.min(w*0.019, h*0.032)).toFixed(2)+'px');
