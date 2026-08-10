@@ -712,29 +712,6 @@ body.compact #driftWrap{
     document.body.classList[small?'add':'remove']('compact');
     if(small) document.documentElement.style.setProperty('--u',
       Math.max(10, Math.min(w*0.019, h*0.032)).toFixed(2)+'px');
-
-    /* The pairing screen needs its own unit, and it is the opposite direction
-       from everything else here.
-
-       Compact deliberately makes --u BIGGER, because an Echo Show is small but
-       you stand close to it, so the display wants larger type than a TV. That
-       is right for the display and exactly wrong for pairing: this screen is
-       already the tallest thing in the product, and compact inflated it from
-       roughly 600px to 1267px on a panel that is 800 tall. Sakib's sister could
-       not complete setup, and the QR sat below the fold even with no browser
-       chrome at all.
-
-       Measured across 480 to 800 high, #pair wants a consistent ~51u whatever
-       the size, so the unit that fits is the height divided by that plus a
-       little margin. Floored at 9px: below that it stops being readable, and it
-       is better to scroll a legible screen than to squint at a whole one.
-       The display is hidden while pairing, so nothing else is affected. */
-    if(document.body.classList.contains('pairing')){
-      var cur = parseFloat(getComputedStyle(document.documentElement)
-                  .getPropertyValue('--u')) || 18;
-      document.documentElement.style.setProperty('--u',
-        Math.max(9, Math.min(cur, h / 56)).toFixed(2) + 'px');
-    }
   }
   scale();
   window.addEventListener('resize',scale);
