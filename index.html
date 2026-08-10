@@ -406,7 +406,21 @@ body.claimed #pair .qr{opacity:.18;transition:opacity .7s ease}
 #gate{position:fixed;top:0;right:0;bottom:0;left:0;z-index:60;display:none;
   align-items:center;justify-content:center;background:rgba(23,20,15,.97);
   text-align:center;padding:7%}
-#gate.show{display:flex}
+/* Same shape as the bug that stopped a real user on an Echo Show 8: a centred
+   flex box with no escape if its content ever exceeds the viewport. It is
+   currently safe only because the copy is short, which is not protection, it is
+   luck. The other session measured it at 256-361px against 540-800 and flagged
+   that one more sentence in here reproduces the bug with no way out. Two lines
+   now, rather than after someone cannot press the button that turns the athan on. */
+/* Column, not the row it was. #gate centres with align-items:center on a flex
+   ROW, and an overflowing row clips both ends exactly like the centred column in
+   #pair did. Auto margins on pseudo-elements only centre along the main axis, so
+   the direction has to change for the trick to do anything vertically. It looks
+   identical when the content fits, which is every case today. */
+#gate.show{display:flex;flex-direction:column;overflow-y:auto;
+  -webkit-overflow-scrolling:touch}
+#gate.show:before,#gate.show:after{content:'';margin:auto;flex:0 0 auto}
+#gate.show>div{flex-shrink:0}
 #gate h2{font-family:var(--display);font-size:calc(var(--u)*3.1);line-height:1.08;
   letter-spacing:-.028em}
 #gate p{margin:calc(var(--u)*1.1) auto 0;font-size:calc(var(--u)*1.16);color:var(--veil);
