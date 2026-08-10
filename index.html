@@ -458,6 +458,23 @@ body.compact footer{font-size:calc(var(--u)*.7);margin-top:calc(var(--u)*.45)}
    down against the rail closes that and gives the sky the top third, which is
    where the sky is actually worth looking at. */
 body.compact main{justify-content:flex-end;padding-bottom:calc(var(--u)*1.15)}
+/* Sakib, reading his own Show from across the room: "fajr in 10 mins, I can see
+   that from far away". He reads it as ONE PHRASE, and the design had it as a
+   hero plus a footnote — name at 5.2u against a countdown at 1.9u.
+
+   That is the hierarchy inverted. The prayer name does not tell you to move;
+   the countdown does. So they now sit on one baseline at comparable weight,
+   which also spends the axis this screen actually has: 960x480 is starved of
+   height and rich in width. */
+body.compact #hero{display:flex;flex-wrap:wrap;align-items:baseline;
+  column-gap:calc(var(--u)*.55)}
+body.compact .eyebrow{flex:0 0 100%;font-size:calc(var(--u)*.74);
+  letter-spacing:.2em;margin-bottom:calc(var(--u)*.05)}
+body.compact .prayer{font-size:calc(var(--u)*4.5);margin:0}
+body.compact .line{align-items:baseline}
+body.compact .line .t{font-size:calc(var(--u)*2.6);color:var(--cream);opacity:1}
+body.compact .line .c{font-size:calc(var(--u)*2.6)}
+body.compact .leave{flex:0 0 100%;margin-top:calc(var(--u)*.35)}
 body.compact .eyebrow{margin-bottom:calc(var(--u)*.1)}
 body.compact .prayer{font-size:calc(var(--u)*5.2);margin:calc(var(--u)*.12) 0 calc(var(--u)*.18)}
 body.compact .rail{padding-top:calc(var(--u)*.85)}
