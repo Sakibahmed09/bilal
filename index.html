@@ -497,14 +497,20 @@ body.compact main{justify-content:flex-end;padding-bottom:calc(var(--u)*1.15)}
    height and rich in width. */
 body.compact #hero{display:flex;flex-wrap:wrap;align-items:baseline;
   column-gap:calc(var(--u)*.55)}
-body.compact .eyebrow{flex:0 0 100%;font-size:calc(var(--u)*.74);
+/* Scoped to #hero, and that scope is the whole bug. flex:0 0 100% is right
+   here, where #hero is a wrapping ROW and this forces the label onto its own
+   line above the prayer name. Unscoped it also matched the pairing screen's
+   eyebrow, and #pair is a COLUMN, where a 100% basis means 100% of the HEIGHT.
+   So the word "Set up" claimed 708px of an 800px panel and pushed the QR off
+   the bottom. That is what stopped Sakib's sister setting hers up. */
+body.compact #hero .eyebrow{flex:0 0 100%;font-size:calc(var(--u)*.74);
   letter-spacing:.2em;margin-bottom:calc(var(--u)*.05)}
 body.compact .prayer{font-size:calc(var(--u)*4.5);margin:0}
 body.compact .line{align-items:baseline}
 body.compact .line .t{font-size:calc(var(--u)*2.6);color:var(--cream);opacity:1}
 body.compact .line .c{font-size:calc(var(--u)*2.6)}
-body.compact .leave{flex:0 0 100%;margin-top:calc(var(--u)*.35)}
-body.compact .eyebrow{margin-bottom:calc(var(--u)*.1)}
+body.compact #hero .leave{flex:0 0 100%;margin-top:calc(var(--u)*.35)}
+body.compact #hero .eyebrow{margin-bottom:calc(var(--u)*.1)}
 body.compact .prayer{font-size:calc(var(--u)*5.2);margin:calc(var(--u)*.12) 0 calc(var(--u)*.18)}
 body.compact .rail{padding-top:calc(var(--u)*.85)}
 /* a bright grade (dhuhr) put cream on near-white sky in Sakib's photo, so the
