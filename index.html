@@ -323,7 +323,25 @@ footer{display:flex;justify-content:space-between;align-items:center;
 /* The sky stays — it is the best first impression we have — but the prayer data
    underneath must go, or the two screens read as one broken one. */
 body.pairing #shell{display:none}
-#pair.show{display:flex;flex-direction:column;justify-content:center}
+/* Reported by a real user on an Echo Show 8: the QR was clipped off the bottom
+   and swiping did nothing. Two causes stacked.
+
+   1. This screen needs ~606px of height at 1280 wide. The Show 8's panel is
+      800px but Silk's address bar eats enough to push the usable area under
+      that, so it overflowed.
+   2. A CENTRED flex column splits its overflow top AND bottom, and with
+      html/body at overflow:hidden the top half is unreachable as well. So it
+      was not merely cut off, it was cut off at both ends with no way to move.
+
+   The ::before/::after auto-margin trick centres the content while there is
+   room and collapses to zero when there is not, so it starts at the top and
+   scrolls like a normal document instead of clipping. Belt and braces with the
+   compact sizing below: make it fit, AND guarantee a way out if it still does
+   not on a device neither of us has. */
+#pair.show{display:flex;flex-direction:column;overflow-y:auto;
+  -webkit-overflow-scrolling:touch}
+#pair.show:before,#pair.show:after{content:'';margin:auto}
+#pair.show>*{flex-shrink:0}
 #pair .eyebrow{color:var(--clay)}
 #pair .head{font-family:var(--display);font-size:calc(var(--u)*5.4);line-height:1.02;
   letter-spacing:-.032em;margin:calc(var(--u)*.5) 0 calc(var(--u)*.9);max-width:17ch}
@@ -453,6 +471,17 @@ body.compact .stop .nm{font-size:calc(var(--u)*.78);letter-spacing:.1em}
 body.compact .stop .jm{font-size:calc(var(--u)*1.7)}
 body.compact .stop{padding:calc(var(--u)*.3) calc(var(--u)*.3)}
 body.compact footer{font-size:calc(var(--u)*.7);margin-top:calc(var(--u)*.45)}
+/* Pairing had zero compact rules, which is why it never fitted a Show. Target
+   is roughly 430px of content so it survives even a greedy browser chrome. */
+body.compact #pair .head{font-size:calc(var(--u)*3.1);margin:calc(var(--u)*.3) 0 calc(var(--u)*.55);
+  max-width:20ch}
+body.compact #pair .cols{gap:calc(var(--u)*1.9)}
+body.compact #pair .qr{width:calc(var(--u)*10.5);height:calc(var(--u)*10.5)}
+body.compact #pair .step{font-size:calc(var(--u)*1.05);line-height:1.5;max-width:24ch}
+body.compact #pair .code{font-size:calc(var(--u)*2.1);margin-top:calc(var(--u)*.35)}
+body.compact #pair .fallback{margin-top:calc(var(--u)*.8);padding-top:calc(var(--u)*.7)}
+body.compact #pair .fallback .lead{font-size:calc(var(--u)*.95);line-height:1.45}
+body.compact #pair .wait{margin-top:calc(var(--u)*.85);font-size:calc(var(--u)*.9)}
 /* 960x480 is a cinema strip, not a small television. Centring the hero in a
    flex:1 column left a dead band through the middle of the screen; pushing it
    down against the rail closes that and gives the sky the top third, which is
