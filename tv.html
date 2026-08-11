@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>bilal · put it on a screen</title>
 <meta name="theme-color" content="#17140f">
+<meta name="description" content="The athan on your phone calls you to nothing. Bilal calls you at leave time, your mosque's live jama'ah time minus your walk.">
+<meta property="og:title" content="bilal · the screen that calls you to jama'ah">
+<meta property="og:description" content="The athan on your phone calls you to nothing. Bilal calls you at leave time, your mosque's live jama'ah time minus your walk.">
+<meta property="og:image" content="https://bilalathan.co.uk/og.jpg">
+<meta property="og:url" content="https://bilalathan.co.uk/tv.html">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -68,12 +75,131 @@
   details.more .note b{color:var(--cream)}
   footer{margin-top:34px;color:var(--veil);font-size:13px;border-top:1px solid var(--hair);
     padding-top:18px}
+
+  /* ── the desktop layer ──────────────────────────────────────────────────
+     Phones keep the page exactly as shipped; everything below only exists
+     from 960px up. The hero becomes the display itself: the real page,
+     rendered at 720p inside a television, scaled down and playing live.
+     The product is the best argument this page can make, so it makes it. */
+  .dhero{display:none}
+
+  @media (min-width:960px){
+    body{padding-top:44px}
+    .wrap{max-width:1120px}
+    /* the hero and the steps band run wide; everything after returns to a
+       reading column so the routes stay a quiet list, not a brochure */
+    .wrap>h2,.wrap>.lede,.wrap>.card,.wrap>details,.wrap>.cta,.wrap>footer{
+      max-width:700px;margin-left:auto;margin-right:auto}
+
+    .mhero{display:none}
+    .dhero{display:grid;grid-template-columns:5fr 6.4fr;gap:60px;align-items:center;
+      padding:44px 0 36px;min-height:540px}
+    /* grid items default to min-width auto, and the 1280px iframe inside the
+       right column will happily blow the whole grid out through that door */
+    .dhero>div{min-width:0}
+    .dhero h1{font-size:clamp(37px,3.5vw,46px);line-height:1.08;margin-top:0}
+    .dhero .lede{font-size:17px;line-height:1.6;max-width:30em}
+    .dhero .url{max-width:26em}
+
+    .qr{display:flex;align-items:center;gap:16px;margin-top:26px;max-width:26em}
+    .qr canvas{width:88px;height:88px;border-radius:10px;display:block;flex:0 0 auto}
+    .qr b{display:block;font-size:15px;font-weight:600}
+    .qr span{display:block;font-size:13px;color:var(--veil);margin-top:3px;line-height:1.5}
+
+    /* The television. Bezel, panel, and the light the panel throws — the
+       glow is the screen's own maghrib leaking into a dark room, so it sits
+       low and warm rather than ringing the frame like an outline. */
+    .dtv{position:relative}
+    .frame{position:relative;border-radius:18px;background:#0b0908;padding:11px;
+      box-shadow:0 40px 90px -28px rgba(0,0,0,.85),
+                 inset 0 0 0 1px rgba(246,239,231,.05)}
+    .frame:before{content:'';position:absolute;z-index:-1;
+      left:-6%;right:-6%;top:32%;bottom:-16%;
+      background:radial-gradient(58% 58% at 50% 62%,rgba(217,164,143,.32),
+        rgba(217,164,143,.08) 55%,rgba(217,164,143,0) 78%);
+      filter:blur(36px)}
+    .screen{position:relative;border-radius:9px;overflow:hidden;aspect-ratio:16/9;
+      background:url('sky/maghrib.jpg') center/cover}
+    .screen iframe{width:1280px;height:720px;border:0;display:block;
+      transform-origin:0 0;pointer-events:none}
+
+    .livechip{display:flex;align-items:center;gap:9px;margin-top:16px;
+      font-size:13px;color:var(--veil);letter-spacing:.02em}
+    .livechip i{width:7px;height:7px;border-radius:50%;background:var(--clay);
+      flex:0 0 auto;animation:lpulse 1.6s ease-in-out infinite}
+    .livechip b{color:var(--cream);font-weight:600}
+    @keyframes lpulse{0%,100%{opacity:.3}50%{opacity:1}}
+
+    /* the steps read as one band of three at desk width */
+    ol.flow{display:grid;grid-template-columns:repeat(3,1fr);gap:34px;
+      padding-left:0;list-style:none;counter-reset:step;margin-top:20px}
+    ol.flow li{counter-increment:step;position:relative;padding-top:40px;margin-bottom:0}
+    ol.flow li:before{content:counter(step);position:absolute;top:0;left:0;
+      font-family:var(--display);font-size:27px;color:var(--clay);opacity:.9}
+
+    /* ── entrance ─────────────────────────────────────────────────────────
+       ANIMATION STORYBOARD (desktop only, fires once on load)
+
+          0ms   page paints deep, nothing moves yet
+         60ms   headline rises
+        140ms   lede follows
+        220ms   url box follows
+        300ms   qr card follows
+        240ms   the television fades in, settling from 98.4% scale
+        820ms   the glow under it blooms on slowly, like a set warming up
+
+       One class drives it all: body.go. Rises share a curve and differ
+       only in delay, which is what makes it read as one gesture. */
+    .rise{opacity:0;transform:translateY(14px);
+      transition:opacity .6s cubic-bezier(.2,.7,.2,1),transform .6s cubic-bezier(.2,.7,.2,1)}
+    body.go .rise{opacity:1;transform:none}
+    .dhero h1.rise{transition-delay:.06s}
+    .dhero .lede.rise{transition-delay:.14s}
+    .dhero .url.rise{transition-delay:.22s}
+    .dhero .qr.rise{transition-delay:.3s}
+    .dtv{opacity:0;transform:scale(.984);
+      transition:opacity .7s cubic-bezier(.2,.7,.2,1) .24s,transform .7s cubic-bezier(.2,.7,.2,1) .24s}
+    body.go .dtv{opacity:1;transform:none}
+    .frame:before{opacity:0;transition:opacity 1.2s ease .82s}
+    body.go .frame:before{opacity:1}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .rise,.dtv,.frame:before{transition:none!important;opacity:1!important;transform:none!important}
+    .livechip i{animation:none}
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="mark">bilal</div>
 
+  <section class="dhero">
+    <div class="dcopy">
+      <h1 class="rise">The athan on your phone calls you to nothing.</h1>
+      <p class="lede rise">It fires at the start time, while the jama'ah at your masjid
+         forms without you. Bilal is a screen for your home that calls you at
+         <b>leave time</b>, the mosque's own jama'ah time minus your walk to the door.</p>
+      <div class="url rise">
+        <code id="u2">bilalathan.co.uk</code>
+        <button id="copy2">Copy</button>
+      </div>
+      <div class="qr rise">
+        <canvas id="dqr" width="264" height="264" role="img"
+                aria-label="QR code that opens this page on your phone"></canvas>
+        <div><b>Carry on from your phone</b>
+             <span>Scan it and this page opens in your hand, ready for the TV steps.</span></div>
+      </div>
+    </div>
+    <div class="dtv">
+      <div class="frame"><div class="screen">
+        <iframe id="demo" title="The live Bilal display" tabindex="-1" aria-hidden="true"></iframe>
+      </div></div>
+      <p class="livechip"><i></i><span><b>Live</b> · Darul Ummah Goresbrook, Dagenham</span></p>
+    </div>
+  </section>
+
+  <div class="mhero">
   <h1>Put it on a screen in your house.</h1>
   <p class="lede">Bilal is built for a screen you walk past, not a phone in your pocket.
      It calls you at the moment you need to <b>leave for jama'ah</b>, not when the prayer
@@ -82,6 +208,7 @@
   <div class="url">
     <code id="u">bilalathan.co.uk</code>
     <button id="copy">Copy</button>
+  </div>
   </div>
 
   <h2>How it goes</h2>
@@ -93,7 +220,7 @@
         The screen picks it up on its own.</li>
     <li><b>One press for sound.</b> The screen reloads itself and asks once. After that
         it can call you to jama'ah for as long as it stays on.
-        <span style="opacity:.72">(The TV app skips this — it arms itself.)</span></li>
+        <span style="opacity:.72">(The TV app skips this, it arms itself.)</span></li>
   </ol>
   <p class="lede" style="margin-top:14px;font-size:14.5px">Same three moments whatever
      screen you use. All that changes below is how you get Bilal open on it.</p>
@@ -117,15 +244,15 @@
     <h3>Fire TV Stick &amp; Android TV<span class="best">The app</span></h3>
     <ol>
       <li>Get <b>Downloader</b> (free, orange icon) from your TV's app store and open it.
-          If the TV asks, flip the switch that lets Downloader install apps —
+          If the TV asks, flip the switch that lets Downloader install apps,
           it shows you where</li>
       <li>Type <b>bilalathan.co.uk/bilal.apk</b> into Downloader, install Bilal, open it</li>
-      <li>Follow the phone steps above — <b>no press for sound needed</b></li>
+      <li>Follow the phone steps above, <b>no press for sound needed</b></li>
     </ol>
     <p class="note"><b>This is the proper answer on a TV.</b> The screen stays on without
        any settings, the athan arms itself, and after a power cut it starts itself
-       back up. <b>The catch:</b> the two newest sticks — Fire TV Stick 4K Select and the
-       2026 Fire TV Stick HD — run Vega OS and can't install apps like this at all.
+       back up. <b>The catch:</b> the two newest sticks, Fire TV Stick 4K Select and the
+       2026 Fire TV Stick HD, run Vega OS and can't install apps like this at all.
        For those, use the Silk browser below.</p>
   </div>
 
@@ -135,7 +262,7 @@
        reason the Show and the app are above them.</p>
 
     <div class="card">
-      <h3>Fire TV Stick — Silk browser</h3>
+      <h3>Fire TV in the Silk browser</h3>
       <ol>
         <li>Open the <b>Silk browser</b>. If it isn't installed, search Silk in Find. It's free</li>
         <li>Go to <b>bilalathan.co.uk</b>, then follow the three steps above</li>
@@ -143,7 +270,7 @@
       </ol>
       <p class="note"><b>The catch:</b> Fire TV has a second sleep timer, around 14 minutes,
          that Amazon hide completely. Turning the screensaver off does not stop it, so the
-         screen goes dark on its own. The app above doesn't have this problem — the browser
+         screen goes dark on its own. The app above doesn't have this problem. The browser
          route is for the Vega OS sticks that can't install it.</p>
     </div>
 
@@ -181,30 +308,101 @@
      Something not working? Tell us</a></footer>
 </div>
 
+<script src="qr.js"></script>
 <script>
   // Show the real host, so this reads correctly on a preview domain too.
   (function(){
     var h = location.host.replace(/^www\./,'');
-    if(h && h.indexOf('localhost')!==0) document.getElementById('u').textContent = h;
+    if(h && h.indexOf('localhost')!==0){
+      document.getElementById('u').textContent = h;
+      document.getElementById('u2').textContent = h;
+    }
   })();
 
-  document.getElementById('copy').addEventListener('click', function(){
-    var url = location.protocol + '//' + location.host + '/';
-    var btn = this;
-    function done(){ btn.textContent='Copied'; setTimeout(function(){ btn.textContent='Copy'; },1600); }
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(url).then(done).catch(fallback);
-    } else fallback();
-    function fallback(){
-      // older webviews: a hidden field and execCommand still works
-      var t=document.createElement('textarea');
-      t.value=url; t.setAttribute('readonly','');
-      t.style.position='fixed'; t.style.left='-9999px';
-      document.body.appendChild(t); t.select();
-      try{ document.execCommand('copy'); done(); }catch(e){}
-      document.body.removeChild(t);
+  function bindCopy(id){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('click', function(){
+      var url = location.protocol + '//' + location.host + '/';
+      var btn = this;
+      function done(){ btn.textContent='Copied'; setTimeout(function(){ btn.textContent='Copy'; },1600); }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(url).then(done).catch(fallback);
+      } else fallback();
+      function fallback(){
+        // older webviews: a hidden field and execCommand still works
+        var t=document.createElement('textarea');
+        t.value=url; t.setAttribute('readonly','');
+        t.style.position='fixed'; t.style.left='-9999px';
+        document.body.appendChild(t); t.select();
+        try{ document.execCommand('copy'); done(); }catch(e){}
+        document.body.removeChild(t);
+      }
+    });
+  }
+  bindCopy('copy'); bindCopy('copy2');
+
+  /* ── desktop boot ─────────────────────────────────────────────────────────
+     The hero's television is the real display, loaded lazily and only at desk
+     width so a phone never downloads a second copy of the product to read an
+     instructions page. It renders at 1280x720, believing it is a TV, and is
+     scaled to fit its frame; ?demo=1 keeps it silent and stops it writing
+     config into the visitor's browser. */
+  (function(){
+    var mq = window.matchMedia ? window.matchMedia('(min-width:960px)') : null;
+    var booted = false;
+
+    function fit(){
+      var s = document.querySelector('.screen');
+      var f = document.getElementById('demo');
+      if(!s || !f || !f.src) return;
+      f.style.transform = 'scale(' + (s.clientWidth / 1280) + ')';
     }
-  });
+
+    function boot(){
+      if(booted || !mq || !mq.matches) return;
+      booted = true;
+
+      var f = document.getElementById('demo');
+      f.src = 'index.html?demo=1&masjid=darul-ummah-goresbrook-1649608083137&walk=10';
+      // once now, once after layout settles, once when the display arrives
+      fit();
+      requestAnimationFrame(fit);
+      f.addEventListener('load', fit);
+
+      /* The QR carries the site root: a phone that scans it gets routed to
+         this page by the same logic that routed the phone in your hand. If
+         drawing fails the card goes rather than showing an empty tile. */
+      try{
+        var dir = location.href.replace(/[^\/]*(\?.*)?(#.*)?$/,'');
+        window.BilalQR.draw(document.getElementById('dqr'), dir,
+          { size: 264, dark: '#221E1C', light: '#F6EFE7', quiet: 2 });
+      }catch(e){
+        var q = document.querySelector('.qr'); if(q) q.style.display = 'none';
+      }
+
+      // the routes read as an open list at desk width, not a folded phone menu
+      var d = document.querySelector('details.more');
+      if(d) d.setAttribute('open','');
+    }
+
+    window.addEventListener('resize', function(){ boot(); fit(); });
+    /* A tab opened in the background loads at 0x0 with rAF suspended, so the
+       width check above says phone and nothing boots. Becoming visible is the
+       moment that lie corrects itself, so listen for it. */
+    document.addEventListener('visibilitychange', function(){ boot(); fit(); });
+    if(mq){
+      if(mq.addEventListener) mq.addEventListener('change', function(){ boot(); fit(); });
+      else if(mq.addListener) mq.addListener(function(){ boot(); fit(); });
+    }
+    boot();
+
+    /* Two frames so every .rise starts life painted at opacity 0, then one
+       class runs the whole storyboard. Reduced motion shows it all at once. */
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      document.body.className += ' go';
+    }); });
+  })();
 </script>
 <script src="diag.js"></script>
 </body>

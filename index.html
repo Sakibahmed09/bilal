@@ -33,7 +33,7 @@
    and stay here. */
 (function(){
   try{
-    if(/[?&](display|masjid|test|at|mode|walk|drift|quiet|lite)=/.test(location.search)){
+    if(/[?&](display|masjid|test|at|mode|walk|drift|quiet|lite|demo)=/.test(location.search)){
       if(/[?&]display=1/.test(location.search)){
         try{ localStorage.setItem('bilal.display','1'); }catch(e){}
       }
@@ -46,7 +46,22 @@
 
     var handset = /iPhone|iPod|Android.*Mobile|Windows Phone|BlackBerry|Opera Mini/i.test(ua);
     var w = (screen && screen.width) || 9999, h = (screen && screen.height) || 9999;
-    if(handset && Math.min(w,h) < 520) location.replace('tv.html' + location.search);
+    if(handset && Math.min(w,h) < 520){ location.replace('tv.html' + location.search); return; }
+
+    /* Desktops get the landing too, by the same philosophy pointed the other
+       way: only what is CERTAINLY a desk browser is sent away, because a TV
+       mistaken for a desktop boots into a marketing page it cannot navigate.
+       So: positive identification only, a saved pairing keeps you here, and
+       any TV marker vetoes (several smart TVs carry Linux in their UA, which
+       is why the X11 arm requires a desktop chip too). iPads say Macintosh
+       and go: the spare-tablet card documents ?display=1, which returns
+       above. A visitor who was merely curious sees the pitch; a display that
+       has ever been paired never leaves this page. */
+    var saved = false;
+    try{ saved = !!((JSON.parse(localStorage.getItem('bilal.config')||'{}')||{}).slug); }catch(e){}
+    var desk = /Macintosh|Windows NT|CrOS|X11; Linux (x86_64|i686|amd64)/i.test(ua)
+            && !/CrKey|Tizen|Web0S|WebOS|SMART-TV|SmartTV|BRAVIA|Roku|PlayStation|Xbox|GoogleTV|HbbTV|Viera|NetCast/i.test(ua);
+    if(desk && !saved) location.replace('tv.html');
   }catch(e){}
 })();
 </script>
@@ -648,6 +663,11 @@ body.compact #driftWrap{
   "use strict";
 
   var Q=new URLSearchParams(location.search);
+  /* tv.html's desktop hero embeds this page as a living demo. A demo never
+     writes config (the visitor's browser must not quietly become a paired
+     display) and never makes sound. Everything else runs exactly as the TV
+     runs it, which is the point of showing it. */
+  var DEMO = Q.get('demo')==='1';
   /* Config resolves URL > paired > default. The default mosque only applies when
      a URL names none, so every existing bookmark keeps working untouched. */
   var SAVED={};
@@ -657,7 +677,7 @@ body.compact #driftWrap{
   /* A URL that names a mosque configures the screen permanently. Without this,
      anyone handed a ?masjid= link would be asked to pair again on every reload,
      and a TV is the worst possible place to keep re-entering a URL. */
-  if(Q.get('masjid')){
+  if(Q.get('masjid') && !DEMO){
     try{
       localStorage.setItem('bilal.config', JSON.stringify({
         slug: Q.get('masjid'),
@@ -673,7 +693,7 @@ body.compact #driftWrap{
     walk: parseInt(Q.get('walk')||SAVED.walk||'15',10),
     mode: Q.get('mode')||'home',
     athan:Q.get('athan')||'athan.mp3',
-    quiet:Q.get('quiet')==='1',
+    quiet:Q.get('quiet')==='1' || DEMO,
     dim:  Q.get('dim')!=='0',
     lite: Q.get('lite')==='1',   // no drift, no heroes: isolates GPU flicker
 
