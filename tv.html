@@ -119,14 +119,28 @@
      column. The panel warms up from the maghrib poster to the live page,
      and the tour inside walks the mosque's whole day. */
   .dtv{position:relative}
-  .frame{position:relative;border-radius:14px;background:#0b0908;padding:8px;
-    box-shadow:0 24px 60px -20px rgba(0,0,0,.8)}
+  /* The device is a smart speaker, not a wall television: slim uniform
+     bezel, soft corners, a camera pin in the bezel, and a fabric-wrapped
+     speaker wedge it stands on. The glow is its screen spilling onto the
+     surface it sits on. */
+  .frame{position:relative;z-index:2;border-radius:22px;background:#0b0908;padding:7px;
+    box-shadow:0 18px 44px -18px rgba(0,0,0,.75)}
+  .frame:after{content:'';position:absolute;top:3px;left:50%;margin-left:-1px;
+    width:2.5px;height:2.5px;border-radius:50%;background:rgba(246,239,231,.16)}
+  .base{position:relative;z-index:1;height:34px;margin:-12px 20px 0;
+    border-radius:0 0 18px 18px;
+    -webkit-clip-path:polygon(2.5% 0,97.5% 0,100% 100%,0 100%);
+    clip-path:polygon(2.5% 0,97.5% 0,100% 100%,0 100%);
+    background:
+      radial-gradient(circle at 1.5px 1.5px,rgba(246,239,231,.08) 1px,transparent 1.7px) 0 0/4px 4px,
+      linear-gradient(#2b2621,#1c1915);
+    box-shadow:0 20px 32px -12px rgba(0,0,0,.8)}
   .frame:before{content:'';position:absolute;z-index:-1;
     left:-6%;right:-6%;top:32%;bottom:-16%;
     background:radial-gradient(58% 58% at 50% 62%,rgba(217,164,143,.32),
       rgba(217,164,143,.08) 55%,rgba(217,164,143,0) 78%);
     filter:blur(36px)}
-  .screen{position:relative;border-radius:7px;overflow:hidden;aspect-ratio:16/9;
+  .screen{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:16/9;
     background:url('sky/maghrib.jpg') center/cover}
   .screen iframe{width:100%;height:100%;border:0;display:block;
     pointer-events:none;opacity:0;transition:opacity .9s ease .15s}
@@ -164,12 +178,14 @@
     .qr b{display:block;font-size:15px;font-weight:600}
     .qr span{display:block;font-size:13px;color:var(--veil);margin-top:3px;line-height:1.5}
 
-    /* the same television, sized for a desk: heavier bezel, deeper shadow */
+    /* the same device, desk-sized */
     .dcopy{display:block}
-    .frame{border-radius:18px;padding:11px;
-      box-shadow:0 40px 90px -28px rgba(0,0,0,.85)}
-    .screen{border-radius:9px}
-    .placard{margin-top:16px}
+    .frame{border-radius:30px;padding:10px;
+      box-shadow:0 30px 70px -24px rgba(0,0,0,.8)}
+    .frame:after{top:4px;width:3px;height:3px}
+    .screen{border-radius:22px}
+    .base{height:46px;margin:-16px 30px 0;border-radius:0 0 24px 24px}
+    .placard{margin-top:18px}
     h2{font-size:26px}
 
     /* the steps read as one band of three at desk width */
@@ -273,6 +289,7 @@
       <div class="frame"><div class="screen">
         <iframe id="demo" title="The live Bilal display" tabindex="-1" aria-hidden="true"></iframe>
       </div></div>
+      <div class="base" aria-hidden="true"></div>
       <p class="placard">A day at Darul Ummah Goresbrook.</p>
     </div>
   </section>
