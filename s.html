@@ -169,7 +169,7 @@ a{color:var(--clay)}
         <div id="pBadge"></div></div>
       <div class="walk">
         <input type="text" id="walk" inputmode="numeric" value="15">
-        <span><b>minutes' walk</b><br>Bilal calls you this far before jama'ah, so you arrive in time.</span>
+        <span><b>minutes' walk</b><br>Bilal calls you this far before jama'ah.</span>
       </div>
       <div id="walkNote" class="hint"></div>
       <button class="btn" id="toCode">Continue</button>
@@ -199,12 +199,12 @@ a{color:var(--clay)}
            is broken overnight and blames us for the television's setting. -->
       <div class="note r r3" style="text-align:left">
         <b>One thing on the TV itself.</b> Nearly every television switches off
-        after about four hours with no button pressed. That is an energy-saving
-        rule, and the setting lives on the TV rather than on the streaming stick.
+        after about four hours with no button pressed. The setting lives on the
+        TV, not the streaming stick.
         <br><br>
         Turn it off under <b>Eco</b>, <b>Energy Saving</b>, or
-        <b>no-operation off timer</b> in your TV's own menu. Otherwise Bilal
-        goes dark overnight and misses Fajr.
+        <b>no-operation off timer</b>. Otherwise Bilal goes dark overnight and
+        misses Fajr.
       </div>
     </div>
   </section>
@@ -213,20 +213,22 @@ a{color:var(--clay)}
   <section id="s5">
     <div class="eyebrow r r1">Not yet</div>
     <h1 class="r r2">We don't have your mosque yet.</h1>
-    <p class="sub r r3">Bilal only shows jama'ah times a mosque publishes itself. We won't guess them, because a guessed time makes you late.</p>
+    <p class="sub r r3">Bilal only shows jama'ah times a mosque publishes itself. A guessed time makes you late.</p>
     <div class="step r r4">
-      <div class="note">Send us the timetable from the wall and we'll add it. It takes a couple
-        of minutes at your end, and a little longer at ours while this is still new. Once it
+      <div class="note">Point us at the building and we'll find its timetable. A couple
+        of minutes at your end, a little longer at ours while this is still new. Once it
         is in, everyone who prays there gets it.</div>
-      <!-- The route out of the dead end: add the times yourself from the
-           timetable on the wall. It genuinely submits, so it belongs here, and
-           it goes first because it is the one that actually fixes anything. -->
-      <!-- "Send us" not "add", because adding is what happens afterwards and it
-           is not instant yet. The submission is real; the turnaround is manual
-           until the extraction backend lands. Promising the second thing on the
-           strength of the first is exactly the lie this product refuses. -->
+      <!-- The route out of the dead end. It genuinely submits, so it belongs
+           here, and it goes first because it is the one that actually fixes
+           anything. -->
+      <!-- The label describes what the person does NOW (drop a pin), not what
+           happens afterwards. add.html asks "Where is it?" and never asks for
+           the wall timetable, so "Send us its timetable" promised an exchange
+           the next screen immediately contradicted. The turnaround is manual
+           until the extraction backend lands, and promising that on the
+           strength of the submission is exactly the lie this product refuses. -->
       <a class="btn" id="addOwn" style="display:block;text-align:center;
-         text-decoration:none;line-height:1.2">Send us its timetable</a>
+         text-decoration:none;line-height:1.2">Tell us where it is</a>
       <a class="btn ghost tweet" id="tweetReq" target="_blank" rel="noopener">Ask them to publish it instead</a>
       <a class="btn ghost" href="bug.html" style="display:block;text-align:center;text-decoration:none;line-height:1.2;font-size:14px;padding:13px">Something not working? Tell us</a>
       <button class="btn ghost" id="back2">Back to search</button>
@@ -283,8 +285,8 @@ a{color:var(--clay)}
     if(!list.length){
       $('results').innerHTML='<button class="item" id="none">'+
         '<div class="n">We don\'t have that one</div>'+
-        '<div class="a">You can add its times yourself from the timetable on the wall. '+
-        'It takes a couple of minutes and fixes it for everyone who prays there.</div></button>';
+        '<div class="a">Tell us where it is and we\'ll add it. '+
+        'A couple of minutes of your time fixes it for everyone who prays there.</div></button>';
       $('none').onclick=function(){ notListed($('q').value); };
       return;
     }
@@ -466,7 +468,7 @@ a{color:var(--clay)}
     var est = m._d!=null ? walkMins(m._d) : null;
     if(est!=null && est<=30){
       $('walk').value=est;
-      $('walkNote').textContent='Estimated from the distance. Change it if you know better. Everything hangs on this number.';
+      $('walkNote').textContent='Estimated from the distance. Everything hangs on this number.';
     } else if(est!=null){
       $('walkNote').textContent='This one is too far to walk, so we have not guessed. '+
         'Set how long it actually takes you to get there.';
@@ -600,7 +602,7 @@ a{color:var(--clay)}
       .then(function(rows){
         btn.innerHTML=label; btn.disabled=false;
         if(!rows||!rows.length){ stale(code); return; }
-        $('doneMsg').textContent=picked.n+' is on your TV. It will remember, so you only do this once.';
+        $('doneMsg').textContent=picked.n+' is on your TV. It will remember.';
         show('s4');
       }).catch(function(){
         btn.innerHTML=label; btn.disabled=false;

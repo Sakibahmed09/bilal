@@ -39,19 +39,20 @@
   .url{display:flex;align-items:center;gap:10px;margin-top:22px;padding:14px 16px;
     background:var(--char);border:1px solid var(--hair);border-radius:12px}
   .url code{font-family:inherit;font-size:17px;font-weight:700;letter-spacing:-.01em;flex:1}
-  .url button{border:0;background:var(--clay);color:var(--char);font-family:inherit;
-    font-weight:700;font-size:13px;padding:9px 14px;border-radius:999px;cursor:pointer}
-  .url button:active{background:#f0c4ad}
+  .url button{border:0;background:none;color:var(--clay);font-family:inherit;
+    font-weight:700;font-size:14px;padding:9px 6px;cursor:pointer;
+    transition:color .25s ease}
+  .url button:hover{color:var(--cream)}
+  .url button:active{opacity:.6}
 
-  h2{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--clay);
-     font-weight:700;margin:38px 0 0}
+  /* Section headings in the display face, sentence case. The small-caps
+     letter-spaced eyebrow was chrome pretending to be typography. */
+  h2{font-family:var(--display);font-size:22px;font-weight:400;letter-spacing:-.015em;
+     color:var(--cream);margin:44px 0 0}
 
   .card{margin-top:14px;background:var(--char);border:1px solid var(--hair);
     border-radius:14px;padding:18px 18px 6px}
   .card h3{font-family:var(--display);font-size:21px;font-weight:400;letter-spacing:-.015em}
-  .card .best{display:inline-block;margin-left:8px;font-family:var(--text);font-size:10.5px;
-    font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--char);
-    background:var(--clay);padding:3px 8px;border-radius:999px;vertical-align:2px}
   ol{margin:12px 0 0;padding-left:1.3em}
   li{margin-bottom:9px;font-size:15.5px}
   li b{font-weight:700}
@@ -68,10 +69,14 @@
   ol.flow li b{color:var(--cream)}
   .card.hero{border-color:rgba(217,164,143,.42);background:rgba(217,164,143,.07)}
   .card.hero h3{font-size:24px}
-  details.more{margin-top:30px}
-  details.more summary{cursor:pointer;font-size:12px;letter-spacing:.18em;
-    text-transform:uppercase;color:var(--clay);font-weight:700;padding:6px 0}
-  details.more summary::-webkit-details-marker{color:var(--clay)}
+  details.more{margin-top:36px;border-top:1px solid var(--hair);padding-top:8px}
+  details.more summary{cursor:pointer;font-family:var(--display);font-size:19px;
+    letter-spacing:-.015em;color:var(--veil);padding:10px 0;list-style:none;
+    transition:color .25s ease}
+  details.more summary:hover{color:var(--cream)}
+  details.more[open] summary{color:var(--cream)}
+  details.more summary::-webkit-details-marker{display:none}
+  details.more summary::marker{content:''}
   details.more .why{color:var(--veil);font-size:14px;margin-top:10px}
   details.more .note b{color:var(--cream)}
   footer{margin-top:34px;color:var(--veil);font-size:13px;border-top:1px solid var(--hair);
@@ -121,15 +126,17 @@
       filter:blur(36px)}
     .screen{position:relative;border-radius:9px;overflow:hidden;aspect-ratio:16/9;
       background:url('sky/maghrib.jpg') center/cover}
+    /* The panel warms up: maghrib poster first, then the live page fades in
+       over it once it has actually arrived. The screen coming to life IS the
+       liveness signal — no dot, no chip, no label doing the work. */
     .screen iframe{width:1280px;height:720px;border:0;display:block;
-      transform-origin:0 0;pointer-events:none}
+      transform-origin:0 0;pointer-events:none;opacity:0;
+      transition:opacity .9s ease .15s}
+    .screen iframe.on{opacity:1}
 
-    .livechip{display:flex;align-items:center;gap:9px;margin-top:16px;
-      font-size:13px;color:var(--veil);letter-spacing:.02em}
-    .livechip i{width:7px;height:7px;border-radius:50%;background:var(--clay);
-      flex:0 0 auto;animation:lpulse 1.6s ease-in-out infinite}
-    .livechip b{color:var(--cream);font-weight:600}
-    @keyframes lpulse{0%,100%{opacity:.3}50%{opacity:1}}
+    /* set like a placard under a photograph, because that is what it is */
+    .placard{margin-top:16px;font-size:13.5px;color:var(--veil);letter-spacing:.01em}
+    h2{font-size:26px}
 
     /* the steps read as one band of three at desk width */
     ol.flow{display:grid;grid-template-columns:repeat(3,1fr);gap:34px;
@@ -172,13 +179,12 @@
        force the finished frame whether or not the storyboard ever ran. When
        it did run, every value already matches and nothing visibly happens. */
     .rise,.dtv{animation:reveal 1ms linear 2.6s forwards}
-    .frame:before{animation:reveal 1ms linear 3s forwards}
+    .frame:before,.screen iframe{animation:reveal 1ms linear 3s forwards}
   }
   @keyframes reveal{to{opacity:1;transform:none}}
 
   @media (prefers-reduced-motion:reduce){
-    .rise,.dtv,.frame:before{transition:none!important;opacity:1!important;transform:none!important}
-    .livechip i{animation:none}
+    .rise,.dtv,.frame:before,.screen iframe{transition:none!important;opacity:1!important;transform:none!important}
   }
 </style>
 </head>
@@ -207,7 +213,7 @@
       <div class="frame"><div class="screen">
         <iframe id="demo" title="The live Bilal display" tabindex="-1" aria-hidden="true"></iframe>
       </div></div>
-      <p class="livechip"><i></i><span><b>Live</b> · Darul Ummah Goresbrook, Dagenham</span></p>
+      <p class="placard">The screen at Darul Ummah Goresbrook, Dagenham, as it is right now.</p>
     </div>
   </section>
 
@@ -253,7 +259,7 @@
   <h2>On a TV</h2>
 
   <div class="card hero">
-    <h3>Fire TV Stick &amp; Android TV<span class="best">The app</span></h3>
+    <h3>The app, for Fire TV and Android TV</h3>
     <ol>
       <li>Get <b>Downloader</b> (free, orange icon) from your TV's app store and open it.
           If the TV asks, flip the switch that lets Downloader install apps,
@@ -381,7 +387,7 @@
       // once now, once after layout settles, once when the display arrives
       fit();
       requestAnimationFrame(fit);
-      f.addEventListener('load', fit);
+      f.addEventListener('load', function(){ fit(); f.className = 'on'; });
 
       /* The QR carries the site root: a phone that scans it gets routed to
          this page by the same logic that routed the phone in your hand. If

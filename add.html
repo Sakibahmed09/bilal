@@ -157,8 +157,7 @@ input:focus{border-color:var(--clay)}
   <section id="s1" class="on go">
     <div class="eyebrow r r1">Step 1 of 2</div>
     <h1 class="r r2">Where is it?</h1>
-    <p class="sub r r3">Drop a pin on the building. We match by <b>position, not name</b>, so nobody
-      ends up with two versions of the same mosque.</p>
+    <p class="sub r r3">Drop a pin on the building. We match by <b>position, not name</b>.</p>
     <div class="step r r4">
       <div id="map"></div>
       <div class="pinbar"><span id="pinInfo">Drag the map to place the pin.</span></div>
@@ -172,8 +171,8 @@ input:focus{border-color:var(--clay)}
   <section id="s2">
     <div class="eyebrow r r1">Step 2 of 2</div>
     <h1 class="r r2">That's nearly it.</h1>
-    <p class="sub r r3">We take it from the pin: we find the mosque, then its website, then
-      the timetable on it. <b>Reading it is done by hand while this is new</b>, so it will
+    <p class="sub r r3">The pin is enough: we find the mosque and its timetable ourselves.
+      <b>Reading it is done by hand while this is new</b>, so it will
       not be on your screen today.</p>
     <div class="step r r4">
       <!-- One optional field, not a choice of three.
@@ -183,8 +182,8 @@ input:focus{border-color:var(--clay)}
            it sits here quietly rather than as one of three routes the person has
            to choose between before they know what any of them mean. -->
       <input type="url" id="srcUrl" placeholder="Link to their timetable (optional)">
-      <div class="hint" id="srcHint">Only if you already know it. Otherwise leave it,
-        we look for it ourselves.</div>
+      <div class="hint" id="srcHint">Only if you already know it. Otherwise we find it
+        ourselves.</div>
       <button class="btn" id="toRead">Add this mosque</button>
       <button class="btn ghost" id="back1">Back</button>
     </div>
@@ -194,8 +193,8 @@ input:focus{border-color:var(--clay)}
   <section id="s3">
     <div class="eyebrow r r1">Reading</div>
     <h1 class="r r2" id="readHead">Going through it month by month.</h1>
-    <p class="sub r r3" id="readSub">Each month is read more than once and the readings compared.
-      Where they disagree it reads again, until they agree.</p>
+    <p class="sub r r3" id="readSub">Each month is read more than once. Where the readings
+      disagree, it reads again until they agree.</p>
     <div class="step r r4">
       <div class="months" id="months"></div>
       <div class="readout" id="readout"></div>
@@ -228,7 +227,7 @@ input:focus{border-color:var(--clay)}
       <p class="sub r r2" id="doneMsg" style="margin-top:12px"></p>
     </div>
     <div class="note r r3">
-      Reading the timetable takes a little while, so it will not be on your TV today.
+      A person reads the timetable first, so it will not be on your TV today.
       Once it is in, <b>everyone who prays there gets it</b>, and nobody at your mosque
       has to do this again.
     </div>
@@ -353,8 +352,7 @@ input:focus{border-color:var(--clay)}
 
   $('srcUrl').oninput=function(){
     $('srcUrl').classList.remove('nudge');
-    $('srcHint').textContent='Only if you already know it. Otherwise leave it, '+
-      'we look for it ourselves.';
+    $('srcHint').textContent='Only if you already know it. Otherwise we find it ourselves.';
     $('srcHint').style.color='';
   };
 
@@ -490,8 +488,7 @@ input:focus{border-color:var(--clay)}
            above it. Nothing to explain. */
       '</div>';
     }).join('')+
-      '<button class="skipall" id="skipAll">I don\'t have the timetable in front of me '+
-      'and cannot check these</button>';
+      '<button class="skipall" id="skipAll">I don\'t have the timetable in front of me</button>';
 
     Array.prototype.forEach.call($('flags').querySelectorAll('button[data-n]'),function(b){
       b.onclick=function(){ settle(b.dataset.n, b.dataset.a==='fix'); };
