@@ -58,6 +58,7 @@
   .note{font-size:13.5px;color:var(--veil);border-top:1px solid var(--hair);
     margin-top:14px;padding:12px 0 14px}
   .note b{color:var(--clay)}
+  .note a{color:var(--clay);text-decoration:underline;text-underline-offset:2px}
 
   .cta{display:block;margin-top:34px;padding:17px;border-radius:14px;background:var(--clay);
     color:var(--char);text-decoration:none;text-align:center;font-weight:700;font-size:16.5px}
@@ -162,7 +163,18 @@
     body.go .dtv{opacity:1;transform:none}
     .frame:before{opacity:0;transition:opacity 1.2s ease .82s}
     body.go .frame:before{opacity:1}
+
+    /* The guaranteed reveal. Everything above waits at opacity 0 for a class
+       that JavaScript applies, and this page's history says exactly what that
+       earns you: a script that dies early leaves a black rectangle where the
+       pitch should be, and nobody reports a page that looks deliberately
+       empty. Animations outrank transitions in the cascade, so at 2.6s these
+       force the finished frame whether or not the storyboard ever ran. When
+       it did run, every value already matches and nothing visibly happens. */
+    .rise,.dtv{animation:reveal 1ms linear 2.6s forwards}
+    .frame:before{animation:reveal 1ms linear 3s forwards}
   }
+  @keyframes reveal{to{opacity:1;transform:none}}
 
   @media (prefers-reduced-motion:reduce){
     .rise,.dtv,.frame:before{transition:none!important;opacity:1!important;transform:none!important}
@@ -201,7 +213,7 @@
 
   <div class="mhero">
   <h1>Put it on a screen in your house.</h1>
-  <p class="lede">Bilal is built for a screen you walk past, not a phone in your pocket.
+  <p class="lede">Bilal is built for a screen you walk past.
      It calls you at the moment you need to <b>leave for jama'ah</b>, not when the prayer
      has already started.</p>
 
@@ -223,7 +235,7 @@
         <span style="opacity:.72">(The TV app skips this, it arms itself.)</span></li>
   </ol>
   <p class="lede" style="margin-top:14px;font-size:14.5px">Same three moments whatever
-     screen you use. All that changes below is how you get Bilal open on it.</p>
+     screen you use.</p>
 
   <h2>The one that just works</h2>
 
@@ -235,7 +247,7 @@
     </ol>
     <p class="note"><b>Nothing to configure and nothing to work around.</b> It's a
        touchscreen, so the sound step is just a tap. Echo Shows normally close the browser
-       after about ten minutes, but the site keeps itself awake, so it stays put.</p>
+       after about ten minutes, but the site keeps itself awake.</p>
   </div>
 
   <h2>On a TV</h2>
@@ -251,7 +263,9 @@
     </ol>
     <p class="note"><b>This is the proper answer on a TV.</b> The screen stays on without
        any settings, the athan arms itself, and after a power cut it starts itself
-       back up. <b>The catch:</b> the two newest sticks, Fire TV Stick 4K Select and the
+       back up. The same file lives at <a href="app.html">bilalathan.co.uk/app</a>,
+       checked byte for byte in your browser, if you'd rather fetch it yourself.
+       <b>The catch:</b> the two newest sticks, Fire TV Stick 4K Select and the
        2026 Fire TV Stick HD, run Vega OS and can't install apps like this at all.
        For those, use the Silk browser below.</p>
   </div>
@@ -269,9 +283,9 @@
         <li>Settings → Display &amp; Sounds → <b>Screensaver → Never</b></li>
       </ol>
       <p class="note"><b>The catch:</b> Fire TV has a second sleep timer, around 14 minutes,
-         that Amazon hide completely. Turning the screensaver off does not stop it, so the
-         screen goes dark on its own. The app above doesn't have this problem. The browser
-         route is for the Vega OS sticks that can't install it.</p>
+         that Amazon hide completely. Turning the screensaver off does not stop it. The app
+         above doesn't have this problem. The browser route is for the Vega OS sticks that
+         can't install it.</p>
     </div>
 
     <div class="card">
@@ -302,8 +316,7 @@
   <a class="cta" href="s.html">Already on a screen? Set your mosque
      <span>Choose your masjid and your walking time</span></a>
 
-  <footer>Times come straight from your mosque's own timetable, so the jama'ah times are
-     the ones they actually pray, not a calculation.
+  <footer>Times come straight from your mosque's own timetable, not a calculation.
      <br><a href="bug.html" style="color:var(--veil);text-decoration:underline">
      Something not working? Tell us</a></footer>
 </div>
