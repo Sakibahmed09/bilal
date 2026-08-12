@@ -33,6 +33,16 @@
    and stay here. */
 (function(){
   try{
+    /* The way back out. ?display=1 sticks by design, which locked anyone who
+       ever tried display mode out of the landing page forever, with devtools
+       as the only key. ?landing=1 unsticks it and shows the pitch. A saved
+       pairing is deliberately left alone: a kitchen display should not lose
+       its mosque because somebody typed a parameter. */
+    if(/[?&]landing=1/.test(location.search)){
+      try{ localStorage.removeItem('bilal.display'); }catch(e){}
+      location.replace('tv.html');
+      return;
+    }
     if(/[?&](display|masjid|test|at|mode|walk|drift|quiet|lite|demo)=/.test(location.search)){
       if(/[?&]display=1/.test(location.search)){
         try{ localStorage.setItem('bilal.display','1'); }catch(e){}
