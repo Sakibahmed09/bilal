@@ -87,9 +87,15 @@
   .note b{color:var(--clay)}
   .note a{color:var(--clay);text-decoration:underline;text-underline-offset:2px}
 
-  .cta{display:block;margin-top:34px;padding:17px;border-radius:14px;background:var(--clay);
-    color:var(--char);text-decoration:none;text-align:center;font-weight:700;font-size:16.5px}
-  .cta span{display:block;font-weight:500;font-size:13px;opacity:.72;margin-top:3px}
+  /* The action is a compact button; its context rides beside it as a
+     whisper instead of inside it as freight. */
+  .go{display:flex;align-items:center;gap:14px;margin-top:30px;flex-wrap:wrap}
+  .cta{display:inline-block;background:var(--clay);color:var(--char);text-decoration:none;
+    font-weight:600;font-size:15px;letter-spacing:.01em;padding:12px 26px;border-radius:10px;
+    transition:background .25s ease,transform .25s ease}
+  .cta:hover{background:#efc0a8;transform:translateY(-1px)}
+  .cta:active{transform:none;background:#c9977f}
+  .cta-note{font-size:13.5px;color:var(--veil)}
   ol.flow{margin-top:14px;padding-left:1.35em}
   ol.flow li{margin-bottom:11px;font-size:15.5px;color:var(--veil)}
   ol.flow li b{color:var(--cream)}
@@ -168,7 +174,7 @@
     .dhero>div{min-width:0}
     .dhero h1{font-size:clamp(37px,3.5vw,46px);line-height:1.08;margin-top:0}
     .dhero .lede{font-size:17px;line-height:1.6;max-width:30em}
-    .dhero .hero-cta{max-width:22em;margin-top:26px;text-align:left;padding:15px 22px}
+    .dhero .go{margin-top:28px}
 
     .qr{display:flex;align-items:center;gap:16px;margin-top:26px;max-width:26em}
     .qr canvas{width:88px;height:88px;border-radius:10px;display:block;flex:0 0 auto}
@@ -257,7 +263,10 @@
   <p class="lede">Bilal is a screen for your home showing your mosque's own
      jama'ah times, your walk already counted.</p>
 
-  <a class="cta hero-cta" href="#how">Set it up<span>Three steps, two minutes</span></a>
+  <div class="go">
+    <a class="cta" href="#how">Set it up</a>
+    <span class="cta-note">three steps, two minutes</span>
+  </div>
   </div>
 
   <section class="dhero">
@@ -265,7 +274,10 @@
       <h1 class="rise">The athan that plays when it's time to leave.</h1>
       <p class="lede rise">Bilal is a screen for your home showing your mosque's own
          jama'ah times, your walk already counted.</p>
-      <a class="cta hero-cta rise" href="#how">Set it up<span>Three steps, two minutes</span></a>
+      <div class="go rise">
+        <a class="cta" href="#how">Set it up</a>
+        <span class="cta-note">three steps, two minutes</span>
+      </div>
       <div class="qr rise">
         <canvas id="dqr" width="264" height="264" role="img"
                 aria-label="QR code that opens this page on your phone"></canvas>
@@ -387,8 +399,10 @@
      you leave, it's working.</p>
   <p class="placard">Sakib</p>
 
-  <a class="cta" href="s.html">Set your mosque
-     <span>For a screen already showing Bilal</span></a>
+  <div class="go">
+    <a class="cta" href="s.html">Set your mosque</a>
+    <span class="cta-note">already on a screen? choose your masjid and your walk</span>
+  </div>
 
   <footer>Times come straight from your mosque's own timetable, not a calculation.
      <br><a href="bug.html" style="color:var(--veil);text-decoration:underline">
