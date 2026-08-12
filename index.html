@@ -689,7 +689,6 @@ body.compact #driftWrap{
 
   var CFG={
     slug: Q.get('masjid')||SAVED.slug||'darul-ummah-goresbrook-1649608083137',
-    key:  Q.get('key')||'JejYcMS7hsOsZTPDk2ZhKOAlW9IyQ6Px',
     walk: parseInt(Q.get('walk')||SAVED.walk||'15',10),
     mode: Q.get('mode')||'home',
     athan:Q.get('athan')||'athan.mp3',
@@ -710,21 +709,16 @@ body.compact #driftWrap{
   function nowDate(){ return new Date(Date.now()+SHIFT); }
   document.body.setAttribute('data-mode',CFG.mode);
 
-  var API='https://api.masjidbox.com/1.0/masjidbox/landing/athany/';
-  /* Sirat's public directory (sirat.uk/mosques/developers) covers ~600 UK
-     mosques MasjidBox doesn't have. Its IDs (mosque-000311) never collide with
-     a MasjidBox slug (always a dashed name), so which API to call is decided
-     by the shape of CFG.slug alone — no separate source flag has to travel
-     with the pairing config. */
-  var SIRAT_API='https://sirat.uk/mosques/v1';
-  var SIRAT_ID_RE=/^mosque-\d+$/i;
-  /* Masjidal covers ~370 mosques, mostly North America, that neither of the
-     others have. Same trick: the ID shape decides the API. Its IDs are 8 chars
-     of base62 (VL4WrjKx), and the digit-or-capital lookahead is load bearing —
-     18 MasjidBox slugs are exactly 8 lowercase letters (albahria, worthing) and
-     a bare {8} test would route every one of them to the wrong API. */
-  var MASJIDAL_API='https://masjidal.com/api/v1/time/range';
-  var MASJIDAL_ID_RE=/^(?=.*[A-Z0-9])[A-Za-z0-9]{8}$/;
+  /* Every time request goes through our own endpoint, which fronts the
+     directories this display draws on and returns each one's reply unchanged.
+     The id's shape still decides which parser reads that reply, so these two
+     tests must stay identical to the endpoint's own routing. The
+     digit-or-capital lookahead is load bearing — a handful of dashed-directory
+     slugs are exactly 8 lowercase letters, and a bare {8} test would hand
+     every one of them to the wrong parser. */
+  var TIMES='https://bilal-times.ahmed-sakib.workers.dev/v1';
+  var NUM_ID_RE=/^mosque-\d+$/i;
+  var CODE_ID_RE=/^(?=.*[A-Z0-9])[A-Za-z0-9]{8}$/;
   var ORDER=['fajr','dhuhr','asr','maghrib','isha'];
   var LABEL={fajr:"fajr",dhuhr:"dhuhr",asr:"asr",maghrib:"maghrib",isha:"isha"};
   var CAP={fajr:"Fajr",dhuhr:"Dhuhr",asr:"Asr",maghrib:"Maghrib",isha:"Isha"};
@@ -920,14 +914,14 @@ body.compact #driftWrap{
 
   // ---------- data ----------
   function load(){
-    if(SIRAT_ID_RE.test(CFG.slug)) return loadSirat();
-    if(MASJIDAL_ID_RE.test(CFG.slug)) return loadMasjidal();
+    if(NUM_ID_RE.test(CFG.slug)) return loadNumbered();
+    if(CODE_ID_RE.test(CFG.slug)) return loadCoded();
     /* The window starts YESTERDAY, not today. After midnight the sky is still
        blending yesterday's isha into fajr, and that needs yesterday's row —
        fetching from today made the blend snap to full dawn at 00:00 (and again
        whenever a post-midnight refetch dropped the old row). One day of the
        seven buys the sky its continuity; the display still sees today+5. */
-    return fetch(API+CFG.slug+'?get=at&days=7&begin='+iso(new Date(Date.now()-86400000)),{headers:{'apikey':CFG.key}})
+    return fetch(TIMES+'/times?id='+encodeURIComponent(CFG.slug)+'&from='+iso(new Date(Date.now()-86400000)))
       .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
       .then(function(j){
         if(!j||!j.timetable||!j.timetable.length) throw new Error('empty');
@@ -939,19 +933,19 @@ body.compact #driftWrap{
       .catch(function(){ if(!useCache()) stat('err','no connection'); });
   }
 
-  /* Sirat serves no hijri date, and a blank date line under half the mosques in
+  /* The numbered directory serves no hijri date, and a blank date line under half the mosques in
      the directory is the one place the two sources would be visibly different.
      It is also the one field that does not need a mosque to supply it: a hijri
      date is a calendar conversion of the Gregorian one.
 
      `islamic-civil` is the variant to use, not the more obvious
-     `islamic-umalqura`. Checked against MasjidBox's own hijri output across a
+     `islamic-umalqura`. Checked against the primary directory's own hijri output across a
      week spanning a month rollover: civil agrees on every day number and turns
      the month on the same day, where umalqura runs two days ahead. Getting this
      wrong is not cosmetic — the date is what people count fasts from.
 
      The month NAMES still come from a table here, because Intl renders the
-     English as "Rabiʻ I" where MasjidBox writes "Rabi` al-Awwal", and the two
+     English as "Rabiʻ I" where the directory writes "Rabi` al-Awwal", and the two
      sources have to be indistinguishable on screen.
 
      Wrapped in try/catch and allowed to return null: Fire OS Silk can be
@@ -970,30 +964,30 @@ body.compact #driftWrap{
       var ar=new Intl.DateTimeFormat('ar-u-ca-islamic-civil-nu-latn',
         {weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(d)
         .replace('،','')            // Intl separates the weekday with a comma
-        .replace(/\s*هـ\s*$/,'')    // and suffixes the era; MasjidBox does neither
+        .replace(/\s*هـ\s*$/,'')    // and suffixes the era; the directory does neither
         .trim();
       return { formatted: ar, dayOfMonth: day,
                monthISO: HIJRI_MONTHS[mon-1]||'', year: yr };
     }catch(e){ return null; }
   }
 
-  /* Sirat's /times rows are keyed the opposite way round from MasjidBox's:
-     the top-level fields (row.fajr etc.) are the congregation time and
-     row.begin holds the prayer's start. Reshaping into MasjidBox's own
+  /* The numbered directory's /times rows are keyed the opposite way round from
+     the primary's: the top-level fields (row.fajr etc.) are the congregation
+     time and row.begin holds the prayer's start. Reshaping into the primary's
      {timetable:[{fajr,...,iqamah:{...}}]} shape here means rowFor/upcoming/
-     paint below stay untouched — this is the only place that knows Sirat
-     exists. Times come back as bare "HH:MM" with no date or offset; appended
+     paint below stay untouched — this is the only place that knows the second
+     shape exists. Times come back as bare "HH:MM" with no date or offset; appended
      to the row's own date with no timezone suffix, `new Date(...)` parses
      them as browser-local wall time, which is correct because a UK display
      runs with the device set to UK local time anyway (same assumption the
      rest of the clock code already makes). */
-  function loadSirat(){
+  function loadNumbered(){
     var id=CFG.slug;
     var from=iso(new Date(Date.now()-86400000)),   // yesterday: see load()
         to=iso(new Date(Date.now()+7*86400000));
     return Promise.all([
-      fetch(SIRAT_API+'/mosques/'+id).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }),
-      fetch(SIRAT_API+'/mosques/'+id+'/times?from='+from+'&to='+to).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      fetch(TIMES+'/mosque?id='+encodeURIComponent(id)).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }),
+      fetch(TIMES+'/times?id='+encodeURIComponent(id)+'&from='+from+'&to='+to).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
     ]).then(function(res){
       var info=res[0], days=res[1];
       if(!days||!days.length) throw new Error('empty');
@@ -1021,7 +1015,7 @@ body.compact #driftWrap{
     }).catch(function(){ if(!useCache()) stat('err','no connection'); });
   }
 
-  /* Masjidal returns salah (begins) and iqamah (jama'ah) as two parallel arrays
+  /* The coded directory returns salah (begins) and iqamah (jama'ah) as two parallel arrays
      of human strings — "4:56AM" against a date like "Tuesday, Aug 11, 2026" —
      so both need parsing into the same date+'T'+HH:MM:00 shape the renderer
      already reads. Two things to be careful about:
@@ -1035,7 +1029,7 @@ body.compact #driftWrap{
 
      Asking for 7 days keeps the payload small; their gateway takes ~60s on a
      full year, which is far too slow for a screen waking up. */
-  function loadMasjidal(){
+  function loadCoded(){
     var id=CFG.slug;
     var from=iso(new Date(Date.now()-86400000)),   // yesterday: see load()
         to=iso(new Date(Date.now()+7*86400000));
@@ -1053,8 +1047,7 @@ body.compact #driftWrap{
       return pad(h)+':'+m[2];
     }
     function at(d,v){ var t=hm(v); return t ? d+'T'+t+':00' : null; }
-    return fetch(MASJIDAL_API+'?masjid_id='+encodeURIComponent(id)+
-                 '&masjid_detail=yes&from_date='+from+'&to_date='+to)
+    return fetch(TIMES+'/times?id='+encodeURIComponent(id)+'&from='+from+'&to='+to)
       .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
       .then(function(res){
         if(!res||res.status!=='success'||!res.data) throw new Error('bad payload');
@@ -1361,7 +1354,7 @@ body.compact #driftWrap{
        proper start. Written as a condition, not "if maghrib", because the gaps
        move through the year — at a 15 min walk Asr crosses the same line today,
        and that should correct itself without a code change. */
-    /* A quarter of the Sirat mosques publish jama'ah times and no start times,
+    /* A quarter of the numbered directory's mosques publish jama'ah times and no start times,
        and that breaks the test above by making `next.begins` null — `tight`
        goes false and the adhan falls back to sounding at leave-time.
 
