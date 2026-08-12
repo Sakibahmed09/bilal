@@ -63,8 +63,8 @@
   }
 
   .mark{font-family:var(--display);font-size:26px;letter-spacing:-.01em}
-  h1{font-family:var(--display);font-size:34px;line-height:1.1;letter-spacing:-.025em;
-     margin-top:26px;font-weight:400}
+  h1{font-family:var(--display);font-size:clamp(29px,8.6vw,34px);line-height:1.1;
+     letter-spacing:-.025em;margin-top:26px;font-weight:400}
   .lede{color:var(--veil);margin-top:14px;font-size:16px}
   .lede b{color:var(--cream);font-weight:600}
 
@@ -73,14 +73,17 @@
   h2{font-family:var(--display);font-size:22px;font-weight:400;letter-spacing:-.015em;
      color:var(--cream);margin:44px 0 0;scroll-margin-top:26px}
 
-  .card{margin-top:14px;background:var(--char);border:1px solid var(--hair);
-    border-radius:14px;padding:18px 18px 6px}
-  .card h3{font-family:var(--display);font-size:21px;font-weight:400;letter-spacing:-.015em}
+  /* Routes are set on the page itself, not boxed into app furniture: a
+     hairline and air mark where one device ends and the next begins, the
+     same separators the rest of the page already speaks. */
+  .card{margin-top:34px;padding-top:24px;border-top:1px solid var(--hair)}
+  h2 + .card{border-top:0;padding-top:0;margin-top:18px}
+  .card h3{font-family:var(--display);font-size:22px;font-weight:400;letter-spacing:-.015em}
+  .card li::marker{color:var(--clay)}
   ol{margin:12px 0 0;padding-left:1.3em}
   li{margin-bottom:9px;font-size:15.5px}
   li b{font-weight:700}
-  .note{font-size:13.5px;color:var(--veil);border-top:1px solid var(--hair);
-    margin-top:14px;padding:12px 0 14px}
+  .note{font-size:13.5px;color:var(--veil);margin-top:13px;padding:0 0 4px}
   .note b{color:var(--clay)}
   .note a{color:var(--clay);text-decoration:underline;text-underline-offset:2px}
 
@@ -90,8 +93,7 @@
   ol.flow{margin-top:14px;padding-left:1.35em}
   ol.flow li{margin-bottom:11px;font-size:15.5px;color:var(--veil)}
   ol.flow li b{color:var(--cream)}
-  .card.hero{border-color:rgba(217,164,143,.42);background:rgba(217,164,143,.07)}
-  .card.hero h3{font-size:24px}
+  .card.hero h3{font-size:26px}
   details.more{margin-top:36px;border-top:1px solid var(--hair);padding-top:8px}
   details.more summary{cursor:pointer;font-family:var(--display);font-size:19px;
     letter-spacing:-.015em;color:var(--veil);padding:10px 0;list-style:none;
@@ -376,7 +378,9 @@
 
   <footer>Times come straight from your mosque's own timetable, not a calculation.
      <br><a href="bug.html" style="color:var(--veil);text-decoration:underline">
-     Something not working? Tell us</a></footer>
+     Something not working? Tell us</a>
+     <br>made by <a href="https://x.com/mertesakib" style="color:var(--veil);
+     text-decoration:underline;text-underline-offset:2px">sakib</a></footer>
 </div>
 
 <script src="qr.js"></script>
