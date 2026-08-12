@@ -92,10 +92,11 @@
   @media (min-width:960px){
     body{padding-top:44px}
     .wrap{max-width:1120px}
-    /* the hero and the steps band run wide; everything after returns to a
-       reading column so the routes stay a quiet list, not a brochure */
+    /* One left axis for the whole page. The hero copy, the band, the route
+       cards and the footer all hang off the same rail; centring the reading
+       column floated the headings away from the content they title. */
     .wrap>h2,.wrap>.lede,.wrap>.card,.wrap>details,.wrap>.cta,.wrap>footer{
-      max-width:700px;margin-left:auto;margin-right:auto}
+      max-width:700px}
 
     .mhero{display:none}
     .dhero{display:grid;grid-template-columns:5fr 6.4fr;gap:60px;align-items:center;
@@ -117,8 +118,7 @@
        low and warm rather than ringing the frame like an outline. */
     .dtv{position:relative}
     .frame{position:relative;border-radius:18px;background:#0b0908;padding:11px;
-      box-shadow:0 40px 90px -28px rgba(0,0,0,.85),
-                 inset 0 0 0 1px rgba(246,239,231,.05)}
+      box-shadow:0 40px 90px -28px rgba(0,0,0,.85)}
     .frame:before{content:'';position:absolute;z-index:-1;
       left:-6%;right:-6%;top:32%;bottom:-16%;
       background:radial-gradient(58% 58% at 50% 62%,rgba(217,164,143,.32),
@@ -128,10 +128,13 @@
       background:url('sky/maghrib.jpg') center/cover}
     /* The panel warms up: maghrib poster first, then the live page fades in
        over it once it has actually arrived. The screen coming to life IS the
-       liveness signal — no dot, no chip, no label doing the work. */
-    .screen iframe{width:1280px;height:720px;border:0;display:block;
-      transform-origin:0 0;pointer-events:none;opacity:0;
-      transition:opacity .9s ease .15s}
+       liveness signal — no dot, no chip, no label doing the work.
+       The iframe simply fills the panel: the display computes its own type
+       scale from whatever viewport it gets, which is the whole reason it
+       runs on phones and mosque walls alike. The earlier fixed-1280-then-
+       transform trick let pane zoom and devicePixelRatio lie to it. */
+    .screen iframe{width:100%;height:100%;border:0;display:block;
+      pointer-events:none;opacity:0;transition:opacity .9s ease .15s}
     .screen iframe.on{opacity:1}
 
     /* set like a placard under a photograph, because that is what it is */
@@ -194,10 +197,11 @@
 
   <section class="dhero">
     <div class="dcopy">
-      <h1 class="rise">The athan on your phone calls you to nothing.</h1>
-      <p class="lede rise">It fires at the start time, while the jama'ah at your masjid
-         forms without you. Bilal is a screen for your home that calls you at
-         <b>leave time</b>, the mosque's own jama'ah time minus your walk to the door.</p>
+      <h1 class="rise">The athan that plays when it's time to leave.</h1>
+      <p class="lede rise">The athan on your phone calls you to nothing: it fires at the
+         start time, while the jama'ah forms without you. Bilal is a screen for your home
+         that shows your mosque's own jama'ah times, your walk already counted, so hearing
+         it means <b>go now and you'll make it</b>.</p>
       <div class="url rise">
         <code id="u2">bilalathan.co.uk</code>
         <button id="copy2">Copy</button>
@@ -213,15 +217,14 @@
       <div class="frame"><div class="screen">
         <iframe id="demo" title="The live Bilal display" tabindex="-1" aria-hidden="true"></iframe>
       </div></div>
-      <p class="placard">The screen at Darul Ummah Goresbrook, Dagenham, as it is right now.</p>
+      <p class="placard">A day at Darul Ummah Goresbrook.</p>
     </div>
   </section>
 
   <div class="mhero">
-  <h1>Put it on a screen in your house.</h1>
-  <p class="lede">Bilal is built for a screen you walk past.
-     It calls you at the moment you need to <b>leave for jama'ah</b>, not when the prayer
-     has already started.</p>
+  <h1>The athan that plays when it's time to leave.</h1>
+  <p class="lede">Bilal shows your mosque's own jama'ah times on a screen in your house,
+     your walk already counted. Hearing the athan means <b>go now and you'll make it</b>.</p>
 
   <div class="url">
     <code id="u">bilalathan.co.uk</code>
@@ -371,23 +374,13 @@
     var mq = window.matchMedia ? window.matchMedia('(min-width:960px)') : null;
     var booted = false;
 
-    function fit(){
-      var s = document.querySelector('.screen');
-      var f = document.getElementById('demo');
-      if(!s || !f || !f.src) return;
-      f.style.transform = 'scale(' + (s.clientWidth / 1280) + ')';
-    }
-
     function boot(){
       if(booted || !mq || !mq.matches) return;
       booted = true;
 
       var f = document.getElementById('demo');
-      f.src = 'index.html?demo=1&masjid=darul-ummah-goresbrook-1649608083137&walk=10';
-      // once now, once after layout settles, once when the display arrives
-      fit();
-      requestAnimationFrame(fit);
-      f.addEventListener('load', function(){ fit(); f.className = 'on'; });
+      f.src = 'index.html?demo=1&tour=1&masjid=darul-ummah-goresbrook-1649608083137&walk=10';
+      f.addEventListener('load', function(){ f.className = 'on'; });
 
       /* The QR carries the site root: a phone that scans it gets routed to
          this page by the same logic that routed the phone in your hand. If
@@ -405,14 +398,14 @@
       if(d) d.setAttribute('open','');
     }
 
-    window.addEventListener('resize', function(){ boot(); fit(); });
+    window.addEventListener('resize', boot);
     /* A tab opened in the background loads at 0x0 with rAF suspended, so the
        width check above says phone and nothing boots. Becoming visible is the
        moment that lie corrects itself, so listen for it. */
-    document.addEventListener('visibilitychange', function(){ boot(); fit(); });
+    document.addEventListener('visibilitychange', boot);
     if(mq){
-      if(mq.addEventListener) mq.addEventListener('change', function(){ boot(); fit(); });
-      else if(mq.addListener) mq.addListener(function(){ boot(); fit(); });
+      if(mq.addEventListener) mq.addEventListener('change', boot);
+      else if(mq.addListener) mq.addListener(boot);
     }
     boot();
 

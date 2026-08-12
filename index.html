@@ -729,6 +729,15 @@ body.compact #driftWrap{
   var LABEL={fajr:"fajr",dhuhr:"dhuhr",asr:"asr",maghrib:"maghrib",isha:"isha"};
   var CAP={fajr:"Fajr",dhuhr:"Dhuhr",asr:"Asr",maghrib:"Maghrib",isha:"Isha"};
   var CACHE='bilal.tt.'+CFG.slug;
+  /* A screen that changes mosque leaves the old timetable behind forever —
+     ~40KB each on devices where localStorage is not a bottomless pit. Keep
+     only the cache for the mosque this screen actually shows. */
+  try{
+    for(var ci=localStorage.length-1;ci>=0;ci--){
+      var ck=localStorage.key(ci);
+      if(ck && ck.indexOf('bilal.tt.')===0 && ck!==CACHE) localStorage.removeItem(ck);
+    }
+  }catch(e){}
 
   var data=null,lastFetch=0,fired={},athanReady=false,armed=false;
   var clkHM=null,clkS=null,railKey=null;
@@ -859,8 +868,12 @@ body.compact #driftWrap{
    * that's about 90 minutes of sunset slowly becoming night; between Isha and
    * Fajr it's seven hours of almost nothing happening, which is correct.
    *
-   * Before the day's first prayer there is no previous entry in the list, so
-   * Isha stands in as the "from" — at 3am the sky behind you is night.
+   * After midnight the previous prayer is YESTERDAY'S isha, which is why the
+   * fetch window and upcoming() both reach one day back: the blend runs
+   * unbroken through 00:00. Only when yesterday is genuinely unknown (a first
+   * boot in the small hours, a cache that started today) does prev come up
+   * empty, and then the incoming sky simply stands at full — a fixed, wrong-ish
+   * backdrop beats a snap that happens while someone is looking at it.
    */
   function paintSky(now, prev, next){
     var fromKey = prev ? prev.key : 'isha';
@@ -909,7 +922,12 @@ body.compact #driftWrap{
   function load(){
     if(SIRAT_ID_RE.test(CFG.slug)) return loadSirat();
     if(MASJIDAL_ID_RE.test(CFG.slug)) return loadMasjidal();
-    return fetch(API+CFG.slug+'?get=at&days=7&begin='+iso(new Date()),{headers:{'apikey':CFG.key}})
+    /* The window starts YESTERDAY, not today. After midnight the sky is still
+       blending yesterday's isha into fajr, and that needs yesterday's row —
+       fetching from today made the blend snap to full dawn at 00:00 (and again
+       whenever a post-midnight refetch dropped the old row). One day of the
+       seven buys the sky its continuity; the display still sees today+5. */
+    return fetch(API+CFG.slug+'?get=at&days=7&begin='+iso(new Date(Date.now()-86400000)),{headers:{'apikey':CFG.key}})
       .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
       .then(function(j){
         if(!j||!j.timetable||!j.timetable.length) throw new Error('empty');
@@ -971,7 +989,8 @@ body.compact #driftWrap{
      rest of the clock code already makes). */
   function loadSirat(){
     var id=CFG.slug;
-    var from=iso(new Date()), to=iso(new Date(Date.now()+7*86400000));
+    var from=iso(new Date(Date.now()-86400000)),   // yesterday: see load()
+        to=iso(new Date(Date.now()+7*86400000));
     return Promise.all([
       fetch(SIRAT_API+'/mosques/'+id).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }),
       fetch(SIRAT_API+'/mosques/'+id+'/times?from='+from+'&to='+to).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
@@ -1018,7 +1037,8 @@ body.compact #driftWrap{
      full year, which is far too slow for a screen waking up. */
   function loadMasjidal(){
     var id=CFG.slug;
-    var from=iso(new Date()), to=iso(new Date(Date.now()+7*86400000));
+    var from=iso(new Date(Date.now()-86400000)),   // yesterday: see load()
+        to=iso(new Date(Date.now()+7*86400000));
     var MON={Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
     function ymd(s){
       var m=/([A-Za-z]{3})[a-z]*\s+(\d{1,2}),\s*(\d{4})/.exec(String(s||''));
@@ -1111,7 +1131,11 @@ body.compact #driftWrap{
 
   function upcoming(now){
     var out=[];
-    for(var off=0;off<2;off++){
+    /* -1: yesterday rides along purely for the sky. paintSky needs last
+       night's isha as its "from" until fajr; the trigger and rail logic are
+       indifferent to day-old entries (due() windows are 90 seconds, fired
+       keys carry the day, the rail reads today's row directly). */
+    for(var off=-1;off<2;off++){
       var d=new Date(now.getTime()); d.setDate(d.getDate()+off);
       var row=rowFor(d); if(!row) continue;
       for(var i=0;i<ORDER.length;i++){
@@ -1183,6 +1207,10 @@ body.compact #driftWrap{
          screen whose audio was fine. Only real playback sets the truth, in
          call(). */
       window.__bilal.unlock = (state==='ok') ? 'ok' : 'unproven';
+      /* A resolved play() is stronger proof than canplaythrough, which waits
+         on the full 3.7MB buffer. Without this the footer read "no athan.mp3,
+         tone only" while the file was merely still downloading. */
+      if(state==='ok') athanReady=true;
       if(err) window.__bilal.lastError=String(err);
       audioState();
       keepAwake();
@@ -1353,11 +1381,29 @@ body.compact #driftWrap{
       var kLeave=next.day+':'+next.key+':leave';
       var kAthan=next.day+':'+next.key+':athan';
       var due=function(m){ return m<=0 && m>-1.5; };
+      /* Only consume a trigger once a fire can actually be heard. fired[] used
+         to be set BEFORE call(), and call() no-ops until the OK press — so a
+         reload landing inside the 90s window ate the trigger while unarmed,
+         and the press seconds later got silence. Quiet mode still consumes:
+         it is deliberately soundless, not waiting for permission. */
+      var canFire = armed || CFG.quiet;
       if(tight){
-        if(!fired[kLeave] && due(toLeave)){ fired[kLeave]=1; cue(); }
-        if(!fired[kAthan] && due((startAt-now)/60000)){ fired[kAthan]=1; call(); }
+        if(canFire && !fired[kLeave] && due(toLeave)){ fired[kLeave]=1; cue(); }
+        if(canFire && !fired[kAthan] && due((startAt-now)/60000)){ fired[kAthan]=1; call(); }
       } else {
-        if(!fired[kAthan] && due(toLeave)){ fired[kAthan]=1; call(); }
+        if(canFire && !fired[kAthan] && due(toLeave)){ fired[kAthan]=1; call(); }
+      }
+      /* The stand-in case has a hole the block above cannot see: when startAt
+         IS the jama'ah, the instant it arrives `next` has already moved on to
+         the following prayer, so its due() never comes up while `next` still
+         names the right prayer — and the adhan simply never sounded. The
+         prayer that just started gets its own check, same stand-in rule, same
+         window, same fired key, so a no-begins Maghrib is called at its
+         jama'ah rather than never. */
+      if(canFire && started){
+        var kSt=started.day+':'+started.key+':athan';
+        var stAt=started.begins || started.jamaah;
+        if(!fired[kSt] && due((stAt-now)/60000)){ fired[kSt]=1; call(); }
       }
     }
 
@@ -1558,6 +1604,72 @@ body.compact #driftWrap{
     }, 2000);
   }
 
+  /* ---------- the speed run ----------
+     A demo television should not sit on one hour of one day. With
+     ?demo=1&tour=1 it walks the whole day instead: for each prayer, the
+     moment twenty minutes before it begins, when the screen is counting
+     toward it and wearing its sky. SHIFT is the same lever ?at= pulls, so
+     every tick recomputes times, sky and label from the shifted clock and
+     each change choreographs itself exactly like a real prayer change.
+     Stations come from the mosque's real timetable, so the tour is honest:
+     winter and summer walk different hours. The first beat stays on the
+     actual now, because the placard beside it says this screen is live. */
+  if(DEMO && Q.get('tour')==='1'){
+    var tourI = -1, tourAnim = null;
+
+    /* Between stations, time itself is tweened: two seconds of accelerated
+       clock, repainted every other frame, so the sky races through the real
+       intervening grades exactly the way the display blends them at full
+       speed. No crossfade is faked; the product's own continuum does it. */
+    var sweepTo = function(target){
+      var from = SHIFT, skip = 0;
+      var t0 = null, DUR = 1900;
+      if(tourAnim) cancelAnimationFrame(tourAnim);
+      var frame = function(ts){
+        if(t0===null) t0 = ts;
+        var p = Math.min(1, (ts-t0)/DUR);
+        var e = p<.5 ? 2*p*p : 1-Math.pow(-2*p+2,2)/2;
+        SHIFT = from + ((target-Date.now())-from)*e;
+        if((skip++&1)===0){ try{ paint(); }catch(err){} }
+        if(p<1) tourAnim = requestAnimationFrame(frame);
+      };
+      tourAnim = requestAnimationFrame(frame);
+    };
+
+    var tourStep = function(){
+      var real = new Date();
+      var list = upcoming(real), seen = {}, st = [];
+      for(var i=0;i<list.length;i++){
+        var p = list[i];
+        if(!p.begins || seen[p.key]) continue;
+        if(p.begins.getTime() < real.getTime() - 6*3600000) continue;
+        seen[p.key] = 1;
+        st.push(p.begins.getTime() - 20*60000);
+        if(st.length === 5) break;
+      }
+      if(st.length){                    // before the feed lands, list is empty: hold and retry
+        tourI++;
+        var target = st[tourI % st.length];
+        if(tourI > 0 && tourI % st.length === 0){
+          /* The loop restart would otherwise rewind a whole day in two
+             seconds, sun racing backwards. A dip to dark reads as the reel
+             starting again instead. */
+          document.body.style.transition = 'opacity .45s ease';
+          document.body.style.opacity = '0';
+          setTimeout(function(){
+            SHIFT = target - Date.now();
+            try{ paint(); }catch(err){}
+            document.body.style.opacity = '1';
+          }, 500);
+        } else {
+          sweepTo(target);
+        }
+      }
+      setTimeout(tourStep, 7500);
+    };
+    setTimeout(tourStep, 4500);
+  }
+
   // ---------- boot ----------
   $('gateBtn').addEventListener('click',arm);
   $('gate').addEventListener('click',arm);
@@ -1654,10 +1766,37 @@ body.compact #driftWrap{
   useCache();
   try{ paint(); }catch(e){}
 
+  var lastAttempt=Date.now();
   load().then(function(){
     try{ paint(); } finally { reveal(); }
+  }).catch(function(e){
+    /* A first paint that throws must fail loudly — but as an error event,
+       which diag reports the same way, rather than as a dangling rejection. */
+    setTimeout(function(){ throw e; },0);
   });
-  setInterval(function(){ paint(); if(Date.now()-lastFetch>3*3600*1000) load(); },1000);
+  /* Refetch every ~3h — and when the network is down, retry each MINUTE.
+     lastFetch stays 0 until a load succeeds, so without the attempt gate an
+     offline boot fired a fresh fetch every single second, piling unsettled
+     requests onto a Fire Stick whose wifi had not associated yet.
+
+     A paint() that throws must take neither the clock nor this refetch loop
+     down with it. It is contained here and re-thrown at most once an hour,
+     so diag still hears about it without a broken screen posting an error
+     report per second. */
+  var paintFailAt=0;
+  setInterval(function(){
+    try{ paint(); }
+    catch(e){
+      if(Date.now()-paintFailAt>3600000){
+        paintFailAt=Date.now();
+        setTimeout(function(){ throw e; },0);   // surface to diag, bounded
+      }
+    }
+    if(Date.now()-lastFetch>3*3600*1000 && Date.now()-lastAttempt>60000){
+      lastAttempt=Date.now();
+      load();
+    }
+  },1000);
   setInterval(drift,60000);
   setInterval(keepAwake,240000);
   setInterval(nudgeSilk,55000);   // under Silk's ~10 min idle timer
