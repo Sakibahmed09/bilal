@@ -242,9 +242,8 @@ a{color:var(--clay)}
   "use strict";
   var SB  = 'https://vstfgrlkwqevonrznzwm.supabase.co/rest/v1/bilal_pairings';
   var SBK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzdGZncmxrd3Fldm9ucnpuendtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MDAwOTUsImV4cCI6MjA4OTk3NjA5NX0.IjPhlACgy3xslF9EvhKeIemoobHKR02LXcEgiKYHdYg';
-  /* Times come through our own endpoint; it fronts the directory and holds
-     the credentials, so neither appears here. */
-  var TIMES = 'https://bilal-times.ahmed-sakib.workers.dev/v1';
+  var MB  = 'https://api.masjidbox.com/1.0/masjidbox/landing/athany/';
+  var MBK = 'JejYcMS7hsOsZTPDk2ZhKOAlW9IyQ6Px';
 
   var $=function(i){return document.getElementById(i);};
   var MOSQUES=[], picked=null, here=null;
@@ -480,7 +479,7 @@ a{color:var(--clay)}
     /* Classified live rather than from a stored snapshot: mosques fix their
        listings, and a cached verdict starts rotting the day it is written. */
     var today=new Date(), iso=today.getFullYear()+'-'+p2(today.getMonth()+1)+'-'+p2(today.getDate());
-    fetch(TIMES+'/times?id='+encodeURIComponent(m.g)+'&from='+iso)
+    fetch(MB+m.g+'?get=at&days=1&begin='+iso,{headers:{'apikey':MBK}})
       .then(function(r){return r.json();})
       .then(function(j){
         var row=j.timetable&&j.timetable[0]; if(!row) throw 0;
