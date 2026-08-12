@@ -85,7 +85,12 @@
   li b{font-weight:700}
   .note{font-size:13.5px;color:var(--veil);margin-top:13px;padding:0 0 4px}
   .note b{color:var(--clay)}
-  .note a{color:var(--clay);text-decoration:underline;text-underline-offset:2px}
+  /* every prose link speaks terracotta, visited included; the browser's
+     visited-purple has no place in this night */
+  .wrap a:not(.cta){color:var(--clay);text-decoration:underline;text-underline-offset:2px;
+    transition:color .25s ease}
+  .wrap a:not(.cta):visited{color:var(--clay)}
+  .wrap a:not(.cta):hover{color:var(--cream)}
 
   /* The action is a compact button; its context rides beside it as a
      whisper instead of inside it as freight. */
@@ -388,15 +393,18 @@
   </details>
 
   <h2>Why this exists</h2>
-  <p class="lede">In Muslim countries the athan interrupts you. It was designed to:
-     you hear it out loud, you leave what you're doing, and you go.</p>
-  <p class="lede">Athan apps kept the sound and dropped the job. They fire at the
-     prayer's start time, not the jama'ah you'd actually walk to, and a phone can be
-     muted, dying, or in another room.</p>
-  <p class="lede">Athan means call. Bilal is the experiment we started in 2024 to give
-     the sound its job back: the athan out loud, at your mosque's jama'ah time minus
-     your walk, from a screen that is always on. Set it up once. If hearing it makes
-     you leave, it's working.</p>
+  <p class="lede">The first athan was a man. The Prophet ﷺ chose Bilal (RA) as the
+     first muezzin, and when his voice went up over Madinah, people put down what
+     they were carrying and walked.</p>
+  <p class="lede">You can still feel this in Muslim countries: the athan interrupts
+     you, out loud, on purpose. Athan apps kept the sound and dropped the job. They
+     fire at the prayer's start time, not the jama'ah you'd actually walk to, and a
+     phone can be muted, dying, or in another room.</p>
+  <p class="lede">I was the person checking my mosque's website five times a day and
+     working out when to leave. So in 2024 we started the experiment and gave it the
+     muezzin's name: the athan out loud, at your mosque's jama'ah time minus your
+     walk, from a screen that is always on. Set it up once. If hearing it makes you
+     leave, it's working.</p>
   <p class="placard">Sakib</p>
 
   <div class="go">
@@ -405,10 +413,8 @@
   </div>
 
   <footer>Times come straight from your mosque's own timetable, not a calculation.
-     <br><a href="bug.html" style="color:var(--veil);text-decoration:underline">
-     Something not working? Tell us</a>
-     <br>made by <a href="https://x.com/mertesakib" style="color:var(--veil);
-     text-decoration:underline;text-underline-offset:2px">sakib</a></footer>
+     <br><a href="bug.html">Something not working? Tell us</a>
+     <br>made by <a href="https://x.com/mertesakib">sakib</a></footer>
 </div>
 
 <script src="qr.js"></script>
