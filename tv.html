@@ -28,7 +28,38 @@
   body{background:var(--deep);color:var(--cream);font-family:var(--text);
     -webkit-font-smoothing:antialiased;line-height:1.55;
     padding:max(28px,env(safe-area-inset-top)) 22px calc(64px + env(safe-area-inset-bottom))}
-  .wrap{max-width:34rem;margin:0 auto}
+  .wrap{max-width:34rem;margin:0 auto;position:relative;z-index:1}
+
+  /* ── the night the page sits in ─────────────────────────────────────────
+     The display's own materials, nothing invented: its star tile gliding at
+     the far layer's speed (1054s to cross a screen, the pace dhikry taught
+     us reads as sky rather than a sliding poster), a few heroes twinkling on
+     their own periods AND delays because drift alone always looks printed,
+     and the isha rooftops rising faintly behind the footer. The demo
+     television already pulls every one of these files, so the atmosphere
+     costs the visitor nothing it wasn't already paying. All of it sits
+     behind .wrap and under 15% opacity: the instructions stay ink on paper. */
+  #night,#horizon,.hs{position:fixed;pointer-events:none}
+  #night{top:0;left:0;right:0;bottom:0;z-index:0;
+    background:url('sky/stars.png') repeat;background-size:760px auto;
+    opacity:0;animation:nightIn 2.4s ease .6s forwards,
+                        nightDrift 1054s linear infinite}
+  @keyframes nightIn{to{opacity:.13}}
+  @keyframes nightDrift{to{background-position:-760px -40px}}
+  #horizon{left:0;right:0;bottom:0;height:34vh;z-index:0;
+    background:url('sky/isha.jpg') center bottom/cover no-repeat;
+    opacity:0;animation:horizonIn 2.4s ease .9s forwards;
+    -webkit-mask-image:linear-gradient(to top,rgba(0,0,0,1),rgba(0,0,0,0));
+    mask-image:linear-gradient(to top,rgba(0,0,0,1),rgba(0,0,0,0))}
+  @keyframes horizonIn{to{opacity:.34}}
+  .hs{width:2px;height:2px;border-radius:50%;background:var(--cream);z-index:0;
+    opacity:0;animation:twinkle var(--p) ease-in-out var(--d) infinite}
+  @keyframes twinkle{0%,100%{opacity:.06}50%{opacity:.4}}
+  @media (prefers-reduced-motion:reduce){
+    #night{animation:none;opacity:.13}
+    #horizon{animation:none;opacity:.34}
+    .hs{animation:none;opacity:.18}
+  }
 
   .mark{font-family:var(--display);font-size:26px;letter-spacing:-.01em}
   h1{font-family:var(--display);font-size:34px;line-height:1.1;letter-spacing:-.025em;
@@ -82,12 +113,32 @@
   footer{margin-top:34px;color:var(--veil);font-size:13px;border-top:1px solid var(--hair);
     padding-top:18px}
 
-  /* ── the desktop layer ──────────────────────────────────────────────────
-     Phones keep the page exactly as shipped; everything below only exists
-     from 960px up. The hero becomes the display itself: the real page,
-     rendered at 720p inside a television, scaled down and playing live.
-     The product is the best argument this page can make, so it makes it. */
-  .dhero{display:none}
+  /* ── the television ─────────────────────────────────────────────────────
+     One component, both breakpoints. On a phone it rides just under the
+     hero copy at full width; at desk width it becomes the hero's right
+     column. The panel warms up from the maghrib poster to the live page,
+     and the tour inside walks the mosque's whole day. */
+  .dtv{position:relative}
+  .frame{position:relative;border-radius:14px;background:#0b0908;padding:8px;
+    box-shadow:0 24px 60px -20px rgba(0,0,0,.8)}
+  .frame:before{content:'';position:absolute;z-index:-1;
+    left:-6%;right:-6%;top:32%;bottom:-16%;
+    background:radial-gradient(58% 58% at 50% 62%,rgba(217,164,143,.32),
+      rgba(217,164,143,.08) 55%,rgba(217,164,143,0) 78%);
+    filter:blur(36px)}
+  .screen{position:relative;border-radius:7px;overflow:hidden;aspect-ratio:16/9;
+    background:url('sky/maghrib.jpg') center/cover}
+  .screen iframe{width:100%;height:100%;border:0;display:block;
+    pointer-events:none;opacity:0;transition:opacity .9s ease .15s}
+  .screen iframe.on{opacity:1}
+  /* the guaranteed reveal: if the load event never fires the class on, the
+     panel must not sit on the poster forever pretending to be a still */
+  .screen iframe{animation:reveal 1ms linear 3s forwards}
+  .placard{margin-top:14px;font-size:13.5px;color:var(--veil);letter-spacing:.01em}
+
+  /* phones: the demo sits under the hero copy; the desk copy stays hidden */
+  .dhero{display:block;margin-top:30px}
+  .dcopy{display:none}
 
   @media (min-width:960px){
     body{padding-top:44px}
@@ -113,32 +164,12 @@
     .qr b{display:block;font-size:15px;font-weight:600}
     .qr span{display:block;font-size:13px;color:var(--veil);margin-top:3px;line-height:1.5}
 
-    /* The television. Bezel, panel, and the light the panel throws — the
-       glow is the screen's own maghrib leaking into a dark room, so it sits
-       low and warm rather than ringing the frame like an outline. */
-    .dtv{position:relative}
-    .frame{position:relative;border-radius:18px;background:#0b0908;padding:11px;
+    /* the same television, sized for a desk: heavier bezel, deeper shadow */
+    .dcopy{display:block}
+    .frame{border-radius:18px;padding:11px;
       box-shadow:0 40px 90px -28px rgba(0,0,0,.85)}
-    .frame:before{content:'';position:absolute;z-index:-1;
-      left:-6%;right:-6%;top:32%;bottom:-16%;
-      background:radial-gradient(58% 58% at 50% 62%,rgba(217,164,143,.32),
-        rgba(217,164,143,.08) 55%,rgba(217,164,143,0) 78%);
-      filter:blur(36px)}
-    .screen{position:relative;border-radius:9px;overflow:hidden;aspect-ratio:16/9;
-      background:url('sky/maghrib.jpg') center/cover}
-    /* The panel warms up: maghrib poster first, then the live page fades in
-       over it once it has actually arrived. The screen coming to life IS the
-       liveness signal — no dot, no chip, no label doing the work.
-       The iframe simply fills the panel: the display computes its own type
-       scale from whatever viewport it gets, which is the whole reason it
-       runs on phones and mosque walls alike. The earlier fixed-1280-then-
-       transform trick let pane zoom and devicePixelRatio lie to it. */
-    .screen iframe{width:100%;height:100%;border:0;display:block;
-      pointer-events:none;opacity:0;transition:opacity .9s ease .15s}
-    .screen iframe.on{opacity:1}
-
-    /* set like a placard under a photograph, because that is what it is */
-    .placard{margin-top:16px;font-size:13.5px;color:var(--veil);letter-spacing:.01em}
+    .screen{border-radius:9px}
+    .placard{margin-top:16px}
     h2{font-size:26px}
 
     /* the steps read as one band of three at desk width */
@@ -182,7 +213,7 @@
        force the finished frame whether or not the storyboard ever ran. When
        it did run, every value already matches and nothing visibly happens. */
     .rise,.dtv{animation:reveal 1ms linear 2.6s forwards}
-    .frame:before,.screen iframe{animation:reveal 1ms linear 3s forwards}
+    .frame:before{animation:reveal 1ms linear 3s forwards}
   }
   @keyframes reveal{to{opacity:1;transform:none}}
 
@@ -192,8 +223,33 @@
 </style>
 </head>
 <body>
+<!-- the night: star tile, twinkling heroes on their own clocks, rooftops.
+     Positions keep the heroes to the margins and the sky above the fold,
+     away from where anyone is reading. -->
+<div id="night"></div>
+<div id="horizon"></div>
+<i class="hs" style="top:9%;left:12%;--p:3.1s;--d:.4s"></i>
+<i class="hs" style="top:16%;left:88%;--p:4.3s;--d:1.7s"></i>
+<i class="hs" style="top:6%;left:64%;--p:3.7s;--d:2.9s"></i>
+<i class="hs" style="top:24%;left:4%;--p:5.1s;--d:.9s"></i>
+<i class="hs" style="top:11%;left:38%;--p:4.7s;--d:3.6s"></i>
+<i class="hs" style="top:31%;left:94%;--p:3.4s;--d:2.2s"></i>
+<i class="hs" style="top:4%;left:81%;--p:5.6s;--d:1.1s"></i>
+<i class="hs" style="top:20%;left:53%;--p:4.1s;--d:4.4s"></i>
+<i class="hs" style="top:38%;left:2%;--p:4.9s;--d:2.7s"></i>
 <div class="wrap">
   <div class="mark">bilal</div>
+
+  <div class="mhero">
+  <h1>The athan that plays when it's time to leave.</h1>
+  <p class="lede">Bilal shows your mosque's own jama'ah times on a screen in your house,
+     your walk already counted. Hearing the athan means <b>go now and you'll make it</b>.</p>
+
+  <div class="url">
+    <code id="u">bilalathan.co.uk</code>
+    <button id="copy">Copy</button>
+  </div>
+  </div>
 
   <section class="dhero">
     <div class="dcopy">
@@ -220,17 +276,6 @@
       <p class="placard">A day at Darul Ummah Goresbrook.</p>
     </div>
   </section>
-
-  <div class="mhero">
-  <h1>The athan that plays when it's time to leave.</h1>
-  <p class="lede">Bilal shows your mosque's own jama'ah times on a screen in your house,
-     your walk already counted. Hearing the athan means <b>go now and you'll make it</b>.</p>
-
-  <div class="url">
-    <code id="u">bilalathan.co.uk</code>
-    <button id="copy">Copy</button>
-  </div>
-  </div>
 
   <h2>How it goes</h2>
   <ol class="flow">
@@ -375,12 +420,20 @@
     var booted = false;
 
     function boot(){
-      if(booted || !mq || !mq.matches) return;
+      /* The demo loads at every width now, phones included; innerWidth of
+         zero still means a background tab whose layout has not happened. */
+      if(booted || !innerWidth) return;
       booted = true;
-
       var f = document.getElementById('demo');
       f.src = 'index.html?demo=1&tour=1&masjid=darul-ummah-goresbrook-1649608083137&walk=10';
       f.addEventListener('load', function(){ f.className = 'on'; });
+      desk();
+    }
+
+    var desked = false;
+    function desk(){
+      if(desked || !mq || !mq.matches) return;
+      desked = true;
 
       /* The QR carries the site root: a phone that scans it gets routed to
          this page by the same logic that routed the phone in your hand. If
@@ -398,14 +451,14 @@
       if(d) d.setAttribute('open','');
     }
 
-    window.addEventListener('resize', boot);
+    window.addEventListener('resize', function(){ boot(); desk(); });
     /* A tab opened in the background loads at 0x0 with rAF suspended, so the
        width check above says phone and nothing boots. Becoming visible is the
        moment that lie corrects itself, so listen for it. */
-    document.addEventListener('visibilitychange', boot);
+    document.addEventListener('visibilitychange', function(){ boot(); desk(); });
     if(mq){
-      if(mq.addEventListener) mq.addEventListener('change', boot);
-      else if(mq.addListener) mq.addListener(boot);
+      if(mq.addEventListener) mq.addEventListener('change', desk);
+      else if(mq.addListener) mq.addListener(desk);
     }
     boot();
 

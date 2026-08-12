@@ -1618,21 +1618,21 @@ body.compact #driftWrap{
     /* ---- tour storyboard, per station -----------------------------------
      *
      *      0ms   the numbers bow out: shell fades to nothing
-     *    600ms   only sky remains; time begins to glide toward the next
+     *    540ms   only sky remains; time begins to glide toward the next
      *            station, sky repainted every other frame, so the grades
      *            melt through each other the way the display always blends
      *            them, just quicker
-     *   3800ms   time lands exactly; the full paint runs once
-     *   3900ms   shell fades back in, settled, while the prayer's own
+     *   3450ms   time lands exactly; the full paint runs once
+     *   3550ms   shell fades back in, settled, while the prayer's own
      *            entrance choreography plays underneath it
-     *  12000ms   next station
+     *  10800ms   next station
      *
      * The jank this replaces: sweeping the FULL page through time dragged
      * the clock, the countdown and the state machine along at 30fps, so
      * digits spun, GO NOW flashed and the congregation dim strobed. Only
      * the sky is continuous in this product; everything else is discrete
      * and deserves a cut hidden inside a fade. */
-    var T_DWELL = 12000, T_FADE_OUT = 600, T_MELT = 3200, T_FADE_IN = 900;
+    var T_DWELL = 10800, T_FADE_OUT = 540, T_MELT = 2880, T_FADE_IN = 810;
     var tourI = -1, tourAnim = null;
 
     var skyOnly = function(){
@@ -1715,7 +1715,7 @@ body.compact #driftWrap{
       }
       setTimeout(tourStep, T_DWELL);
     };
-    setTimeout(tourStep, 6000);
+    setTimeout(tourStep, 5400);
   }
 
   // ---------- boot ----------
