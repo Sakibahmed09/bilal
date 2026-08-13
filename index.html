@@ -391,6 +391,14 @@ body.pairing #shell{display:none}
   border-top:1px solid rgba(246,239,231,.16)}
 #pair .fallback .lead{font-size:calc(var(--u)*1.12);color:var(--veil);line-height:1.6}
 #pair .fallback .lead b{color:var(--cream);font-weight:600}
+/* The one-click path for a machine that has a keyboard. display:none is the
+   default so the TV never shows it, and the script turns it on only after the
+   same positive identification the routing in <head> uses. */
+#pair .here{display:none;font-size:calc(var(--u)*1.12);color:var(--veil);
+  line-height:1.6;margin-bottom:calc(var(--u)*.7)}
+#pair .here a{color:var(--clay);font-weight:600;text-decoration:none;
+  border-bottom:1px solid rgba(217,164,143,.42)}
+#pair .here a:hover{color:var(--cream);border-bottom-color:rgba(246,239,231,.6)}
 #pair .wait{display:flex;align-items:center;margin-top:calc(var(--u)*1.6);
   font-size:calc(var(--u)*1.05);color:var(--veil);letter-spacing:.1em;text-transform:uppercase}
 #pair .wait i{width:calc(var(--u)*.5);height:calc(var(--u)*.5);border-radius:50%;
@@ -645,6 +653,12 @@ body.compact #driftWrap{
       <div class="step">Open the camera and hold it up to the code. Everything
         it needs is in there.</div>
       <div class="fallback">
+        <!-- Shown only on something positively identified as a desk browser, and
+             hidden by default so a television can never reach a state where it
+             is telling someone to click a link at it. -->
+        <div class="here" id="pairHere">Running this on a computer?
+          <a id="pairHereLink" href="#" target="_blank" rel="noopener">Set it up on this screen</a>
+        </div>
         <div class="lead">No camera? Go to <b id="setupUrl">bilalathan.co.uk/s</b>
           and type</div>
         <div class="code" id="pairCode">&nbsp;</div>
@@ -1561,6 +1575,27 @@ body.compact #driftWrap{
     var code = newCode();
     showCode(code);
 
+    /* A television has to be pointed at, because it cannot be typed into. A
+       laptop can, so sending someone to fetch their phone while they are sat
+       at the keyboard is ceremony for its own sake. Same rule as the routing
+       in <head>, pointed the same way: POSITIVE identification only, because
+       a TV wrongly offered a link shows a line nobody can click, while a
+       laptop wrongly denied one simply types the code as before.
+
+       target=_blank is load bearing. Navigating this tab to the setup page
+       would take the display down with it, and the pairing it is polling for
+       dies at the same moment. `here=1` tells the setup page it is finishing
+       on the machine it started on, so it can close with the advice that
+       actually applies there. */
+    try{
+      var pua = navigator.userAgent || '';
+      if(/Macintosh|Windows NT|CrOS|X11; Linux (x86_64|i686|amd64)/i.test(pua)
+         && !/CrKey|Tizen|Web0S|WebOS|SMART-TV|SmartTV|BRAVIA|Roku|PlayStation|Xbox|GoogleTV|HbbTV|Viera|NetCast/i.test(pua)){
+        $('pairHereLink').href = origin + '/s.html?c=' + code + '&here=1';
+        $('pairHere').style.display = 'block';
+      }
+    }catch(e){}
+
     /* The code travels inside the QR, so a scan lands on the setup page already
        knowing which television it is talking to. If drawing fails for any
        reason the printed code below it still works, which is why this is
@@ -1734,6 +1769,28 @@ body.compact #driftWrap{
   document.addEventListener('click',arm);
   document.addEventListener('touchstart',arm);
   document.addEventListener('keydown',arm);
+
+  /* F for fullscreen. On a television the browser is already the whole screen,
+     so this never came up; in a tab it is the difference between a display and
+     a web page, with a tab strip and a dock framing the sky.
+
+     It rides alongside arm() rather than replacing it: every key still grants
+     audio, and this one also fills the screen. Prefixed call included, since
+     Silk can be old enough to want it, and the whole thing is guarded because
+     a browser refusing fullscreen must never take the display down. */
+  document.addEventListener('keydown',function(e){
+    if(!e || (e.key||'').toLowerCase()!=='f') return;
+    try{
+      var d=document, el=d.documentElement;
+      if(d.fullscreenElement||d.webkitFullscreenElement){
+        if(d.exitFullscreen) d.exitFullscreen();
+        else if(d.webkitExitFullscreen) d.webkitExitFullscreen();
+      }else{
+        if(el.requestFullscreen){ var q=el.requestFullscreen(); if(q&&q.catch) q.catch(function(){}); }
+        else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      }
+    }catch(err){}
+  });
   document.addEventListener('mousemove',function(){
     document.body.classList.add('cursor');
     clearTimeout(window.__c);

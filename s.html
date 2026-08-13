@@ -197,7 +197,7 @@ a{color:var(--clay)}
       <!-- Every TV has a 4-hour auto-off mandated by energy rules, on a timer the
            Fire Stick cannot reach. Without this line, every user concludes Bilal
            is broken overnight and blames us for the television's setting. -->
-      <div class="note r r3" style="text-align:left">
+      <div class="note r r3" id="doneTv" style="text-align:left">
         <b>One thing on the TV itself.</b> Nearly every television switches off
         after about four hours with no button pressed. The setting lives on the
         TV, not the streaming stick.
@@ -205,6 +205,15 @@ a{color:var(--clay)}
         Turn it off under <b>Eco</b>, <b>Energy Saving</b>, or
         <b>no-operation off timer</b>. Otherwise Bilal goes dark overnight and
         misses Fajr.
+      </div>
+      <!-- Same machine: the screen is the tab behind this one, so the telly
+           timer above is not the risk and the sound press is one tab away. -->
+      <div class="note r r3" id="doneHere" style="text-align:left;display:none">
+        <b>Two things back in the other tab.</b> Press once for sound, then press
+        <b>F</b> to fill the screen.
+        <br><br>
+        Keep that tab open, and stop the computer sleeping if you want Fajr. A
+        sleeping screen calls nothing, and it won't tell you it missed one.
       </div>
     </div>
   </section>
@@ -561,6 +570,12 @@ a{color:var(--clay)}
   var CODE=(new URLSearchParams(location.search).get('c')||'')
              .toUpperCase().replace(/[^A-Z0-9]/g,'');
   var SCANNED = CODE.length===6;
+  /* Set by the display when it hands this page a link on the same machine. The
+     screen being configured is then a tab behind this one rather than a
+     television across the room, which changes what the last screen should say:
+     the four-hour telly timer is not the risk, and the press for sound is
+     waiting in a tab the reader has just navigated away from. */
+  var HERE = SCANNED && /[?&]here=1(&|$)/.test(location.search);
 
   function patch(code, body){
     return fetch(SB+'?code=eq.'+encodeURIComponent(code),{
@@ -573,7 +588,8 @@ a{color:var(--clay)}
 
   if(SCANNED){
     $('walkStep').textContent='Step 2 of 2';
-    $('toCode').textContent='Send to my TV';
+    // "my TV" is wrong when the screen is the tab behind this one.
+    $('toCode').textContent=HERE ? 'Send to the screen' : 'Send to my TV';
     /* Tell the television the scan landed, so it can stop saying "waiting for
        your phone" while the person is already choosing a mosque. A config with
        no slug was already ignored by the TV's poll, so this needs no new column
@@ -602,7 +618,13 @@ a{color:var(--clay)}
       .then(function(rows){
         btn.innerHTML=label; btn.disabled=false;
         if(!rows||!rows.length){ stale(code); return; }
-        $('doneMsg').textContent=picked.n+' is on your TV. It will remember.';
+        $('doneMsg').textContent=picked.n+(HERE
+          ? ' is on your screen. It will remember.'
+          : ' is on your TV. It will remember.');
+        if(HERE){
+          $('doneTv').style.display='none';
+          $('doneHere').style.display='block';
+        }
         show('s4');
       }).catch(function(){
         btn.innerHTML=label; btn.disabled=false;
