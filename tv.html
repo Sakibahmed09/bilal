@@ -118,6 +118,38 @@
   footer{margin-top:34px;color:var(--veil);font-size:13px;border-top:1px solid var(--hair);
     padding-top:18px}
 
+  /* ── the founder's note ─────────────────────────────────────────────────
+     A letter, and it has to read as one without asking for a box back: the
+     page gave up its cards on purpose, so the difference is typographic
+     rather than furniture.
+
+     The clay tick above the heading is the display's own mark for the
+     prayer that matters right now (.stop.on in index.html, 2.4u wide and
+     2px tall, which is 44px at the unit the TV actually runs). Borrowing
+     it points the page at the product instead of at a design system.
+
+     Then: the first sentence takes the display face and stands alone,
+     because it is the best line here and it was buried mid-paragraph; the
+     measure narrows against the instructions above so the eye knows it has
+     changed register; and the name is signed in Prata rather than
+     captioned in grey. It also lands where the isha rooftops are already
+     rising behind the page, so the letter sits in the warmest part of the
+     night without a panel being drawn for it. */
+  .letter{margin-top:62px;max-width:32em}
+  /* The heading is a label on a letter, not a second headline: at full size
+     and full cream it sat level with the opening sentence and the eye read
+     two titles stacked. Quieter and smaller, so "The first athan was a man"
+     is the only thing shouting in here. */
+  .letter h2{margin-top:0;padding-top:21px;position:relative;
+    font-size:18px;color:var(--veil)}
+  .letter h2:before{content:'';position:absolute;top:0;left:0;
+    width:44px;height:2px;background:var(--clay)}
+  .letter .open{font-family:var(--display);font-size:clamp(21px,5.8vw,25px);
+    line-height:1.34;letter-spacing:-.018em;color:var(--cream);margin-top:19px}
+  .letter p{color:var(--veil);font-size:16px;line-height:1.74;margin-top:17px}
+  .letter .sign{font-family:var(--display);font-size:24px;letter-spacing:-.01em;
+    color:var(--clay);margin-top:30px}
+
   /* ── the television ─────────────────────────────────────────────────────
      One component, both breakpoints. On a phone it rides just under the
      hero copy at full width; at desk width it becomes the hero's right
@@ -316,7 +348,7 @@
   <p class="lede" style="margin-top:14px;font-size:14.5px">Same three moments whatever
      screen you use.</p>
 
-  <h2>The one that just works</h2>
+  <h2>On a smart speaker</h2>
 
   <div class="card hero">
     <h3>Amazon Echo Show</h3>
@@ -370,7 +402,13 @@
     <div class="card">
       <h3>A spare phone or tablet</h3>
       <ol>
-        <li>Open <b><a href="?display=1">bilalathan.co.uk/?display=1</a></b>
+        <!-- "./" is load bearing. A bare href="?display=1" resolves against the
+             CURRENT document, so from /tv.html it went to /tv.html?display=1: the
+             landing page again, with a parameter only the display reads, and no
+             way for the reader to tell that the link had quietly failed. The
+             directory-relative form lands on the display at the site root, and
+             keeps working on the staging repo where the site sits at a subpath. -->
+        <li>Open <b><a href="./?display=1">bilalathan.co.uk/?display=1</a></b>
             <span style="opacity:.72">(the <b>?display=1</b> tells a phone to show the
             screen rather than this page)</span></li>
         <li>Scan the code it shows <b>with your main phone</b>, then follow the steps above</li>
@@ -392,20 +430,25 @@
     </div>
   </details>
 
-  <h2>Why this exists</h2>
-  <p class="lede">The first athan was a man. The Prophet ﷺ chose Bilal (RA) as the
-     first muezzin, and when his voice went up over Madinah, people put down what
-     they were carrying and walked.</p>
-  <p class="lede">You can still feel this in Muslim countries: the athan interrupts
-     you, out loud, on purpose. Athan apps kept the sound and dropped the job. They
-     fire at the prayer's start time, not the jama'ah you'd actually walk to, and a
-     phone can be muted, dying, or in another room.</p>
-  <p class="lede">I was the person checking my mosque's website five times a day and
-     working out when to leave. So in 2024 we started the experiment and gave it the
-     muezzin's name: the athan out loud, at your mosque's jama'ah time minus your
-     walk, from a screen that is always on. Set it up once. If hearing it makes you
-     leave, it's working.</p>
-  <p class="placard">Sakib</p>
+  <section class="letter">
+    <h2>Why I built this</h2>
+    <p class="open">The first athan was a man.</p>
+    <p>The Prophet ﷺ asked Bilal (RA) to call people to prayer, and when his voice went
+       up over Madinah people left what they were doing and walked.</p>
+    <p>If you can hear that from your house, you don't need this. I can't, and most of
+       us can't. What we have instead is athan apps, and they're not fit for purpose.
+       Most don't even make a sound anymore, it's a notification you can mute or swipe
+       away, and nobody has ever stood up for a notification. The ones that do play give
+       you the prayer's start time, which isn't when anything happens at your masjid.</p>
+    <p>So that's the experiment. If I hear the athan out loud at the time I was meant to
+       leave, the way it was always meant to work, can I build the habit? Set it up once
+       and find out.</p>
+    <!-- The closer answers the second paragraph: that one tells you who does not
+         need this and admits my own house is one that does, so the warmth at the
+         end is a hope between two houses rather than a wish at a customer. -->
+    <p>I hope it does for your house what it's done for mine.</p>
+    <p class="sign">- Sakib</p>
+  </section>
 
   <div class="go">
     <a class="cta" href="s.html">Set your mosque</a>
