@@ -251,13 +251,47 @@ a{color:var(--clay)}
   "use strict";
   var SB  = 'https://vstfgrlkwqevonrznzwm.supabase.co/rest/v1/bilal_pairings';
   var SBK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzdGZncmxrd3Fldm9ucnpuendtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MDAwOTUsImV4cCI6MjA4OTk3NjA5NX0.IjPhlACgy3xslF9EvhKeIemoobHKR02LXcEgiKYHdYg';
-  var MB  = 'https://api.masjidbox.com/1.0/masjidbox/landing/athany/';
-  var MBK = 'JejYcMS7hsOsZTPDk2ZhKOAlW9IyQ6Px';
+  /* Every time request goes through our own endpoint, which fronts the
+     directories this list is merged from and returns each one's reply
+     unchanged. mosques.json carries no marker of which directory a row came
+     from: the id's own shape says that, the same rule index.html uses to fetch
+     the television's times. These two tests must stay identical to the
+     endpoint's own routing. The digit-or-capital lookahead is load bearing, a
+     handful of dashed-directory slugs are exactly 8 lowercase letters and a
+     bare {8} test would hand every one of them to the wrong parser. */
+  var TIMES='https://bilal-times.ahmed-sakib.workers.dev/v1';
+  var NUM_ID_RE=/^mosque-\d+$/i;
+  var CODE_ID_RE=/^(?=.*[A-Z0-9])[A-Za-z0-9]{8}$/;
 
   var $=function(i){return document.getElementById(i);};
   var MOSQUES=[], picked=null, here=null;
 
-  fetch('mosques.json').then(function(r){return r.json();}).then(function(d){ MOSQUES=d; });
+  /* The directory is 122KB gzipped, and a fast thumb beats it. While it is
+     still in flight an empty search result means NOTHING YET, and saying
+     "we don't have that one" over a list that has not arrived is a confident
+     lie — the exact failure this codebase keeps having to unlearn. So the
+     load carries a state, empty results speak to that state, and whatever is
+     in the box re-runs the moment the list lands. */
+  var DIR_STATE='loading';   // loading | ready | failed
+  function loadDirectory(){
+    DIR_STATE='loading';
+    fetch('mosques.json')
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(d){
+        MOSQUES=d;
+        /* lowercase haystack once, not per keystroke: the search loop used to
+           re-lowercase 2,362 names and addresses on every input event */
+        MOSQUES.forEach(function(m){ m._n=m.n.toLowerCase(); m._h=m._n+' '+(m.a||'').toLowerCase(); });
+        DIR_STATE='ready';
+        refreshSearch();
+      })
+      .catch(function(){ DIR_STATE='failed'; refreshSearch(); });
+  }
+  function refreshSearch(){
+    var q=$('q');
+    if(q && q.value.trim().length>=2) runSearch(q.value);
+  }
+  loadDirectory();
 
   function show(id){
     ['s1','s2','s3','s4','s5'].forEach(function(x){ $(x).classList.remove('on','go'); });
@@ -292,6 +326,18 @@ a{color:var(--clay)}
        exists for. Offering a softer version of the same search is how somebody
        leaves; naming what happens next is how they stay. */
     if(!list.length){
+      /* "We don't have that one" is only true once the list has ARRIVED. */
+      if(DIR_STATE!=='ready'){
+        $('results').innerHTML='<button class="item" id="none">'+
+          (DIR_STATE==='loading'
+            ? '<div class="n">Still fetching the mosque list</div>'+
+              '<div class="a">A couple of seconds on a slow connection. Your search runs by itself when it lands.</div>'
+            : '<div class="n">Could not load the mosque list</div>'+
+              '<div class="a">Check your connection, then tap here to try again.</div>')+
+          '</button>';
+        $('none').onclick=function(){ if(DIR_STATE==='failed') loadDirectory(); };
+        return;
+      }
       $('results').innerHTML='<button class="item" id="none">'+
         '<div class="n">We don\'t have that one</div>'+
         '<div class="a">Tell us where it is and we\'ll add it. '+
@@ -358,6 +404,12 @@ a{color:var(--clay)}
       var r = j && j.result;
       if(!r || r.latitude == null) throw 0;
       here = { lat: r.latitude, lng: r.longitude };
+      if(!MOSQUES.length){
+        $('hint').textContent = DIR_STATE==='failed'
+          ? 'Could not load the mosque list. Check your connection and try again.'
+          : 'Still fetching the mosque list, one moment.';
+        return;
+      }
       var located = MOSQUES.filter(function(m){ return m.y != null; });
       located.forEach(function(m){ m._d = hav(here.lat, here.lng, m.y, m.x); });
       var near = located.sort(function(a,b){ return a._d - b._d; }).slice(0, 8);
@@ -376,8 +428,9 @@ a{color:var(--clay)}
     });
   }
 
-  $('q').addEventListener('input', function(){
-    var raw=this.value.trim();
+  $('q').addEventListener('input', function(){ runSearch(this.value); });
+  function runSearch(raw){
+    raw=raw.trim();
     var v=raw.toLowerCase();
     if(v.length<2){ $('results').innerHTML=''; return; }
     if(PC_FULL.test(raw) || PC_OUT.test(raw)){ postcodeLookup(raw); return; }
@@ -390,7 +443,7 @@ a{color:var(--clay)}
     var words=v.split(/\s+/).filter(Boolean);
     var hits=[];
     MOSQUES.forEach(function(m){
-      var n=m.n.toLowerCase(), a=(m.a||'').toLowerCase(), hay=n+' '+a;
+      var n=m._n, hay=m._h;
       for(var i=0;i<words.length;i++) if(hay.indexOf(words[i])===-1) return;
       var rank;
       if(n.indexOf(v)===0)                              rank=0;  // typed its name
@@ -408,7 +461,7 @@ a{color:var(--clay)}
       return a.m.n.localeCompare(b.m.n);
     });
     render(hits.slice(0,25).map(function(h){return h.m;}), here!=null);
-  });
+  }
 
   // ---------- nearby ----------
   // 4.8 km/h, and 1.3x for the fact that streets are not straight lines
@@ -435,6 +488,12 @@ a{color:var(--clay)}
 
     navigator.geolocation.getCurrentPosition(function(pos){
       here={lat:pos.coords.latitude,lng:pos.coords.longitude};
+      if(!MOSQUES.length){
+        fail(DIR_STATE==='failed'
+          ? 'Could not load the mosque list. Check your connection and try again.'
+          : 'Still fetching the mosque list. Try again in a couple of seconds.');
+        return;
+      }
       /* Coordinates ship inside mosques.json, geocoded once offline. The old
          version resolved postcodes at runtime through postcodes.io: four network
          round-trips, and blind to the 35% of addresses with no postcode in them.
@@ -460,6 +519,94 @@ a{color:var(--clay)}
     }, function(){ fail('Location was declined. Search by name or town instead.'); },
        {enableHighAccuracy:false, timeout:12000, maximumAge:600000});
   };
+
+  /* Both directories get reduced to the same three values the classifier below
+     reads: `offs` (minutes between a prayer starting and its jama'ah), `mins`
+     (the minute-hand of each start time), and `nq` (how many jama'ah times
+     exist at all). Everything the badge decides is a judgement about those, so
+     neither API's own shape reaches it.
+
+     `nq` is counted separately from `offs` and that separation is the whole
+     point. An offset needs BOTH a start and a jama'ah, so a mosque that
+     publishes five jama'ah times and no start times produces an empty `offs`
+     — indistinguishable, on offsets alone, from a mosque that published
+     nothing. Measured on the numbered directory: 84 mosques are in exactly
+     that state, and they are the single most useful kind of listing this
+     product can get. Judging them on `offs` called all 84 "no jama'ah times
+     published", which is the opposite of the truth. */
+  function checkDashed(slug, iso){
+    return fetch(TIMES+'/times?id='+encodeURIComponent(slug)+'&from='+iso)
+      .then(function(r){return r.json();})
+      .then(function(j){
+        var row=j.timetable&&j.timetable[0]; if(!row) throw 0;
+        var offs=[], mins=[], nq=0;
+        ['fajr','dhuhr','asr','maghrib','isha'].forEach(function(k){
+          var b=row[k], q=(row.iqamah||{})[k];
+          if(q) nq++;
+          if(b&&q) offs.push(Math.round((new Date(q)-new Date(b))/60000));
+          if(b) mins.push(new Date(b).getMinutes());
+        });
+        return {offs:offs, mins:mins, nq:nq};
+      });
+  }
+
+  /* The numbered directory serves bare "HH:MM" strings, and the top-level
+     field is the jama'ah while row.begin holds the start, the opposite nesting
+     to the dashed one. The offset is minute arithmetic on the strings
+     themselves, so no Date is built and no timezone can be misread. */
+  function checkNumbered(id, iso){
+    return fetch(TIMES+'/times?id='+encodeURIComponent(id)+'&from='+iso+'&to='+iso)
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(days){
+        var row=days&&days[0]; if(!row) throw 0;
+        var begin=row.begin||{}, offs=[], mins=[], nq=0;
+        function toMin(hm){
+          if(!hm) return null;
+          var p=String(hm).split(':');
+          if(p.length!==2) return null;
+          var h=parseInt(p[0],10), m=parseInt(p[1],10);
+          return (isNaN(h)||isNaN(m)) ? null : h*60+m;
+        }
+        ['fajr','dhuhr','asr','maghrib','isha'].forEach(function(k){
+          var b=toMin(begin[k]), q=toMin(row[k]);
+          if(q!=null) nq++;
+          if(b!=null&&q!=null) offs.push(q-b);
+          if(b!=null) mins.push(b%60);
+        });
+        return {offs:offs, mins:mins, nq:nq};
+      });
+  }
+
+  /* The coded directory nests it the same way round as the dashed one, salah
+     is the start and iqamah is the jama'ah, but serves 12-hour strings
+     ("4:56AM"), calls dhuhr "zuhr", and dates the rows as "Tuesday, Aug 11,
+     2026". Reduced to minutes here so the offset maths downstream is identical
+     for all three sources. */
+  function checkCoded(id, isoDate){
+    return fetch(TIMES+'/times?id='+encodeURIComponent(id)+'&from='+isoDate+'&to='+isoDate)
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(res){
+        if(!res||res.status!=='success'||!res.data) throw 0;
+        var s=(res.data.salah||[])[0], q=(res.data.iqamah||[])[0];
+        if(!s) throw 0;
+        function toMin(v){
+          var m=/^(\d{1,2}):(\d{2})\s*([AaPp])/.exec(String(v||'').trim());
+          if(!m) return null;
+          var h=parseInt(m[1],10)%12;
+          if(m[3].toLowerCase()==='p') h+=12;
+          return h*60+parseInt(m[2],10);
+        }
+        var KEY={fajr:'fajr',dhuhr:'zuhr',asr:'asr',maghrib:'maghrib',isha:'isha'};
+        var offs=[], mins=[], nq=0;
+        ['fajr','dhuhr','asr','maghrib','isha'].forEach(function(k){
+          var b=toMin(s[KEY[k]]), iq=q?toMin(q[KEY[k]]):null;
+          if(iq!=null) nq++;
+          if(b!=null&&iq!=null) offs.push(iq-b);
+          if(b!=null) mins.push(b%60);
+        });
+        return {offs:offs, mins:mins, nq:nq};
+      });
+  }
 
   // ---------- pick, and classify live ----------
   function choose(m){
@@ -488,16 +635,12 @@ a{color:var(--clay)}
     /* Classified live rather than from a stored snapshot: mosques fix their
        listings, and a cached verdict starts rotting the day it is written. */
     var today=new Date(), iso=today.getFullYear()+'-'+p2(today.getMonth()+1)+'-'+p2(today.getDate());
-    fetch(MB+m.g+'?get=at&days=1&begin='+iso,{headers:{'apikey':MBK}})
-      .then(function(r){return r.json();})
-      .then(function(j){
-        var row=j.timetable&&j.timetable[0]; if(!row) throw 0;
-        var P=['fajr','dhuhr','asr','maghrib','isha'], offs=[], mins=[];
-        P.forEach(function(k){
-          var b=row[k], q=(row.iqamah||{})[k];
-          if(b&&q) offs.push(Math.round((new Date(q)-new Date(b))/60000));
-          if(b) mins.push(new Date(b).getMinutes());
-        });
+    var check = NUM_ID_RE.test(m.g) ? checkNumbered(m.g, iso)
+              : CODE_ID_RE.test(m.g) ? checkCoded(m.g, iso)
+              : checkDashed(m.g, iso);
+    check
+      .then(function(r){
+        var offs=r.offs, mins=r.mins;
         var uniq={}; offs.forEach(function(o){uniq[o]=1;});
         var n=Object.keys(uniq).length;
         /* A zero offset everywhere has two opposite meanings and calling them
@@ -515,7 +658,19 @@ a{color:var(--clay)}
            them (05:00 13:30 19:00 20:50 22:00), so the old wording called its
            genuine jama'ah times "start times" and warned people off. */
         var round = mins.length===5 && mins.filter(function(m){return m%5===0;}).length>=4;
-        if(offs.length<5)          badge('bad','No jama\'ah times published');
+        /* Five jama'ah times and no start times is a COMPLETE listing for this
+           product — the whole thesis is that jama'ah is the time that matters.
+           Checked before the offset tests, because with no starts there are no
+           offsets to test and every one of them would otherwise fall through to
+           "No jama'ah times published". */
+        if(r.nq===0)               badge('bad','No jama\'ah times published');
+        /* ANY jama'ah times with no start times is the no-separate-starts
+           case, not just the full five. The old `nq===5` guard let a mosque
+           with three jama'ah times fall through to "No jama'ah times
+           published" — the exact opposite of what it had done. */
+        else if(offs.length===0)   badge('warn','Jama\'ah times, but no separate start times');
+        else if(r.nq<5)            badge('warn','Only a partial listing published');
+        else if(offs.length<5)     badge('warn','Times not confirmed by the mosque');
         else if(offs.every(function(o){return o===0;}))
           round ? badge('warn','Jama\'ah times, but no separate start times')
                 : badge('bad','No jama\'ah times, only start times');
@@ -583,7 +738,20 @@ a{color:var(--clay)}
       headers:{'apikey':SBK,'Authorization':'Bearer '+SBK,
                'Content-Type':'application/json','Prefer':'return=representation'},
       body:JSON.stringify(body)
-    }).then(function(r){return r.json();});
+    }).then(function(r){
+      /* Three shapes come back and they mean three different things. Collapsing
+         them into "rows or not" reported a broken backend as "code expired",
+         which sends a person around a loop of fresh codes that all "expire".
+         - !ok: OUR side refused (policy, outage). Not stale, not their fault.
+         - ok + array: the rows the update touched. Empty = genuinely stale.
+         - ok + no JSON body (204): the write landed without an echo. Success. */
+      if(!r.ok){ var e=new Error('backend '+r.status); e.ours=true; throw e; }
+      if(r.status===204) return [{}];
+      return r.json().then(
+        function(rows){ return Array.isArray(rows)?rows:[{}]; },
+        function(){ return [{}]; }
+      );
+    });
   }
 
   if(SCANNED){
@@ -626,9 +794,11 @@ a{color:var(--clay)}
           $('doneHere').style.display='block';
         }
         show('s4');
-      }).catch(function(){
+      }).catch(function(e){
         btn.innerHTML=label; btn.disabled=false;
-        var msg='Could not reach your TV. Check your connection and try again.';
+        var msg=(e&&e.ours)
+          ? 'Something went wrong at our end, not with your code. Give it a minute and try again.'
+          : 'Could not reach your TV. Check your connection and try again.';
         if(SCANNED){ $('walkNote').textContent=msg; } else { $('sendMsg').textContent=msg; }
       });
   }
