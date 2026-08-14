@@ -791,8 +791,21 @@ body.compact #driftWrap{
     var isEcho = /Echo|AEO[A-Z0-9]*/i.test(ua);
     var small = (w < 820) || (h < 620) || (isEcho && h < 1000);
     document.body.classList[small?'add':'remove']('compact');
-    if(small) document.documentElement.style.setProperty('--u',
-      Math.max(10, Math.min(w*0.019, h*0.032)).toFixed(2)+'px');
+    if(small){
+      /* The 10px floor keeps type legible on a small panel, but it must never
+         beat the height. The layout wants about 22.7 units of height, so on a
+         viewport too short to hold that, the floor stops being a minimum and
+         becomes an overflow: the rail walks off the bottom edge and the
+         timetable — the part you came for — is cut through the middle of its
+         own labels. A complete display in small type beats a half-cut one in
+         large type, so the floor is itself capped by what the height affords.
+         This only bites on genuinely short viewports (the demo panel on
+         tv.html at 317x178). Phone portrait, Echo Show and Fire TV all have
+         the height to hold the floor and are untouched. */
+      var uh=h*0.032, u2=Math.min(w*0.019,uh);
+      if(u2<10) u2=Math.min(10,uh);
+      document.documentElement.style.setProperty('--u',u2.toFixed(2)+'px');
+    }
   }
   scale();
   window.addEventListener('resize',scale);
