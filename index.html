@@ -1495,8 +1495,19 @@ body.compact #driftWrap{
     $('rail').innerHTML=html;
   }
 
+  /* Burn-in protection: a panel showing the same rail in the same place for
+     hours will etch it, so the shell moves a little once a minute. The range
+     was written as flat pixels against a 1280x720 television, where +/-9px is
+     about a fifth of the safe margin and reads as nothing at all. The demo
+     panel on tv.html is 317x178, where the margin is 10px, so the same 9px
+     parked the content hard against the right edge with no padding left.
+     Same lesson as the type floor above: a constant measured on a television
+     is not a constant. As fractions of the panel it drifts by the same
+     proportion everywhere, and still lands on +/-9 and +/-6 at 1280x720. */
   function drift(){
-    var x=(Math.random()*18-9).toFixed(1),y=(Math.random()*12-6).toFixed(1);
+    var w=window.innerWidth||1280,h=window.innerHeight||720;
+    var x=((Math.random()*2-1)*w*0.00703).toFixed(1),
+        y=((Math.random()*2-1)*h*0.00833).toFixed(1);
     var t='translate('+x+'px,'+y+'px)';
     $('shell').style.webkitTransform=t; $('shell').style.transform=t;
   }
