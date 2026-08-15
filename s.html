@@ -61,8 +61,11 @@ html,body{background:var(--deep);color:var(--cream);font-family:var(--text);
 
 h1{font-family:var(--display);font-size:35px;line-height:1.12;letter-spacing:-.022em;font-weight:400}
 .sub{color:var(--veil);font-size:15.5px;line-height:1.62;margin-top:12px}
-.eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--clay);
-  font-weight:700;margin-bottom:13px}
+/* Was a small-caps letterspaced clay label. That treatment is decoration, and it
+   read as decoration, so what survives here is only the wayfinding: which step
+   of how many. Anything that merely restated its own headline is gone. */
+.eyebrow{font-size:12.5px;letter-spacing:0;text-transform:none;color:var(--veil);
+  font-weight:500;margin-bottom:13px}
 
 /* ── entrance choreography ─────────────────────────────────────────────── */
 section{display:none}
@@ -149,7 +152,7 @@ a{color:var(--clay)}
 
   <!-- 1. choose -->
   <section id="s1" class="on go">
-    <div class="eyebrow r r1">Set up</div>
+    <div class="eyebrow r r1">Step 1 of 3</div>
     <h1 class="r r2">Which mosque do you pray at?</h1>
     <p class="sub r r3">Bilal shows your mosque's own jama'ah times, and calls you when it's time to leave.</p>
     <div class="step r r4">
@@ -220,7 +223,6 @@ a{color:var(--clay)}
 
   <!-- not listed -->
   <section id="s5">
-    <div class="eyebrow r r1">Not yet</div>
     <h1 class="r r2">We don't have your mosque yet.</h1>
     <p class="sub r r3">Bilal only shows jama'ah times a mosque publishes itself. A guessed time makes you late.</p>
     <div class="step r r4">
