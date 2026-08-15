@@ -145,11 +145,24 @@ section{display:none} section.on{display:block}
   "use strict";
   var $=function(i){return document.getElementById(i);};
 
+  /* diag.js supplies both the attachment and the transport. This page is the
+     escape hatch, so if diag ever fails to load it must degrade to a visible
+     smaller report, never to a healthy-looking form whose buttons are dead —
+     that was exactly the shape of failure it exists to catch. */
+  var DIAG = window.BilalDiag || null;
+
   /* Show the person exactly what is attached. Flattened to plain rows rather
      than a wall of JSON, because a list somebody can actually read is the point
      of showing it at all. */
   function rows(){
-    var d=BilalDiag.snapshot();
+    if(!DIAG){
+      return [
+        ['Your device', (navigator.userAgent||'').slice(0,80)],
+        ['Time', new Date().toLocaleString('en-GB')],
+        ['Note', 'diagnostics failed to load on this visit']
+      ];
+    }
+    var d=DIAG.snapshot();
     var out=[
       ['Your device', d.device],
       ['Screen size', d.viewport],
@@ -159,9 +172,11 @@ section{display:none} section.on{display:block}
     ];
     if(d.mosque && d.mosque.slug) out.push(['Mosque set up here', d.mosque.name || d.mosque.slug]);
     if(d.status) out.push(['Status line', d.status]);
-    if(d.audio)  out.push(['Athan state', d.audio]);
+    /* the verdict sentence, not the object — ['Athan state', d.audio] printed
+       "[object Object]" on every single report */
+    if(d.audio)  out.push(['Athan state', d.audio.verdict || d.audio.line || 'unknown']);
     if(d.errors && d.errors.length) out.push(['Errors caught', d.errors.length + ' on this page']);
-    out.push(['This browser’s id', BilalDiag.id()]);
+    out.push(['This browser’s id', DIAG.id()]);
     return out;
   }
 
@@ -214,11 +229,21 @@ section{display:none} section.on{display:block}
     btn.innerHTML='<span class="spin"></span> Sending…'; btn.disabled=true;
     $('msg').textContent=''; $('msg').className='msg';
 
+    if(!DIAG){
+      btn.innerHTML=label; btn.disabled=false;
+      $('msg').className='msg bad';
+      $('msg').textContent='This page could not load its sender. Reload and try again.';
+      return;
+    }
     /* File it against the screen when one is quoted, so the words land beside
        that screen's own heartbeats and errors rather than beside this phone's. */
-    BilalDiag.send('manual', '[' + kind + '] ' + what, code || null)
+    DIAG.send('manual', '[' + kind + '] ' + what, code || null)
       .then(function(r){
-        if(r && r.ok===false) throw new Error('http');
+        /* "Sent." must mean sent. r is undefined when the transport threw
+           synchronously, and ok:false when the server refused — both used to
+           slip past `r && r.ok===false` and show the thank-you screen over a
+           report that went nowhere. */
+        if(!r || !r.ok) throw new Error('http');
         $('s1').classList.remove('on'); $('s2').classList.add('on');
         window.scrollTo(0,0);
       })

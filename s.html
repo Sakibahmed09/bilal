@@ -262,6 +262,7 @@ a{color:var(--clay)}
   var TIMES='https://bilal-times.ahmed-sakib.workers.dev/v1';
   var NUM_ID_RE=/^mosque-\d+$/i;
   var CODE_ID_RE=/^(?=.*[A-Z0-9])[A-Za-z0-9]{8}$/;
+  var UUID_ID_RE=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   var $=function(i){return document.getElementById(i);};
   var MOSQUES=[], picked=null, here=null;
@@ -608,6 +609,45 @@ a{color:var(--clay)}
       });
   }
 
+  /* The yearly directory returns all 366 days at once, keyed by day and month
+     with no year, and nests begins and jama'ah side by side in one row
+     (fajr / iqamah_Fajr). Only today's row is needed here, so it is picked out
+     by day and month rather than by index — the array is ordered in practice,
+     but "in practice" is not what the athan should fire on. Minute arithmetic
+     on the strings, so no Date is built and no timezone can be misread. */
+  function checkYearly(id, isoDate){
+    return fetch(TIMES+'/times?id='+encodeURIComponent(id)+'&from='+isoDate+'&to='+isoDate)
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(res){
+        var m=res&&res.model;
+        if(!m||res.hasError) throw 0;
+        var parts=isoDate.split('-'),
+            mo=parseInt(parts[1],10), da=parseInt(parts[2],10);
+        var row=null, year=m.salahTimings||[];
+        for(var i=0;i<year.length;i++){
+          if(year[i].month===mo&&year[i].day===da){ row=year[i]; break; }
+        }
+        if(!row) throw 0;
+        function toMin(hm){
+          var p=String(hm||'').split(':');
+          if(p.length!==2) return null;
+          var h=parseInt(p[0],10), mm=parseInt(p[1],10);
+          return (isNaN(h)||isNaN(mm)) ? null : h*60+mm;
+        }
+        var BEGIN={fajr:'fajr',dhuhr:'zuhr',asr:'asr',maghrib:'maghrib',isha:'isha'};
+        var IQ={fajr:'iqamah_Fajr',dhuhr:'iqamah_Zuhr',asr:'iqamah_Asr',
+                maghrib:'iqamah_Maghrib',isha:'iqamah_Isha'};
+        var offs=[], mins=[], nq=0;
+        ['fajr','dhuhr','asr','maghrib','isha'].forEach(function(k){
+          var b=toMin(row[BEGIN[k]]), q=toMin(row[IQ[k]]);
+          if(q!=null) nq++;
+          if(b!=null&&q!=null) offs.push(q-b);
+          if(b!=null) mins.push(b%60);
+        });
+        return {offs:offs, mins:mins, nq:nq};
+      });
+  }
+
   // ---------- pick, and classify live ----------
   function choose(m){
     picked=m;
@@ -637,6 +677,7 @@ a{color:var(--clay)}
     var today=new Date(), iso=today.getFullYear()+'-'+p2(today.getMonth()+1)+'-'+p2(today.getDate());
     var check = NUM_ID_RE.test(m.g) ? checkNumbered(m.g, iso)
               : CODE_ID_RE.test(m.g) ? checkCoded(m.g, iso)
+              : UUID_ID_RE.test(m.g) ? checkYearly(m.g, iso)
               : checkDashed(m.g, iso);
     check
       .then(function(r){

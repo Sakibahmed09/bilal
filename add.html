@@ -516,7 +516,7 @@ input:focus{border-color:var(--clay)}
     /* Say what actually happened. Someone who skipped every flag should not be
        told the year is confirmed — the next person at their mosque is the one
        who will settle those rows, and the copy should set that up. */
-    var msg='<b>'+(name||'Your mosque')+'</b> now has a year of jama\'ah times.';
+    var msg='<b>'+esc(name||'Your mosque')+'</b> now has a year of jama\'ah times.';
     var unresolved=FLAGS.length-corrected;
     if(FLAGS.length && corrected===0)
       msg+=' The '+FLAGS.length+' flagged day'+(FLAGS.length===1?'':'s')+
