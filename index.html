@@ -1276,7 +1276,16 @@ body.compact #driftWrap{
     armed=true;
     $('gate').classList.remove('show');
     audioEl=a;
-    window.__bilal={audio:a, cue:cueEl, calls:0, cues:0, lastError:null, unlock:'pending'};
+    /* Merged onto whatever is already here rather than replacing it. The panel
+       instrumentation starts at page load, but arming happens whenever somebody
+       presses OK, so a plain assignment threw away the wake lock's history
+       every time a screen was armed — and an unarmed screen is exactly the
+       state a reloaded display sits in, which is when panel questions matter
+       most. */
+    window.__bilal=window.__bilal||{};
+    window.__bilal.audio=a; window.__bilal.cue=cueEl;
+    window.__bilal.calls=0; window.__bilal.cues=0;
+    window.__bilal.lastError=null; window.__bilal.unlock='pending';
 
     var p=a.play();                                  // must be in the gesture
 
@@ -1607,6 +1616,68 @@ body.compact #driftWrap{
   // us a gesture we can run a genuinely-playing, inaudible audio loop, which is
   // far more likely to hold a media session open on Fire OS.
   var hum=null;
+
+  /* The Screen Wake Lock is the ONLY web API that speaks to the panel rather
+     than to the browser, so on the night of 16 Aug it was the one lever whose
+     state we could not read. The screen went dark while the page stayed
+     provably healthy — unbroken heartbeats, 523 Silk nudges, rAF firing 1794
+     samples every 30 min, zero errors — and the wake lock was being requested
+     every 240s as `.request('screen').catch(function(){})`. Sentinel thrown
+     away, outcome thrown away. Granted, refused and granted-then-ignored all
+     looked identical, which is this codebase's oldest failure mode.
+
+     Two real bugs in that one line, either of which is enough on its own:
+
+     · The sentinel was discarded. A WakeLockSentinel nobody holds is garbage
+       collectible, and collecting it releases the lock. The 240s re-request
+       masked it into a flicker rather than a fix.
+     · A lock is auto-released whenever the document stops being visible, and
+       the spec gives you a 'release' event to notice. Nothing listened, so a
+       lock lost at 21:10 stayed lost except for whatever the next re-request
+       happened to win.
+
+     The premise that put us here was also wrong, and it is worth writing down:
+     the code assumed Silk is Chromium ~70 and therefore has no Wake Lock at
+     all. Every Silk device that has ever heartbeated reports Chromium 118-150
+     (Echo Shows 118/128/138/144, Fire TVs 119/138/150). Wake Lock shipped in
+     Chrome 84. It has been available on the whole fleet the entire time. */
+  var lock=null, lockState=('wakeLock' in navigator)?'idle':'absent',
+      lockGrants=0, lockReleases=0, lockErr=null;
+  /* Published on every transition rather than once per keepAwake pass. The
+     first draft wrote the snapshot synchronously inside keepAwake, which reads
+     the state BEFORE the request has resolved: a healthy screen reported
+     'idle' at boot and a lock lost at 21:10 stayed unreported until the 240s
+     tick. Reporting a stale value is how the original empty catch did its
+     damage, only slower. */
+  function reportLock(){
+    var b=window.__bilal||(window.__bilal={});
+    b.wakeLock={ state:lockState, grants:lockGrants,
+                 releases:lockReleases, error:lockErr };
+  }
+  function takeLock(){
+    if(lockState==='absent' || lock) return;          // never stack sentinels
+    try{
+      navigator.wakeLock.request('screen').then(function(s){
+        lock=s; lockState='held'; lockGrants++; reportLock();
+        /* Held for the same reason the sentinel is: an anonymous listener on a
+           collectible object is not a subscription you can rely on. */
+        try{ s.addEventListener('release', function(){
+          lock=null; lockReleases++;
+          if(lockState==='held') lockState='released';
+          reportLock();
+        }); }catch(e){}
+      }).catch(function(e){
+        lock=null; lockState='refused'; lockErr=String(e&&e.name||e); reportLock();
+      });
+    }catch(e){ lock=null; lockState='threw'; lockErr=String(e&&e.name||e); reportLock(); }
+  }
+  reportLock();                       // 'absent' is a finding, so say it at boot
+  /* Re-take the moment the document is visible again: this is the exact edge
+     the old code could only recover from by luck, up to 4 minutes late. */
+  try{ document.addEventListener('visibilitychange', function(){
+    if(!document.hidden) takeLock();
+  }); }catch(e){}
+
   function keepAwake(){
     var v=$('keepawake'); if(v){ var p=v.play(); if(p&&p.catch) p.catch(function(){}); }
     if(armed){
@@ -1614,7 +1685,18 @@ body.compact #driftWrap{
       if(hum.paused){ var q=hum.play(); if(q&&q.catch) q.catch(function(){}); }
       if(window.__bilal) window.__bilal.hum=hum;
     }
-    if('wakeLock' in navigator){ try{ navigator.wakeLock.request('screen').catch(function(){}); }catch(e){} }
+    takeLock();
+    /* The video is the other half of the keep-awake story and has never been
+       checked in the field either. On 8 Aug a muted video at this opacity was
+       found to be play()-accepted and paused-anyway, which is why the hum
+       exists at all. Report what it is actually doing rather than assuming the
+       replacement made the question moot. */
+    reportLock();
+    if(v){
+      var b=window.__bilal||(window.__bilal={});
+      b.vid={ paused:!!v.paused, t:Math.round((v.currentTime||0)*10)/10,
+              ready:v.readyState };
+    }
   }
 
   /* Echo Show: Silk closes the browser after roughly ten minutes of what it

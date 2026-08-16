@@ -236,6 +236,27 @@
                 lite: /[?&]lite=1/.test(location.search) },
       asleep: { gaps: gaps.slice(), timesHidden: hides,
                 uptimeMin: Math.round((Date.now() - started) / 60000) },
+      /* ── "the screen went dark" ────────────────────────────────────────
+         The failure this was added for looks like nothing else in here: the
+         page is perfectly healthy and the panel is black. On 16 Aug an Echo
+         Show ran all night with unbroken heartbeats, rAF at full rate and zero
+         errors, and showed the owner a dark screen. Everything above answers
+         "is the page alive", and every one of them said yes.
+
+         So these two are deliberately about the panel, not the page:
+         `state` is the wake lock's real outcome (held / refused / released /
+         absent / idle), which used to be swallowed by an empty catch, and
+         `vid` says whether the keep-awake video is genuinely playing or
+         merely play()-accepted and paused, which is a distinction that has
+         already cost one morning on this project.
+
+         Absent on an older cached display, same as `heard` above: report null
+         rather than inventing a verdict we did not measure. */
+      awake: (function () {
+        var b = global.__bilal || {};
+        if (!b.wakeLock && !b.vid) return null;
+        return { lock: b.wakeLock || null, vid: b.vid || null };
+      })(),
       at: new Date().toISOString(),
       tzOffsetMin: new Date().getTimezoneOffset(),
       device: device(),
@@ -266,7 +287,16 @@
      real screen in the fleet table — heartbeats from every landing-page
      visit, drowning the signal the table exists for ("a screen that stops
      reporting IS the signal"). Snapshots still work; only the network stops. */
-  var EMBEDDED = /[?&](demo|nodiag)=1/.test(location.search);
+  /* Staging counts as embedded for the same reason ?demo=1 does: it writes to
+     the SAME reports table as production, so every test load became a real
+     screen in the fleet. That table is the instrument the "is anything dark"
+     question is answered from, and a phantom desktop sitting in it for three
+     days is a false reading in exactly the place we can least afford one.
+     Caught on 16 Aug while using staging to verify a wake-lock fix — four
+     rows, one imaginary screen. Matching on the staging repo path rather than
+     the host, because the host also serves the public gh-pages site. */
+  var STAGING = /\/bilal-staging\//.test(location.pathname);
+  var EMBEDDED = /[?&](demo|nodiag)=1/.test(location.search) || STAGING;
 
   /* note() caps what a report CARRIES; this caps what a fault SENDS. The
      display's render loop runs every second, so one throwing frame used to
