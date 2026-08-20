@@ -1856,6 +1856,50 @@ body.compact #driftWrap{
     }, 2000);
   }
 
+  /* ---------- changing a screen's mosque without touching the screen ----------
+
+     A paired display reads bilal.config once, at load, and never asks again.
+     That was fine until someone needed to MOVE a screen: Burhan set his Taqwa
+     wall up in August, landed on the wrong mosque because his own was not in
+     the directory yet, and then could not change it. He read the six-character
+     device id off the corner of the screen, typed it into the setup page, and
+     was told his code had expired — because a device id was never a pairing
+     code, it just looks exactly like one.
+
+     So make it one. The row is keyed `dev-<device id>`, which the pairing flow
+     cannot mint or claim (it only ever writes bare six-character codes), so the
+     two live in the same table without being able to collide.
+
+     Threat model is unchanged and worth stating: anyone who can READ the id off
+     the screen can re-point it. That is already true of the pairing code, and
+     of the television generally — if you are close enough to read it, you are
+     close enough to unplug it.
+
+     Checked once shortly after load and then on the heartbeat's own half-hour,
+     so a screen that has gone quiet costs nothing extra. */
+  function remoteConfig(){
+    var id;
+    try{ id = window.BilalDiag && window.BilalDiag.id(); }catch(e){ return; }
+    if(!id) return;
+    fetch(SB + '?code=eq.' + encodeURIComponent('dev-' + id) + '&select=config',
+          {headers: sbHeaders()})
+      .then(function(r){ return r.json(); })
+      .then(function(rows){
+        var cfg = rows && rows[0] && rows[0].config;
+        if(!cfg || !cfg.slug || cfg.slug === CFG.slug) return;
+        /* Write and reload rather than re-render. The rail, the sky, the athan
+           schedule and the cached timetable are all derived from the mosque at
+           load; swapping the slug underneath them in place is how you get a
+           screen showing one mosque's rail and another's athan. */
+        try{ localStorage.setItem('bilal.config', JSON.stringify({
+          slug: cfg.slug, walk: cfg.walk || CFG.walk, name: cfg.name || ''
+        })); }catch(e){ return; }
+        try{ localStorage.removeItem(CACHE); }catch(e){}
+        location.href = location.pathname;
+      })
+      .catch(function(){});
+  }
+
   /* ---------- the speed run ----------
      A demo television should not sit on one hour of one day. With
      ?demo=1&tour=1 it walks the whole day instead: for each prayer, the
@@ -2006,7 +2050,15 @@ body.compact #driftWrap{
 
   if(NEEDS_PAIRING){
     startPairing();
-  } else if(!CFG.quiet){
+  } else {
+    /* Only a paired screen listens. A screen mid-pairing already has a live
+       poll on its own code, and a demo panel must never move. */
+    if(!DEMO){
+      setTimeout(remoteConfig, 20000);
+      setInterval(remoteConfig, 30 * 60 * 1000);
+    }
+  }
+  if(!NEEDS_PAIRING && !CFG.quiet){
     $('gate').classList.add('show'); try{$('gateBtn').focus();}catch(e){}
   }
   audioState();
