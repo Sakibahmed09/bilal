@@ -29,7 +29,7 @@
   unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,
     U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 /* ─────────────────────────────────────────────────────────────────────────
- * NEAR, the laptop tab
+ * NEAR, the portable companion
  *
  * The display is one mosque, permanent, across a room. This is wherever you
  * are, resolved once, at arm's length. Deliberately a separate file:
@@ -49,8 +49,8 @@
  * simple because of it: no swap thresholds, no frozen targets, no "you have
  * moved" state to reconcile.
  *
- * Chromium-70 constraints do NOT apply here (this is a laptop, not a Fire
- * Stick), but the house style is kept so the two files read as one product.
+ * Chromium-70 constraints do NOT apply here (this is a modern phone, not a
+ * Fire Stick), but the house style is kept so the two files read as one product.
  * ───────────────────────────────────────────────────────────────────────── */
 :root{
   --clay:#d9a48f; --clay-lift:#e8b9a3; --cream:#f6efe7;
@@ -61,6 +61,7 @@
   --text:'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif;
   --safe-top:env(safe-area-inset-top,0px);
   --safe-bottom:env(safe-area-inset-bottom,0px);
+  --sky-height:74svh;
   --swift:160ms;
   --settle:420ms;
   --grand:760ms;
@@ -145,7 +146,7 @@ button,input{font:inherit}
 .refresh-hint-mark{width:7px;height:7px;border-right:1px solid currentColor;
   border-bottom:1px solid currentColor;transform:rotate(45deg) translateY(-1px)}
 
-#sky{position:fixed;top:0;left:0;right:0;height:74svh;z-index:0;
+#sky{position:fixed;top:0;left:0;right:0;height:var(--sky-height);z-index:0;
   background-position:66% 32%;background-size:cover;
   opacity:0;transform:scale(1.018);transition:opacity 1.2s var(--out),transform 1.8s var(--out)}
 #sky.on{opacity:1;transform:none}
@@ -438,16 +439,45 @@ body.guide-open{overflow:hidden}
   .route-primary:hover .route-arrow{transform:translate(2px,-2px)}
 }
 
-@media(max-width:420px){
-  #app{padding-left:calc(20px + env(safe-area-inset-left,0px));
-    padding-right:calc(20px + env(safe-area-inset-right,0px))}
-  .brandrow{margin-bottom:44px}
-  .maddr{max-width:34ch}
-  h2.sec{margin-top:48px}
+@media(max-width:520px){
+  :root{--sky-height:70svh}
+  #app{padding-top:calc(18px + var(--safe-top));
+    padding-left:calc(18px + env(safe-area-inset-left,0px));
+    padding-right:calc(18px + env(safe-area-inset-right,0px))}
+  #sky{background-position:72% 27%}
+  .brandrow{margin-bottom:clamp(24px,5.2svh,38px)}
+  .mname{font-size:clamp(31px,9.2vw,39px);line-height:1.04;
+    letter-spacing:-.03em;text-wrap:pretty}
+  .maddr{max-width:36ch;font-size:13.5px;margin-top:7px}
+  .mdist{margin-top:5px}
+  .rule{margin:clamp(22px,4.6svh,34px) 0 18px}
+  .ptime{font-size:clamp(62px,18.8vw,78px);margin-top:5px}
+  .pcount{margin-top:8px}
+  .leave{margin-top:14px;line-height:1.42}
+  .journey-meta{margin-top:5px}
+  .actions{gap:10px;margin-top:20px}
+  .route-primary{min-height:60px}
+  #arm{min-height:52px}
+  .day{margin-top:22px}
+  h2.sec{margin-top:40px}
   .item-top{gap:12px}
   .item .soon{display:block;text-align:right}
   .item .soon span{display:block;margin-bottom:2px}
   .install-panel{padding-left:18px;padding-right:18px}
+}
+
+/* Short phones still deliver the whole decision before asking for a scroll.
+   This is density through hierarchy, not a shrunken desktop canvas: every
+   control retains its touch target and only the ceremonial whitespace yields. */
+@media(max-width:520px) and (max-height:740px){
+  .brandrow{margin-bottom:20px}
+  .mname{font-size:30px}
+  .rule{margin:18px 0 15px}
+  .ptime{font-size:58px}
+  .pcount{margin-top:6px}
+  .leave{margin-top:11px}
+  .actions{margin-top:16px}
+  .day{margin-top:18px}
 }
 
 @media(min-width:700px){
@@ -464,7 +494,7 @@ body.guide-open{overflow:hidden}
    still inset, so the clock and controls never sit under the notch. */
 @supports (-webkit-touch-callout:none){
   #sky{position:absolute;top:calc(0px - var(--safe-top));
-    height:calc(74svh + var(--safe-top))}
+    height:calc(var(--sky-height) + var(--safe-top))}
   #scrim{position:absolute;top:calc(0px - var(--safe-top));bottom:auto;
     height:calc(100svh + var(--safe-top))}
   .splash{position:absolute;top:calc(0px - var(--safe-top));bottom:auto;
@@ -615,7 +645,7 @@ body.guide-open{overflow:hidden}
   </div>
 </section>
 
-<script src="near-core.js?v=6"></script>
+<script src="near-core.js?v=7"></script>
 <script>
 (function(){
   'use strict';
@@ -1020,7 +1050,7 @@ body.guide-open{overflow:hidden}
       $('leave').textContent='No further times published. Refresh later.';
       return;
     }
-    sky(nx.prayer);
+    sky(CORE.currentAtmosphere(ROWS,nowDate()));
     $('plabel').textContent = LABEL[nx.prayer]+' jama\'ah'+
       (iso(nx.at)!==iso(nowDate()) ? ' · tomorrow' : '');
     $('ptime').textContent  = hhmm(nx.at);

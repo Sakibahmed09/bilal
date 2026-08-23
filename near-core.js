@@ -87,6 +87,40 @@
     return best;
   }
 
+  /* The answer can point at tomorrow without turning tonight into daytime.
+     Atmosphere follows the prayer window we are living in, not the next
+     jama'ah in the queue. Begins is the closer proxy for the sky; jama'ah is
+     only a fallback for directories that do not publish separate starts. */
+  function currentAtmosphere(rows,now){
+    now=typeof now==='number' ? new Date(now) : now;
+    if(!validDate(now)) return 'isha';
+    var today=dateKey(now), row=null, i;
+    for(i=0;i<(rows||[]).length;i++){
+      if(rows[i].date===today){ row=rows[i]; break; }
+    }
+
+    var current='isha';
+    if(row){
+      PRAYERS.forEach(function(prayer){
+        var begins=row.begins && row.begins[prayer];
+        var jamaah=row.jamaah && row.jamaah[prayer];
+        var transition=validDate(begins) ? begins : jamaah;
+        if(validDate(transition) && transition.getTime()<=now.getTime()) current=prayer;
+      });
+      return current;
+    }
+
+    /* Honest fallback when today's row is absent. It keeps late night dark
+       and avoids borrowing the colour of a future result. */
+    var hour=now.getHours();
+    if(hour<5) return 'isha';
+    if(hour<8) return 'fajr';
+    if(hour<15) return 'dhuhr';
+    if(hour<19) return 'asr';
+    if(hour<21) return 'maghrib';
+    return 'isha';
+  }
+
   function verdict(use,kind,why,audit){
     return {use:use,kind:kind,why:why,audit:audit};
   }
@@ -165,6 +199,7 @@
   }
 
   return {PRAYERS:PRAYERS,effectiveJamaah:effectiveJamaah,auditRows:auditRows,
-    nextJamaah:nextJamaah,judge:judge,firstDecidable:firstDecidable,
+    nextJamaah:nextJamaah,currentAtmosphere:currentAtmosphere,
+    judge:judge,firstDecidable:firstDecidable,
     pullDistance:pullDistance,mapsUrl:mapsUrl};
 });
