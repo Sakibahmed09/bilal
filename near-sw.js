@@ -4,7 +4,7 @@
  * the site root. That gives it a broad technical scope, so the fetch handler
  * is intentionally narrow: every route that is not part of Near falls straight
  * through to the network and remains owned by the television experience. */
-const VERSION = 'bilal-near-v4';
+const VERSION = 'bilal-near-v5';
 const SHELL = VERSION + '-shell';
 const DATA = VERSION + '-data';
 const TIMES_HOST = 'bilal-times.ahmed-sakib.workers.dev';
@@ -21,7 +21,7 @@ const SHELL_PATHS = [
   '/fonts/archivo-latin.woff2'
 ];
 const SHELL_INSTALL_PATHS = SHELL_PATHS.map(function(path) {
-  return path === '/near-core.js' ? '/near-core.js?v=4' : path;
+  return path === '/near-core.js' ? '/near-core.js?v=5' : path;
 });
 /* Only the sky for the current prayer is fetched. Pre-caching all five made a
    first visit download nearly 700 KB of scenery while the user was waiting

@@ -610,7 +610,7 @@ body.guide-open{overflow:hidden}
   </div>
 </section>
 
-<script src="near-core.js?v=4"></script>
+<script src="near-core.js?v=5"></script>
 <script>
 (function(){
   'use strict';
@@ -761,14 +761,6 @@ body.guide-open{overflow:hidden}
     }
     return JOURNEYS[m.g];
   }
-  function mapsUrl(m){
-    /* Omitting origin lets Maps use its own current-location permission. Near
-       passes only the mosque's exact pin and never puts HERE into an external
-       URL. With no travelmode forced, Maps can show every route it supports. */
-    var destination=Number(m.y).toFixed(6)+','+Number(m.x).toFixed(6);
-    return 'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(destination);
-  }
-
   /* ── the three shapes ────────────────────────────────────────────────────
      The Worker is a pass-through, so each directory's own body arrives intact
      and this is where the three become one. Output is always:
@@ -1213,7 +1205,11 @@ body.guide-open{overflow:hidden}
   function journeyUI(){
     if(!PICKED) return;
     var journey=journeyFor(PICKED), arm=$('arm');
-    $('route').href=mapsUrl(PICKED);
+    /* Maps receives the mosque's name and full address, not an anonymous
+       coordinate. It resolves its own establishment pin and entrance; Near
+       still omits HERE and travel mode so Maps owns both private location and
+       live routing. A reviewed placeId, when present, makes the match exact. */
+    $('route').href=CORE.mapsUrl(PICKED);
     $('route').setAttribute('aria-label','Directions to '+PICKED.n+' in Google Maps');
     $('journeyForm').className='journey-form';
     $('journeyForm').setAttribute('aria-hidden','true');

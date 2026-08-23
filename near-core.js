@@ -143,7 +143,23 @@
     return Math.min(maximum,dy*resistance);
   }
 
+  /* Maps can route to a bare coordinate, but then it presents the destination
+     as an anonymous point. A name plus full address lets Maps resolve the
+     establishment and its own entrance pin. A reviewed Place ID is stronger
+     still, so the directory can add one without changing the client again. */
+  function mapsUrl(m){
+    var identity=[m && m.n,m && m.a].filter(function(value){
+      return String(value||'').trim();
+    }).join(', ');
+    if(!identity && m){
+      identity=Number(m.y).toFixed(6)+','+Number(m.x).toFixed(6);
+    }
+    var url='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(identity);
+    if(m && m.placeId) url+='&destination_place_id='+encodeURIComponent(m.placeId);
+    return url;
+  }
+
   return {PRAYERS:PRAYERS,effectiveJamaah:effectiveJamaah,auditRows:auditRows,
     nextJamaah:nextJamaah,judge:judge,firstDecidable:firstDecidable,
-    pullDistance:pullDistance};
+    pullDistance:pullDistance,mapsUrl:mapsUrl};
 });
