@@ -1,0 +1,127 @@
+(function(root,factory){
+  var api=factory();
+  if(typeof module==='object' && module.exports) module.exports=api;
+  if(root) root.BilalNearCore=api;
+})(typeof self!=='undefined' ? self : this,function(){
+  'use strict';
+
+  var PRAYERS=['fajr','dhuhr','asr','maghrib','isha'];
+
+  function validDate(d){ return d instanceof Date && !isNaN(d.getTime()); }
+  function pad(n){ return n<10 ? '0'+n : String(n); }
+  function dateKey(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+  function rowKey(row,prayer){ return String(row.date||'')+'/'+prayer; }
+  function wallMinutes(d){ return d.getHours()*60+d.getMinutes(); }
+
+  /* A jama'ah just after midnight belongs after a begins time just before
+     midnight. Smaller negative gaps are genuinely backwards. */
+  function offsetMinutes(begins,jamaah){
+    var n=(jamaah.getTime()-begins.getTime())/60000;
+    if(n < -720) n+=1440;
+    return n;
+  }
+
+  function effectiveJamaah(begins,jamaah){
+    if(validDate(begins) && validDate(jamaah) && jamaah.getTime()-begins.getTime() < -720*60000){
+      return new Date(jamaah.getTime()+86400000);
+    }
+    return jamaah;
+  }
+
+  function auditRows(rows){
+    var bad={}, issues=[], previous={};
+    (rows||[]).forEach(function(row){
+      PRAYERS.forEach(function(prayer){
+        var key=rowKey(row,prayer), begins=row.begins && row.begins[prayer];
+        var jamaah=row.jamaah && row.jamaah[prayer];
+        if(jamaah && !validDate(jamaah)){
+          bad[key]='This time could not be read';
+          issues.push({key:key,reason:bad[key]});
+          return;
+        }
+        if(!jamaah) return;
+        if(begins && validDate(begins)){
+          var offset=offsetMinutes(begins,jamaah);
+          if(offset<0){
+            bad[key]='Jama\'ah appears before the prayer begins';
+          }else if(offset>240){
+            bad[key]='Jama\'ah is unusually far after the prayer begins';
+          }
+          if(bad[key]){
+            issues.push({key:key,reason:bad[key]});
+            return;
+          }
+        }
+
+        var prev=previous[prayer];
+        if(prev){
+          var a=new Date(prev.date+'T12:00:00'), b=new Date(row.date+'T12:00:00');
+          var days=Math.round((b-a)/86400000);
+          if(days>0 && days<=2){
+            var delta=Math.abs(wallMinutes(jamaah)-wallMinutes(prev.jamaah));
+            delta=Math.min(delta,1440-delta);
+            if(delta>180){
+              bad[key]='This time jumps by more than three hours from the previous day';
+              issues.push({key:key,reason:bad[key]});
+              return;
+            }
+          }
+        }
+        previous[prayer]={date:row.date,jamaah:jamaah};
+      });
+    });
+    return {bad:bad,issues:issues};
+  }
+
+  function nextJamaah(rows,now){
+    var at=typeof now==='number' ? now : now.getTime();
+    var audit=auditRows(rows), best=null;
+    (rows||[]).forEach(function(row){
+      PRAYERS.forEach(function(prayer){
+        var q=row.jamaah && row.jamaah[prayer];
+        q=effectiveJamaah(row.begins && row.begins[prayer],q);
+        if(!validDate(q) || audit.bad[rowKey(row,prayer)] || q.getTime()<=at) return;
+        if(!best || q<best.at) best={key:rowKey(row,prayer),prayer:prayer,at:q};
+      });
+    });
+    return best;
+  }
+
+  function verdict(use,kind,why,audit){
+    return {use:use,kind:kind,why:why,audit:audit};
+  }
+
+  function judge(rows,now){
+    var audit=auditRows(rows), today=dateKey(now), row=null, i;
+    for(i=0;i<(rows||[]).length;i++) if(rows[i].date===today){ row=rows[i]; break; }
+    if(!row){
+      for(i=0;i<(rows||[]).length;i++) if(rows[i].date>today){ row=rows[i]; break; }
+      if(!row) row=(rows||[])[0]||null;
+    }
+    if(!row) return verdict(false,'bad','No jama\'ah times published',audit);
+
+    var nq=0, offs=[];
+    PRAYERS.forEach(function(prayer){
+      var key=rowKey(row,prayer), begins=row.begins && row.begins[prayer];
+      var jamaah=row.jamaah && row.jamaah[prayer];
+      if(validDate(jamaah) && !audit.bad[key]) nq++;
+      if(validDate(begins) && validDate(jamaah) && !audit.bad[key]){
+        offs.push(Math.round(offsetMinutes(begins,jamaah)));
+      }
+    });
+    var distinct={}; offs.forEach(function(n){ distinct[n]=1; });
+    var n=Object.keys(distinct).length;
+
+    if(nq===0) return verdict(false,'bad','No trustworthy jama\'ah times published',audit);
+    if(nq<3) return verdict(false,'warn','Only a partial listing passed its checks',audit);
+    if(row.date!==today) return verdict(true,'warn','No times published for today',audit);
+    if(audit.issues.length) return verdict(true,'warn','Some times withheld for checking',audit);
+    if(offs.length===0) return verdict(true,'warn','Jama\'ah times, but no separate start times',audit);
+    if(n===1) return verdict(false,'bad','Times look automatic, not set by the mosque',audit);
+    if(n===2) return verdict(true,'warn','Times not confirmed by the mosque',audit);
+    return verdict(true,'ok','Real jama\'ah times, set by the mosque',audit);
+  }
+
+  return {PRAYERS:PRAYERS,effectiveJamaah:effectiveJamaah,auditRows:auditRows,
+    nextJamaah:nextJamaah,judge:judge};
+});
