@@ -4,7 +4,7 @@
  * the site root. That gives it a broad technical scope, so the fetch handler
  * is intentionally narrow: every route that is not part of Near falls straight
  * through to the network and remains owned by the television experience. */
-const VERSION = 'bilal-near-v8';
+const VERSION = 'bilal-near-v9';
 const SHELL = VERSION + '-shell';
 const DATA = VERSION + '-data';
 const TIMES_HOST = 'bilal-times.ahmed-sakib.workers.dev';
@@ -69,12 +69,23 @@ function shellRequest(request) {
   });
 }
 
+/* Installed launches must never wait for the network before the first paint.
+ * The exact page shell was cached at install time, so return it immediately
+ * and refresh it quietly for the next launch. The previous network-first path
+ * left iOS holding its operating-system launch frame on every slow connection. */
 function pageRequest(request) {
-  return fetch(request).then(function(response) {
-    if (!response || !response.ok) throw new Error('page unavailable');
-    caches.open(SHELL).then(function(cache) { cache.put('/near.html', response.clone()); });
-    return response;
-  }).catch(function() { return caches.match('/near.html'); });
+  return caches.match('/near.html').then(function(hit) {
+    var fresh = fetch(request).then(function(response) {
+      if (!response || !response.ok) throw new Error('page unavailable');
+      caches.open(SHELL).then(function(cache) { cache.put('/near.html', response.clone()); });
+      return response;
+    });
+    if (hit) {
+      fresh.catch(function() {});
+      return hit;
+    }
+    return fresh.catch(function() { return caches.match('/near.html'); });
+  });
 }
 
 function timesRequest(request) {
