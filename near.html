@@ -75,7 +75,7 @@
   --text:'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif;
   --safe-top:env(safe-area-inset-top,0px);
   --safe-bottom:env(safe-area-inset-bottom,0px);
-  --sky-height:74svh;
+  --sky-height:76svh;
   --swift:160ms;
   --settle:420ms;
   --grand:760ms;
@@ -163,12 +163,14 @@ button,input{font:inherit}
   border-bottom:1px solid currentColor;transform:rotate(45deg) translateY(-1px)}
 
 #sky{position:fixed;top:0;left:0;right:0;height:var(--sky-height);z-index:0;
-  background-position:66% 32%;background-size:cover;
+  background-position:66% center;background-size:auto 100%;
   opacity:0;transform:scale(1.018);transition:opacity 1.2s var(--out),transform 1.8s var(--out)}
 #sky.on{opacity:1;transform:none}
 #scrim{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1;pointer-events:none;
-  background:linear-gradient(to bottom, rgba(23,20,15,.44) 0%, rgba(23,20,15,.30) 20%,
-                             rgba(23,20,15,.86) 50%, var(--deep) 66%, var(--deep) 100%)}
+  background:
+    linear-gradient(to right,rgba(23,20,15,.34) 0%,rgba(23,20,15,.18) 62%,rgba(23,20,15,.04) 100%),
+    linear-gradient(to bottom,rgba(23,20,15,.40) 0%,rgba(23,20,15,.25) 22%,
+      rgba(23,20,15,.84) 53%,var(--deep) 69%,var(--deep) 100%)}
 #scrim:after{content:'';position:absolute;inset:0;opacity:0;
   background:radial-gradient(circle at 50% 37%,rgba(217,164,143,.24),transparent 54%)}
 body.calling #scrim:after{animation:call-glow 1.4s var(--out) both}
@@ -326,11 +328,21 @@ button.item:active{transform:scale(.985)}
 .btn:active{transform:scale(.98)}
 .btn:disabled{opacity:1;cursor:default}
 .btn.ghost{background:transparent;color:var(--clay);border-color:rgba(217,164,143,.45)}
-.actions{display:grid;gap:8px;margin-top:24px}
-.route-primary{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:56px;
-  text-decoration:none;padding-left:18px;padding-right:15px}
-.route-primary .route-arrow{display:grid;place-items:center;width:27px;height:27px;border-radius:50%;
-  background:rgba(34,30,28,.12);font-size:15px;transition:transform var(--settle) var(--out)}
+.actions{display:grid;gap:8px;margin-top:26px}
+/* A route is the completion of the decision, not a generic rectangular CTA.
+   Two quiet rules hold an editorial action in the page; the clay disc is the
+   only button-like shape and sits where a thumb naturally finishes the scan. */
+.route-primary{display:grid;grid-template-columns:minmax(0,1fr) 48px;align-items:center;gap:16px;
+  width:100%;min-height:84px;padding:14px 0;border-top:1px solid rgba(217,164,143,.42);
+  border-bottom:1px solid var(--hair);color:var(--cream);text-decoration:none;cursor:pointer}
+.route-copy{display:block;min-width:0}
+.route-kicker{display:block;color:var(--clay);font-size:11.5px;line-height:1.2;
+  letter-spacing:.015em}
+.route-label{display:block;margin-top:5px;font-family:var(--display);font-size:24px;
+  font-weight:400;line-height:1.16;letter-spacing:-.02em}
+.route-primary .route-arrow{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;
+  background:var(--clay);color:var(--char);font-size:20px;
+  transition:background-color var(--swift) ease,transform var(--settle) var(--out)}
 .route-primary:active .route-arrow{transform:translate(2px,-2px)}
 #arm{display:flex;align-items:center;justify-content:flex-start;gap:10px;width:max-content;max-width:100%;
   min-height:48px;padding:7px 2px;background:transparent;border-color:transparent;
@@ -476,28 +488,37 @@ body.guide-open{overflow:hidden}
   button.item:hover{background:rgba(246,239,231,.075);border-color:rgba(246,239,231,.30)}
   .btn:hover{background:var(--clay-lift);border-color:var(--clay-lift)}
   .btn.ghost:hover{background:rgba(217,164,143,.10);color:var(--clay-lift)}
-  .route-primary:hover .route-arrow{transform:translate(2px,-2px)}
+  .route-primary:hover{color:var(--clay-lift)}
+  .route-primary:hover .route-arrow{background:var(--clay-lift);transform:translate(2px,-2px)}
 }
 
 @media(max-width:520px){
-  :root{--sky-height:70svh}
+  :root{--sky-height:78svh}
   #app{padding-top:calc(18px + var(--safe-top));
     padding-left:calc(18px + env(safe-area-inset-left,0px));
     padding-right:calc(18px + env(safe-area-inset-right,0px))}
-  #sky{background-position:72% 27%}
+  /* The source photograph is landscape. On a phone it is treated as a
+     portrait crop: the full minaret rises on the right edge while the open
+     sky becomes the reading field. This is art direction, not a smaller TV. */
+  #sky{background-position:64% center;background-size:auto 100%}
+  #scrim{background:
+    linear-gradient(to right,rgba(23,20,15,.66) 0%,rgba(23,20,15,.36) 66%,rgba(23,20,15,.08) 100%),
+    linear-gradient(to bottom,rgba(23,20,15,.35) 0%,rgba(23,20,15,.20) 24%,
+      rgba(23,20,15,.84) 56%,var(--deep) 72%,var(--deep) 100%)}
   .brandrow{margin-bottom:clamp(21px,4.4svh,32px)}
-  .mname{font-size:clamp(29px,8.4vw,36px);line-height:1.06;
+  .mname{max-width:88%;font-size:clamp(30px,8.7vw,38px);line-height:1.06;
     letter-spacing:-.03em;text-wrap:pretty}
-  .maddr{max-width:36ch;font-size:13.5px;margin-top:7px}
+  .maddr{max-width:78%;font-size:13.5px;margin-top:7px}
   .mdist{margin-top:5px}
-  .rule{margin:clamp(20px,4.1svh,30px) 0 17px}
+  .rule{width:88%;margin:clamp(20px,4.1svh,30px) 0 17px}
   .ptime{font-size:19px}
   .leave{margin-top:13px}
   .leave span{font-size:clamp(39px,12.2vw,52px)}
   .leave.none span,.leave.late span{font-size:clamp(30px,8.8vw,38px)}
   .journey-meta{margin-top:5px}
-  .actions{gap:5px;margin-top:19px}
-  .route-primary{min-height:60px}
+  .actions{gap:6px;margin-top:22px}
+  .route-primary{min-height:82px}
+  .route-label{font-size:23px}
   #arm{min-height:48px}
   .day{margin-top:18px}
   .item-top{gap:12px}
@@ -523,7 +544,7 @@ body.guide-open{overflow:hidden}
   #app{padding-top:calc(42px + var(--safe-top));
     padding-left:calc(30px + env(safe-area-inset-left,0px));
     padding-right:calc(30px + env(safe-area-inset-right,0px))}
-  #sky{background-position:center 32%}
+  #sky{background-position:center center;background-size:cover}
   .install-panel{max-height:calc(100svh - 18px);border-radius:28px 28px 0 0;padding-top:10px}
 }
 
@@ -613,8 +634,9 @@ body.guide-open{overflow:hidden}
       </div>
     </form>
     <div class="actions">
-      <a class="btn route route-primary" id="route" target="_blank" rel="noopener external">
-        <span>Open directions</span><span class="route-arrow" aria-hidden="true">↗</span>
+      <a class="route route-primary" id="route" target="_blank" rel="noopener external">
+        <span class="route-copy"><span class="route-kicker">Live route · Google Maps</span><strong class="route-label">Take me there</strong></span>
+        <span class="route-arrow" aria-hidden="true">↗</span>
       </a>
       <button class="btn ghost" id="arm" aria-pressed="false"><span class="armdot" aria-hidden="true"></span><span class="arm-copy"><span id="armText">Alert me when to leave</span><small>Bilal needs to stay open</small></span></button>
     </div>
@@ -1150,7 +1172,7 @@ body.guide-open{overflow:hidden}
     }else{
       /* No journey means no leave-time and no call. Maps can provide the live
          route, but only the person can bring that duration back to Bilal. */
-      setLeave('leave none','<span>When should you leave?</span><small>Open the route, then set your journey time.</small>');
+      setLeave('leave none','<span>When should you leave?</span><small>Check the live route, then set your journey time.</small>');
     }
   }
 
