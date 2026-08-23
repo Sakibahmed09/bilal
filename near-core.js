@@ -122,6 +122,28 @@
     return verdict(true,'ok','Real jama\'ah times, set by the mosque',audit);
   }
 
+  /* Results are ordered nearest-first. A usable result is only decisive once
+     every closer result has settled; a fast mosque farther away must never
+     jump one whose timetable is still being checked. */
+  function firstDecidable(results){
+    for(var i=0;i<(results||[]).length;i++){
+      if(typeof results[i]==='undefined') return {decided:false,index:-1,result:null};
+      if(results[i] && results[i].v && results[i].v.use){
+        return {decided:true,index:i,result:results[i]};
+      }
+    }
+    return {decided:true,index:-1,result:null};
+  }
+
+  /* A pull only belongs to a deliberate, mostly vertical drag from the very
+     top of the page. Keeping the geometry here makes the gesture testable and
+     stops ordinary sideways swipes or in-page scrolling becoming reloads. */
+  function pullDistance(dy,dx,atTop,resistance,maximum){
+    if(!atTop || dy<=0 || Math.abs(dx)>dy*.8) return 0;
+    return Math.min(maximum,dy*resistance);
+  }
+
   return {PRAYERS:PRAYERS,effectiveJamaah:effectiveJamaah,auditRows:auditRows,
-    nextJamaah:nextJamaah,judge:judge};
+    nextJamaah:nextJamaah,judge:judge,firstDecidable:firstDecidable,
+    pullDistance:pullDistance};
 });

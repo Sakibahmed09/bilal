@@ -4,7 +4,7 @@
  * the site root. That gives it a broad technical scope, so the fetch handler
  * is intentionally narrow: every route that is not part of Near falls straight
  * through to the network and remains owned by the television experience. */
-const VERSION = 'bilal-near-v2';
+const VERSION = 'bilal-near-v3';
 const SHELL = VERSION + '-shell';
 const DATA = VERSION + '-data';
 const TIMES_HOST = 'bilal-times.ahmed-sakib.workers.dev';
@@ -17,13 +17,17 @@ const SHELL_PATHS = [
   '/icon-192.png',
   '/icon-512.png',
   '/mosques.json',
-  '/sky/fajr.jpg',
-  '/sky/dhuhr.jpg',
-  '/sky/asr.jpg',
-  '/sky/maghrib.jpg',
-  '/sky/isha.jpg'
+  '/fonts/prata-latin.woff2',
+  '/fonts/archivo-latin.woff2'
 ];
-const ON_DEMAND_PATHS = ['/athan.mp3'];
+/* Only the sky for the current prayer is fetched. Pre-caching all five made a
+   first visit download nearly 700 KB of scenery while the user was waiting
+   for the actual answer. */
+const ON_DEMAND_PATHS = [
+  '/athan.mp3',
+  '/sky/fajr.webp', '/sky/dhuhr.webp', '/sky/asr.webp', '/sky/maghrib.webp', '/sky/isha.webp',
+  '/sky/fajr.jpg', '/sky/dhuhr.jpg', '/sky/asr.jpg', '/sky/maghrib.jpg', '/sky/isha.jpg'
+];
 
 self.addEventListener('install', function(event) {
   event.waitUntil(

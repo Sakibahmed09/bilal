@@ -10,6 +10,22 @@
   "background_color": "#17140f",
   "theme_color": "#17140f",
   "categories": ["lifestyle", "navigation"],
+  "screenshots": [
+    {
+      "src": "/near-screenshot.webp",
+      "sizes": "390x844",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Bilal Near showing the next trustworthy jama'ah and when to leave."
+    },
+    {
+      "src": "/near-screenshot-wide.webp",
+      "sizes": "1280x720",
+      "type": "image/webp",
+      "form_factor": "wide",
+      "label": "Bilal Near on a larger screen."
+    }
+  ],
   "icons": [
     {
       "src": "/icon-192.png",
