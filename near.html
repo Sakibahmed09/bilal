@@ -163,11 +163,11 @@ body.calling #scrim:after{animation:call-glow 1.4s var(--out) both}
      90ms  address and distance arrive as one thought
     190ms  the rule draws, then the prayer becomes the subject
     300ms  countdown and leave instruction follow
-    410ms  the two controls finish the gesture
+    410ms  the route and supporting controls finish the gesture
 
    One class drives the sequence. It is an editorial reveal, not a collection
    of unrelated fades, and switching mosque reuses the same settling curve. */
-#hero>:not(.journey-form),#hero .row{opacity:0;transform:translateY(12px);
+#hero>:not(.journey-form),#hero .actions{opacity:0;transform:translateY(12px);
   transition:opacity var(--grand) var(--out),transform var(--grand) var(--out)}
 #hero.in>:not(.journey-form){opacity:1;transform:none}
 #hero .maddr,#hero .mdist{transition-delay:90ms}
@@ -175,19 +175,13 @@ body.calling #scrim:after{animation:call-glow 1.4s var(--out) both}
 #hero.in .rule{transform:scaleX(1)}
 #hero .plabel,#hero .ptime{transition-delay:230ms}
 #hero .pcount,#hero .leave{transition-delay:300ms}
-#hero .row{transition-delay:410ms}
+#hero .actions{transition-delay:410ms}
 #hero .day{transition-delay:470ms}
 .mname{font-family:var(--display);font-size:clamp(34px,10vw,48px);line-height:1.08;
   letter-spacing:-.025em;text-wrap:balance;font-kerning:normal}
 .maddr{font-size:14px;color:var(--veil);margin-top:9px;line-height:1.45}
 .mdist{font-size:14px;color:var(--clay);margin-top:7px;font-weight:600;
   display:flex;align-items:baseline;flex-wrap:wrap;gap:7px}
-.route{position:relative;display:inline-flex;align-items:center;min-height:44px;margin:-13px 0;
-  color:var(--clay-lift);font-weight:600;text-decoration:none}
-.route:after{content:'';position:absolute;left:0;right:0;bottom:10px;
-  border-bottom:1px solid currentColor;opacity:.48;transform:scaleX(.72);transform-origin:left;
-  transition:transform var(--settle) var(--out),opacity var(--swift) ease}
-
 .rule{height:1px;background:var(--hair);margin:clamp(28px,7vh,54px) 0 24px}
 
 .plabel{font-size:13px;letter-spacing:.02em;color:var(--veil);text-transform:none}
@@ -280,8 +274,17 @@ button.item:active{transform:scale(.985)}
 .btn:active{transform:scale(.98)}
 .btn:disabled{opacity:1;cursor:default}
 .btn.ghost{background:transparent;color:var(--clay);border-color:rgba(217,164,143,.45)}
-.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;margin-top:26px}
-.row .btn{white-space:nowrap}
+.actions{display:grid;gap:10px;margin-top:26px}
+.route-primary{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:54px;
+  text-decoration:none;padding-left:18px;padding-right:15px}
+.route-primary .route-arrow{display:grid;place-items:center;width:27px;height:27px;border-radius:50%;
+  background:rgba(34,30,28,.12);font-size:15px;transition:transform var(--settle) var(--out)}
+.route-primary:active .route-arrow{transform:translate(2px,-2px)}
+.support-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
+.support-row .btn{white-space:nowrap}
+.refresh-action{appearance:none;border:0;background:none;color:var(--veil);min-height:44px;padding:9px 2px;
+  font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:underline;
+  text-decoration-color:rgba(246,239,231,.2);text-underline-offset:3px}
 #arm{display:flex;align-items:center;justify-content:center;gap:0}
 .armdot{width:0;height:6px;border-radius:50%;background:var(--clay);opacity:0;
   transform:scale(.5);transition:width var(--settle) var(--out),margin var(--settle) var(--out),
@@ -417,7 +420,7 @@ body.guide-open{overflow:hidden}
   button.item:hover{background:rgba(246,239,231,.075);border-color:rgba(246,239,231,.30)}
   .btn:hover{background:var(--clay-lift);border-color:var(--clay-lift)}
   .btn.ghost:hover{background:rgba(217,164,143,.10);color:var(--clay-lift)}
-  .route:hover:after{opacity:1;transform:scaleX(1)}
+  .route-primary:hover .route-arrow{transform:translate(2px,-2px)}
 }
 
 @media(max-width:420px){
@@ -425,8 +428,7 @@ body.guide-open{overflow:hidden}
     padding-right:calc(20px + env(safe-area-inset-right,0px))}
   .brandrow{margin-bottom:44px}
   .maddr{max-width:34ch}
-  .row{grid-template-columns:minmax(0,1fr) minmax(96px,auto)}
-  .row .btn{padding-left:14px;padding-right:14px}
+  .support-row .btn{padding-left:14px;padding-right:14px}
   h2.sec{margin-top:48px}
   .item-top{gap:12px}
   .item .soon{display:block;text-align:right}
@@ -505,7 +507,7 @@ body.guide-open{overflow:hidden}
   <div id="hero" style="display:none">
     <div class="mname" id="mname"></div>
     <div class="maddr" id="maddr"></div>
-    <div class="mdist"><span id="mdist"></span><a class="route" id="route" target="_blank" rel="noopener external">Directions ↗</a></div>
+    <div class="mdist"><span id="mdist"></span></div>
     <div class="rule"></div>
     <div class="plabel" id="plabel"></div>
     <div class="ptime" id="ptime">--:--</div>
@@ -520,9 +522,14 @@ body.guide-open{overflow:hidden}
       </div>
       <div class="journey-hint">Walk, drive, transit, cycle or a lift. Bilal only needs the minutes.</div>
     </form>
-    <div class="row">
-      <button class="btn" id="arm" aria-pressed="false"><span class="armdot" aria-hidden="true"></span><span id="armText">Turn the athan on</span></button>
-      <button class="btn ghost" id="again">Refresh</button>
+    <div class="actions">
+      <a class="btn route route-primary" id="route" target="_blank" rel="noopener external">
+        <span>Open directions</span><span class="route-arrow" aria-hidden="true">↗</span>
+      </a>
+      <div class="support-row">
+        <button class="btn ghost" id="arm" aria-pressed="false"><span class="armdot" aria-hidden="true"></span><span id="armText">Call me when to leave</span></button>
+        <button class="refresh-action" id="again" type="button">Refresh</button>
+      </div>
     </div>
     <section class="day" id="daySection">
       <button class="day-toggle" id="dayToggle" type="button" aria-expanded="false" aria-controls="dayDrawer">
@@ -1101,13 +1108,13 @@ body.guide-open{overflow:hidden}
     function ok(){
       a.pause(); a.currentTime=0; a.volume=1;
       ARMED=true;
-      $('armText').textContent='Athan is on';
+      $('armText').textContent='Leave call is on';
       btn.setAttribute('aria-pressed','true');
       btn.disabled=true;
       btn.className='btn ghost armed';
       note();
     }
-    function no(){ $('armText').textContent='Sound was blocked, tap again'; }
+    function no(){ $('armText').textContent='Sound was blocked. Try again'; }
     if(p && p.then) p.then(ok).catch(no); else ok();
     try{
       if(window.Notification && Notification.permission==='default') Notification.requestPermission();
@@ -1217,7 +1224,7 @@ body.guide-open{overflow:hidden}
     if(!ARMED){
       arm.disabled=false;
       arm.className='btn';
-      $('armText').textContent=journey ? 'Turn the athan on' : 'Set journey time';
+      $('armText').textContent=journey ? 'Call me when to leave' : 'Set journey time for call';
       if(journey) arm.removeAttribute('aria-controls');
       else arm.setAttribute('aria-controls','journeyForm');
     }
@@ -1380,7 +1387,7 @@ body.guide-open{overflow:hidden}
 
   function note(){
     var bits=[];
-    bits.push(ARMED ? 'Athan on for this tab.' : 'Athan not armed. Nothing will make a sound.');
+    bits.push(ARMED ? 'Leave call on for this tab.' : 'Leave call off. Nothing will make a sound.');
     if(ARMED && PICKED && !journeyFor(PICKED)) bits.push('Set a journey time before Bilal can call.');
     else if(ARMED) bits.push('Keep Bilal open; after a refresh, turn it on again.');
     $('footnote').textContent=bits.join(' ');
