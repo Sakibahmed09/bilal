@@ -143,17 +143,22 @@
     return Math.min(maximum,dy*resistance);
   }
 
-  /* Maps can route to a bare coordinate, but then it presents the destination
-     as an anonymous point. A name plus full address lets Maps resolve the
-     establishment and its own entrance pin. A reviewed Place ID is stronger
-     still, so the directory can add one without changing the client again. */
+  /* A directory coordinate is safer than asking Maps to guess which branch a
+     generic mosque name means. Only a human-reviewed identity may use the nicer
+     named-establishment handoff; a Place ID remains the strongest form. */
   function mapsUrl(m){
-    var identity=[m && m.n,m && m.a].filter(function(value){
-      return String(value||'').trim();
-    }).join(', ');
-    if(!identity && m){
+    var reviewed=!!(m && (m.v===1 || m.placeId));
+    var identity='';
+    if(reviewed){
+      identity=[m.n,m.a].filter(function(value){
+        return String(value||'').trim();
+      }).join(', ');
+    }
+    if(!identity && m && m.y!=null && m.x!=null &&
+       isFinite(Number(m.y)) && isFinite(Number(m.x))){
       identity=Number(m.y).toFixed(6)+','+Number(m.x).toFixed(6);
     }
+    if(!identity && m) identity=[m.n,m.a].filter(Boolean).join(', ');
     var url='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(identity);
     if(m && m.placeId) url+='&destination_place_id='+encodeURIComponent(m.placeId);
     return url;
