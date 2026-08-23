@@ -54,7 +54,7 @@
  * ───────────────────────────────────────────────────────────────────────── */
 :root{
   --clay:#d9a48f; --clay-lift:#e8b9a3; --cream:#f6efe7;
-  --char:#221e1c; --deep:#17140f;
+  --char:#221e1c; --deep:#17140f; --chrome:#14161d;
   --veil:rgba(246,239,231,.52); --hair:rgba(246,239,231,.14);
   --ok:#7fb08a; --warn:#d8a24a; --bad:#c4614f;
   --display:'Prata',Georgia,serif;
@@ -71,8 +71,10 @@
 html,body{color:var(--cream);font-family:var(--text);
   font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;min-height:100%;
   -webkit-tap-highlight-color:transparent;text-rendering:optimizeLegibility}
-html{background:#14161d;scroll-behavior:smooth;min-height:-webkit-fill-available}
-body{position:relative;background:var(--deep);overflow-x:hidden;overscroll-behavior-y:none;
+html{background:var(--chrome);scroll-behavior:smooth;min-height:-webkit-fill-available}
+body{position:relative;overflow-x:hidden;overscroll-behavior-y:none;
+  background:linear-gradient(to bottom,var(--chrome) 0,var(--chrome) 66svh,
+    var(--deep) 66svh,var(--deep) 100%);
   min-height:100vh;min-height:-webkit-fill-available}
 button,input{font:inherit}
 
@@ -999,7 +1001,7 @@ body.guide-open{overflow:hidden}
     var meta=document.querySelector('meta[name="theme-color"]');
     var tone=THEME[prayer] || THEME.isha;
     if(meta) meta.setAttribute('content',tone);
-    document.documentElement.style.backgroundColor=tone;
+    document.documentElement.style.setProperty('--chrome',tone);
   }
 
   /* ── paint ───────────────────────────────────────────────────────────── */
