@@ -20,6 +20,9 @@ const SHELL_PATHS = [
   '/fonts/prata-latin.woff2',
   '/fonts/archivo-latin.woff2'
 ];
+const SHELL_INSTALL_PATHS = SHELL_PATHS.map(function(path) {
+  return path === '/near-core.js' ? '/near-core.js?v=4' : path;
+});
 /* Only the sky for the current prayer is fetched. Pre-caching all five made a
    first visit download nearly 700 KB of scenery while the user was waiting
    for the actual answer. */
@@ -32,7 +35,7 @@ const ON_DEMAND_PATHS = [
 self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(SHELL)
-      .then(function(cache) { return cache.addAll(SHELL_PATHS); })
+      .then(function(cache) { return cache.addAll(SHELL_INSTALL_PATHS); })
       .then(function() { return self.skipWaiting(); })
   );
 });
