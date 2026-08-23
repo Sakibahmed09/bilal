@@ -132,6 +132,19 @@ button,input{font:inherit}
 .pull-refresh.refreshing .pull-arrow{animation:pull-spin .7s linear infinite}
 @keyframes pull-spin{to{transform:rotate(360deg)}}
 
+/* A quiet platform cue, not a third action. It lives in the top edge, scrolls
+   away with the page and yields to the full pull status as soon as a finger
+   moves. The 44px gesture surface is the page itself, so the mark can stay
+   optically tiny. */
+.refresh-hint{position:absolute;z-index:22;top:calc(var(--safe-top) + 7px);left:50%;
+  display:flex;align-items:center;gap:6px;color:rgba(246,239,231,.38);font-size:10px;
+  line-height:1;letter-spacing:.045em;white-space:nowrap;pointer-events:none;
+  opacity:0;transform:translate(-50%,-5px);
+  transition:opacity 240ms ease,transform var(--settle) var(--out)}
+.refresh-hint.on{opacity:1;transform:translate(-50%,0)}
+.refresh-hint-mark{width:7px;height:7px;border-right:1px solid currentColor;
+  border-bottom:1px solid currentColor;transform:rotate(45deg) translateY(-1px)}
+
 #sky{position:fixed;top:0;left:0;right:0;height:74svh;z-index:0;
   background-position:66% 32%;background-size:cover;
   opacity:0;transform:scale(1.018);transition:opacity 1.2s var(--out),transform 1.8s var(--out)}
@@ -274,18 +287,15 @@ button.item:active{transform:scale(.985)}
 .btn:active{transform:scale(.98)}
 .btn:disabled{opacity:1;cursor:default}
 .btn.ghost{background:transparent;color:var(--clay);border-color:rgba(217,164,143,.45)}
-.actions{display:grid;gap:10px;margin-top:26px}
-.route-primary{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:54px;
+.actions{display:grid;gap:12px;margin-top:28px}
+.route-primary{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:56px;
   text-decoration:none;padding-left:18px;padding-right:15px}
 .route-primary .route-arrow{display:grid;place-items:center;width:27px;height:27px;border-radius:50%;
   background:rgba(34,30,28,.12);font-size:15px;transition:transform var(--settle) var(--out)}
 .route-primary:active .route-arrow{transform:translate(2px,-2px)}
-.support-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
-.support-row .btn{white-space:nowrap}
-.refresh-action{appearance:none;border:0;background:none;color:var(--veil);min-height:44px;padding:9px 2px;
-  font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:underline;
-  text-decoration-color:rgba(246,239,231,.2);text-underline-offset:3px}
-#arm{display:flex;align-items:center;justify-content:center;gap:0}
+#arm{display:flex;align-items:center;justify-content:center;gap:0;width:100%;min-height:48px;
+  background:rgba(246,239,231,.025);border-color:rgba(246,239,231,.19);
+  color:rgba(246,239,231,.78)}
 .armdot{width:0;height:6px;border-radius:50%;background:var(--clay);opacity:0;
   transform:scale(.5);transition:width var(--settle) var(--out),margin var(--settle) var(--out),
   opacity var(--swift) ease,transform var(--settle) var(--out)}
@@ -428,7 +438,6 @@ body.guide-open{overflow:hidden}
     padding-right:calc(20px + env(safe-area-inset-right,0px))}
   .brandrow{margin-bottom:44px}
   .maddr{max-width:34ch}
-  .support-row .btn{padding-left:14px;padding-right:14px}
   h2.sec{margin-top:48px}
   .item-top{gap:12px}
   .item .soon{display:block;text-align:right}
@@ -483,6 +492,9 @@ body.guide-open{overflow:hidden}
 <div class="pull-refresh" id="pullRefresh" role="status" aria-live="polite" aria-hidden="true">
   <span class="pull-arrow" id="pullArrow" aria-hidden="true">↓</span><span id="pullText">Pull to refresh</span>
 </div>
+<div class="refresh-hint" id="refreshHint" aria-hidden="true">
+  <span class="refresh-hint-mark"></span><span>pull to refresh</span>
+</div>
 <div class="net" id="net" role="status" aria-live="polite" aria-hidden="true">Offline · saved times only</div>
 
 <main id="app">
@@ -526,10 +538,7 @@ body.guide-open{overflow:hidden}
       <a class="btn route route-primary" id="route" target="_blank" rel="noopener external">
         <span>Open directions</span><span class="route-arrow" aria-hidden="true">↗</span>
       </a>
-      <div class="support-row">
-        <button class="btn ghost" id="arm" aria-pressed="false"><span class="armdot" aria-hidden="true"></span><span id="armText">Call me when to leave</span></button>
-        <button class="refresh-action" id="again" type="button">Refresh</button>
-      </div>
+      <button class="btn ghost" id="arm" aria-pressed="false"><span class="armdot" aria-hidden="true"></span><span id="armText">Call me when to leave</span></button>
     </div>
     <section class="day" id="daySection">
       <button class="day-toggle" id="dayToggle" type="button" aria-expanded="false" aria-controls="dayDrawer">
@@ -1121,8 +1130,6 @@ body.guide-open{overflow:hidden}
     }catch(e){}
   };
 
-  $('again').onclick=function(){ location.reload(); };
-
   /* PULL-TO-REFRESH STORYBOARD
 
        touch  the page follows at less than half finger speed
@@ -1144,6 +1151,7 @@ body.guide-open{overflow:hidden}
     $('pullRefresh').setAttribute('aria-hidden','true');
     $('pullArrow').style.transform='';
     $('pullText').textContent='Pull to refresh';
+    if(HERO_SHOWN && navigator.onLine) $('refreshHint').className='refresh-hint on';
     setTimeout(function(){
       $('app').classList.remove('pull-settle');
       $('app').style.transform='';
@@ -1158,6 +1166,7 @@ body.guide-open{overflow:hidden}
     PULLING.startX=e.touches[0].clientX;
     PULLING.startY=e.touches[0].clientY;
     PULLING.distance=0; PULLING.ready=false;
+    $('refreshHint').className='refresh-hint';
     $('app').classList.add('pulling');
   },{passive:true});
   document.addEventListener('touchmove',function(e){
@@ -1370,6 +1379,7 @@ body.guide-open{overflow:hidden}
     var offline=!navigator.onLine, net=$('net');
     net.className=offline ? 'net on' : 'net';
     net.setAttribute('aria-hidden',offline ? 'false' : 'true');
+    if(HERO_SHOWN) $('refreshHint').className=offline ? 'refresh-hint' : 'refresh-hint on';
   }
   window.addEventListener('online',networkState);
   window.addEventListener('offline',networkState);
@@ -1526,7 +1536,10 @@ body.guide-open{overflow:hidden}
         $('foot').style.display='';
         note();
         promote(decision.result.m,decision.result.rows,decision.index>0,false,true);
-        setTimeout(function(){ $('hero').className='in'; HERO_SHOWN=true; },30);
+        setTimeout(function(){
+          $('hero').className='in'; HERO_SHOWN=true;
+          if(navigator.onLine) $('refreshHint').className='refresh-hint on';
+        },30);
       }
       if(completed!==near.length) return;
       RESULTS=settled.filter(Boolean);
