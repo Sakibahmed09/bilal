@@ -68,11 +68,11 @@
   --out:cubic-bezier(.16,1,.3,1);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{background:var(--deep);color:var(--cream);font-family:var(--text);
+html,body{color:var(--cream);font-family:var(--text);
   font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;min-height:100%;
   -webkit-tap-highlight-color:transparent;text-rendering:optimizeLegibility}
-html{scroll-behavior:smooth;min-height:-webkit-fill-available}
-body{position:relative;overflow-x:hidden;overscroll-behavior-y:none;
+html{background:#14161d;scroll-behavior:smooth;min-height:-webkit-fill-available}
+body{position:relative;background:var(--deep);overflow-x:hidden;overscroll-behavior-y:none;
   min-height:100vh;min-height:-webkit-fill-available}
 button,input{font:inherit}
 
@@ -997,7 +997,9 @@ body.guide-open{overflow:hidden}
     }
     LAST_PRAYER=prayer;
     var meta=document.querySelector('meta[name="theme-color"]');
-    if(meta) meta.setAttribute('content', THEME[prayer] || THEME.isha);
+    var tone=THEME[prayer] || THEME.isha;
+    if(meta) meta.setAttribute('content',tone);
+    document.documentElement.style.backgroundColor=tone;
   }
 
   /* ── paint ───────────────────────────────────────────────────────────── */
