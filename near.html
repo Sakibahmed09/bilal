@@ -86,8 +86,8 @@ button,input{font:inherit}
  *  data 2  the living page is ready; the veil lifts in 280ms
  *
  * The splash never creates a wait longer than the work beneath it. A very
- * fast cached answer gets just 360ms so the identity reads as one gesture;
- * slower work continues in the living page after 1.2s so this never becomes
+ * fast cached answer gets 900ms so the mark and name can actually arrive;
+ * slower work continues in the living page after 1.45s so this never becomes
  * a decorative wall between someone and the postcode route. */
 .splash{position:fixed;inset:0;z-index:24;display:grid;place-items:center;overflow:hidden;
   background:
@@ -678,7 +678,7 @@ body.guide-open{overflow:hidden}
      and the initial reveal is allowed to breathe. */
   var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var MOTION = {swift:160, settle:420, grand:760, out:'cubic-bezier(.16,1,.3,1)'};
-  var SPLASH = {minimum:360, maximum:1200};
+  var SPLASH = {minimum:900, maximum:1450};
   var PULL = {threshold:72, maximum:108, resistance:.44, reloadDelay:240};
 
   /* Time override for previewing, the same ?at=HH:MM the display takes. Every
