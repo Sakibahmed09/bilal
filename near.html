@@ -1223,7 +1223,7 @@ body.guide-open{overflow:hidden}
     }
     if(!ARMED){
       arm.disabled=false;
-      arm.className='btn';
+      arm.className='btn ghost';
       $('armText').textContent=journey ? 'Call me when to leave' : 'Set journey time for call';
       if(journey) arm.removeAttribute('aria-controls');
       else arm.setAttribute('aria-controls','journeyForm');
