@@ -4,7 +4,7 @@
  * the site root. That gives it a broad technical scope, so the fetch handler
  * is intentionally narrow: every route that is not part of Near falls straight
  * through to the network and remains owned by the television experience. */
-const VERSION = 'bilal-near-v6';
+const VERSION = 'bilal-near-v7';
 const SHELL = VERSION + '-shell';
 const DATA = VERSION + '-data';
 const TIMES_HOST = 'bilal-times.ahmed-sakib.workers.dev';
@@ -13,6 +13,7 @@ const SHELL_PATHS = [
   '/near-core.js',
   '/near.webmanifest',
   '/favicon.ico',
+  '/bilal-mark-192.png',
   '/icon-180.png',
   '/icon-192.png',
   '/icon-512.png',

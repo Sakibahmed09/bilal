@@ -16,7 +16,7 @@
 <link rel="manifest" href="near.webmanifest">
 <meta name="robots" content="noindex">
 <link rel="preload" href="fonts/prata-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="icon-192.png" as="image">
+<link rel="preload" href="bilal-mark-192.png" as="image">
 <link rel="preload" href="mosques.json" as="fetch" crossorigin>
 <link rel="preconnect" href="https://bilal-times.ahmed-sakib.workers.dev" crossorigin>
 <style>
@@ -160,7 +160,12 @@ body.calling #scrim:after{animation:call-glow 1.4s var(--out) both}
   padding-top:calc(28px + var(--safe-top));
   padding-right:calc(22px + env(safe-area-inset-right,0px));
   padding-bottom:calc(60px + var(--safe-bottom));
-  padding-left:calc(22px + env(safe-area-inset-left,0px));min-height:100svh}
+  padding-left:calc(22px + env(safe-area-inset-left,0px));min-height:100svh;
+  opacity:1;transition:opacity 220ms ease}
+/* Safari can expose a sliver below an absolute full-bleed layer while its
+   visual viewport is settling. Keep the living page unpainted for the brief
+   data-led loading beat, so no section heading can peek through the home area. */
+body.is-loading #app{opacity:0;visibility:hidden}
 #app.pulling{will-change:transform}
 #app.pull-settle{transition:transform var(--settle) var(--out)}
 
@@ -477,12 +482,12 @@ body.guide-open{overflow:hidden}
 }
 </style>
 </head>
-<body>
+<body class="is-loading">
 <div id="sky"></div>
 <div id="scrim"></div>
 <div class="splash" id="splash" data-stage="0">
   <div class="splash-inner">
-    <img class="splash-mark" src="icon-192.png" width="70" height="70" alt="">
+    <img class="splash-mark" src="bilal-mark-192.png" width="70" height="70" alt="">
     <div class="splash-name">bilal</div>
     <div class="splash-status" id="splashStatus" role="status" aria-live="polite">finding where you are</div>
     <div class="splash-progress" aria-hidden="true"><span id="splashProgress"></span></div>
@@ -694,6 +699,7 @@ body.guide-open{overflow:hidden}
     clearTimeout(SPLASH_MAX_TIMER);
     SPLASH_CLOSED=false;
     SPLASH_STARTED=Date.now();
+    document.body.classList.add('is-loading');
     $('splash').className='splash';
     $('splash').setAttribute('aria-hidden','false');
     splashStage(0,status||'finding where you are',.08);
@@ -707,6 +713,7 @@ body.guide-open{overflow:hidden}
     clearTimeout(SPLASH_TIMER);
     SPLASH_TIMER=setTimeout(function(){
       SPLASH_CLOSED=true;
+      document.body.classList.remove('is-loading');
       $('splash').className='splash out';
       if($('stage').style.display!=='none' && $('stage').animate && !REDUCED){
         $('stage').animate([
