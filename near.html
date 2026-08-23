@@ -178,11 +178,11 @@ body.is-loading #app{opacity:0;visibility:hidden}
 /* ── entrance ─────────────────────────────────────────────────────────────
    ANIMATION STORYBOARD
 
-      0ms  mosque settles into the sky
-     90ms  address and distance arrive as one thought
-    190ms  the rule draws, then the prayer becomes the subject
-    300ms  countdown and leave instruction follow
-    410ms  the route and supporting controls finish the gesture
+   0ms  mosque settles into the sky
+  90ms  address and distance arrive as one thought
+ 190ms  the rule draws, then the prayer context arrives
+ 260ms  the leave decision follows as one sentence
+ 390ms  the route and supporting controls finish the gesture
 
    One class drives the sequence. It is an editorial reveal, not a collection
    of unrelated fades, and switching mosque reuses the same settling curve. */
@@ -192,10 +192,10 @@ body.is-loading #app{opacity:0;visibility:hidden}
 #hero .maddr,#hero .mdist{transition-delay:90ms}
 #hero .rule{transform:scaleX(.94);transform-origin:left center;transition-delay:190ms}
 #hero.in .rule{transform:scaleX(1)}
-#hero .plabel,#hero .ptime{transition-delay:230ms}
-#hero .pcount,#hero .leave{transition-delay:300ms}
-#hero .actions{transition-delay:410ms}
-#hero .day{transition-delay:470ms}
+#hero .jamaah-line{transition-delay:220ms}
+#hero .leave,#hero .journey-meta{transition-delay:280ms}
+#hero .actions{transition-delay:390ms}
+#hero .day{transition-delay:450ms}
 .mname{font-family:var(--display);font-size:clamp(34px,10vw,48px);line-height:1.08;
   letter-spacing:-.025em;text-wrap:balance;font-kerning:normal}
 .maddr{font-size:14px;color:var(--veil);margin-top:9px;line-height:1.45}
@@ -203,23 +203,27 @@ body.is-loading #app{opacity:0;visibility:hidden}
   display:flex;align-items:baseline;flex-wrap:wrap;gap:7px}
 .rule{height:1px;background:var(--hair);margin:clamp(28px,7vh,54px) 0 24px}
 
-.plabel{font-size:13px;letter-spacing:.02em;color:var(--veil);text-transform:none}
-.ptime{font-family:var(--display);font-size:clamp(64px,20vw,92px);line-height:.96;
-  margin-top:8px;letter-spacing:-.04em;font-variant-numeric:lining-nums tabular-nums}
-.pcount{font-size:16px;color:var(--clay);margin-top:12px;font-weight:600}
-.leave{font-size:15px;margin-top:18px;line-height:1.5;color:var(--cream)}
-.leave.none{color:var(--veil)}
-.leave b{color:var(--clay-lift)}
-.journey-meta{display:flex;align-items:baseline;gap:8px;margin-top:8px;
+.jamaah-line{display:flex;align-items:baseline;gap:8px;color:var(--veil)}
+.plabel{font-size:14px;letter-spacing:.01em}
+.ptime{font-family:var(--display);font-size:19px;line-height:1;letter-spacing:-.02em;
+  color:var(--cream);font-variant-numeric:lining-nums tabular-nums}
+.leave{margin-top:14px;color:var(--cream)}
+.leave span{display:block;font-family:var(--display);font-size:clamp(40px,12vw,58px);
+  line-height:1.08;letter-spacing:-.035em;text-wrap:balance}
+.leave b{color:var(--clay-lift);font-weight:400}
+.leave small{display:block;margin-top:11px;color:var(--veil);font-family:var(--text);
+  font-size:13px;line-height:1.45;letter-spacing:0}
+.leave.none span,.leave.late span{font-size:clamp(31px,9vw,43px);line-height:1.12}
+.journey-meta{display:flex;align-items:baseline;gap:8px;margin-top:5px;
   color:var(--veil);font-size:12.5px;line-height:1.45}
 .text-button{appearance:none;border:0;background:none;color:var(--clay);font:inherit;
   display:inline-flex;align-items:center;min-height:44px;margin:-10px 0;font-weight:600;padding:10px 0;
   cursor:pointer;text-decoration:underline;
   text-decoration-color:rgba(217,164,143,.45);text-underline-offset:3px}
-.journey-form{max-height:0;overflow:hidden;opacity:0;margin-top:0;
-  transition:max-height var(--settle) var(--out),opacity var(--swift) ease,
-  margin-top var(--settle) var(--out)}
-.journey-form.on{max-height:154px;opacity:1;margin-top:17px}
+.journey-form{display:grid;grid-template-rows:0fr;opacity:0;
+  transition:grid-template-rows var(--settle) var(--out),opacity var(--swift) ease}
+.journey-form.on{grid-template-rows:1fr;opacity:1}
+.journey-inner{overflow:hidden;padding-top:17px}
 .journey-form label{display:block;color:var(--cream);font-size:13px;font-weight:600;margin-bottom:8px}
 .journey-fields{display:flex;align-items:center;gap:8px}
 #journeyMinutes{width:88px;min-height:46px;border:1px solid var(--hair);border-radius:11px;
@@ -230,7 +234,7 @@ body.is-loading #app{opacity:0;visibility:hidden}
 
 /* The rest of the day is present when it is wanted, never in competition
    with the one decision this screen exists to answer. */
-.day{margin-top:27px;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}
+.day{margin-top:27px;border-top:1px solid var(--hair)}
 .day-toggle{appearance:none;width:100%;min-height:56px;border:0;background:none;color:var(--cream);
   display:flex;align-items:center;justify-content:space-between;gap:18px;text-align:left;
   padding:10px 0;cursor:pointer}
@@ -258,9 +262,22 @@ body.is-loading #app{opacity:0;visibility:hidden}
 .day-report{position:relative;display:inline-flex;align-items:center;min-height:44px;margin:-10px 0;
   color:var(--clay);white-space:nowrap;text-underline-offset:3px}
 
-/* the others */
-h2.sec{font-size:12.5px;font-weight:600;letter-spacing:.06em;color:var(--veil);
-  margin:52px 0 14px;text-transform:uppercase}
+/* Timetable and mosque choice are both available without turning Home into a
+   directory. They use the same quiet disclosure language and only become a
+   surface after someone asks for them. */
+#others{border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}
+.others-toggle{appearance:none;width:100%;min-height:56px;border:0;background:none;color:var(--cream);
+  display:flex;align-items:center;justify-content:space-between;gap:18px;text-align:left;
+  padding:10px 0;cursor:pointer}
+.others-title{font-size:13px;font-weight:600}
+.others-title small{display:block;color:var(--veil);font-size:12px;font-weight:400;margin-top:3px}
+.others-toggle[aria-expanded="true"] .chev{transform:rotate(225deg);margin-top:5px}
+.others-drawer{display:grid;grid-template-rows:0fr;opacity:0;
+  transition:grid-template-rows var(--settle) var(--out),opacity var(--swift) ease}
+.others-drawer.on{grid-template-rows:1fr;opacity:1}
+.others-inner{overflow:hidden}
+.others-content{padding:8px 0 4px}
+.find-label{display:block;margin-bottom:9px;color:var(--veil);font-size:12px}
 .item{display:block;width:100%;text-align:left;background:rgba(246,239,231,.035);
   border:1px solid var(--hair);border-radius:14px;padding:15px 16px;margin-bottom:10px;
   color:var(--cream);font-family:var(--text);font-size:15px;
@@ -293,19 +310,20 @@ button.item:active{transform:scale(.985)}
 .btn:active{transform:scale(.98)}
 .btn:disabled{opacity:1;cursor:default}
 .btn.ghost{background:transparent;color:var(--clay);border-color:rgba(217,164,143,.45)}
-.actions{display:grid;gap:12px;margin-top:28px}
+.actions{display:grid;gap:8px;margin-top:24px}
 .route-primary{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:56px;
   text-decoration:none;padding-left:18px;padding-right:15px}
 .route-primary .route-arrow{display:grid;place-items:center;width:27px;height:27px;border-radius:50%;
   background:rgba(34,30,28,.12);font-size:15px;transition:transform var(--settle) var(--out)}
 .route-primary:active .route-arrow{transform:translate(2px,-2px)}
-#arm{display:flex;align-items:center;justify-content:center;gap:0;width:100%;min-height:48px;
-  background:rgba(246,239,231,.025);border-color:rgba(246,239,231,.19);
-  color:rgba(246,239,231,.78)}
-.armdot{width:0;height:6px;border-radius:50%;background:var(--clay);opacity:0;
-  transform:scale(.5);transition:width var(--settle) var(--out),margin var(--settle) var(--out),
-  opacity var(--swift) ease,transform var(--settle) var(--out)}
-#arm.armed .armdot{width:6px;margin-right:9px;opacity:1;transform:scale(1);
+#arm{display:flex;align-items:center;justify-content:flex-start;gap:10px;width:max-content;max-width:100%;
+  min-height:48px;padding:7px 2px;background:transparent;border-color:transparent;
+  color:var(--clay);text-align:left}
+.arm-copy{display:block}
+.arm-copy small{display:block;margin-top:2px;color:var(--veil);font-size:11.5px;font-weight:400}
+.armdot{width:6px;height:6px;border-radius:50%;background:var(--clay);opacity:.45;
+  transform:scale(.72);transition:opacity var(--swift) ease,transform var(--settle) var(--out)}
+#arm.armed .armdot{opacity:1;transform:scale(1);
   animation:armed-breathe 2.8s ease-in-out infinite}
 
 #pcform{margin-top:18px;display:none}
@@ -318,6 +336,12 @@ button.item:active{transform:scale(.985)}
 .foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--hair);
   font-size:13px;color:var(--veil);line-height:1.6}
 .foot b{color:var(--clay)}
+.near-about{margin-top:8px}
+.near-about summary{display:inline-flex;align-items:center;min-height:44px;color:var(--clay);
+  cursor:pointer;list-style:none;text-decoration:underline;text-decoration-color:rgba(217,164,143,.45);
+  text-underline-offset:3px}
+.near-about summary::-webkit-details-marker{display:none}
+.near-about p{max-width:50ch;padding:2px 0 8px}
 
 .msg{font-size:16px;line-height:1.55;color:var(--cream)}
 .msg .sub{font-size:14px;color:var(--veil);margin-top:9px}
@@ -445,21 +469,21 @@ body.guide-open{overflow:hidden}
     padding-left:calc(18px + env(safe-area-inset-left,0px));
     padding-right:calc(18px + env(safe-area-inset-right,0px))}
   #sky{background-position:72% 27%}
-  .brandrow{margin-bottom:clamp(24px,5.2svh,38px)}
-  .mname{font-size:clamp(31px,9.2vw,39px);line-height:1.04;
+  .brandrow{margin-bottom:clamp(21px,4.4svh,32px)}
+  .mname{font-size:clamp(29px,8.4vw,36px);line-height:1.06;
     letter-spacing:-.03em;text-wrap:pretty}
   .maddr{max-width:36ch;font-size:13.5px;margin-top:7px}
   .mdist{margin-top:5px}
-  .rule{margin:clamp(22px,4.6svh,34px) 0 18px}
-  .ptime{font-size:clamp(62px,18.8vw,78px);margin-top:5px}
-  .pcount{margin-top:8px}
-  .leave{margin-top:14px;line-height:1.42}
+  .rule{margin:clamp(20px,4.1svh,30px) 0 17px}
+  .ptime{font-size:19px}
+  .leave{margin-top:13px}
+  .leave span{font-size:clamp(39px,12.2vw,52px)}
+  .leave.none span,.leave.late span{font-size:clamp(30px,8.8vw,38px)}
   .journey-meta{margin-top:5px}
-  .actions{gap:10px;margin-top:20px}
+  .actions{gap:5px;margin-top:19px}
   .route-primary{min-height:60px}
-  #arm{min-height:52px}
-  .day{margin-top:22px}
-  h2.sec{margin-top:40px}
+  #arm{min-height:48px}
+  .day{margin-top:18px}
   .item-top{gap:12px}
   .item .soon{display:block;text-align:right}
   .item .soon span{display:block;margin-bottom:2px}
@@ -471,13 +495,12 @@ body.guide-open{overflow:hidden}
    control retains its touch target and only the ceremonial whitespace yields. */
 @media(max-width:520px) and (max-height:740px){
   .brandrow{margin-bottom:20px}
-  .mname{font-size:30px}
+  .mname{font-size:29px}
   .rule{margin:18px 0 15px}
-  .ptime{font-size:58px}
-  .pcount{margin-top:6px}
   .leave{margin-top:11px}
-  .actions{margin-top:16px}
-  .day{margin-top:18px}
+  .leave span{font-size:39px}
+  .actions{margin-top:15px}
+  .day{margin-top:14px}
 }
 
 @media(min-width:700px){
@@ -556,24 +579,28 @@ body.guide-open{overflow:hidden}
     <div class="maddr" id="maddr"></div>
     <div class="mdist"><span id="mdist"></span></div>
     <div class="rule"></div>
-    <div class="plabel" id="plabel"></div>
-    <div class="ptime" id="ptime">--:--</div>
-    <div class="pcount" id="pcount"></div>
-    <div class="leave" id="leave"></div>
+    <div class="jamaah-line">
+      <span class="plabel" id="plabel"></span>
+      <span class="ptime" id="ptime">--:--</span>
+    </div>
+    <div class="leave" id="leave" role="status" aria-live="polite"></div>
+    <div class="pcount sr-only" id="pcount"></div>
     <div class="journey-meta" id="journeyMeta"><span id="journeySource"></span><button class="text-button" id="journeyEdit" type="button" aria-expanded="false" aria-controls="journeyForm">Change</button></div>
     <form class="journey-form" id="journeyForm" aria-hidden="true" inert>
-      <label for="journeyMinutes">How many minutes from here?</label>
-      <div class="journey-fields">
-        <input id="journeyMinutes" type="number" min="1" max="180" step="1" inputmode="numeric" autocomplete="off">
-        <button class="btn ghost" type="submit">Use this</button>
+      <div class="journey-inner">
+        <label for="journeyMinutes">How many minutes from here?</label>
+        <div class="journey-fields">
+          <input id="journeyMinutes" type="number" min="1" max="180" step="1" inputmode="numeric" autocomplete="off">
+          <button class="btn ghost" type="submit">Use this</button>
+        </div>
+        <div class="journey-hint">Walk, drive, transit, cycle or a lift. Bilal only needs the minutes.</div>
       </div>
-      <div class="journey-hint">Walk, drive, transit, cycle or a lift. Bilal only needs the minutes.</div>
     </form>
     <div class="actions">
       <a class="btn route route-primary" id="route" target="_blank" rel="noopener external">
         <span>Open directions</span><span class="route-arrow" aria-hidden="true">↗</span>
       </a>
-      <button class="btn ghost" id="arm" aria-pressed="false"><span class="armdot" aria-hidden="true"></span><span id="armText">Call me when to leave</span></button>
+      <button class="btn ghost" id="arm" aria-pressed="false"><span class="armdot" aria-hidden="true"></span><span class="arm-copy"><span id="armText">Alert me when to leave</span><small>Bilal needs to stay open</small></span></button>
     </div>
     <section class="day" id="daySection">
       <button class="day-toggle" id="dayToggle" type="button" aria-expanded="false" aria-controls="dayDrawer">
@@ -592,25 +619,30 @@ body.guide-open{overflow:hidden}
     </section>
   </div>
 
-  <div id="others" style="display:none">
-    <h2 class="sec" id="othersHead">Also near you</h2>
-    <input class="find" id="q" placeholder="Search for another mosque by name" spellcheck="false">
-    <div id="list"></div>
-  </div>
+  <section id="others" style="display:none">
+    <button class="others-toggle" id="othersToggle" type="button" aria-expanded="false" aria-controls="othersDrawer">
+      <span class="others-title">Other mosques<small id="othersHint">Nearby choices and search</small></span>
+      <span class="chev" aria-hidden="true"></span>
+    </button>
+    <div class="others-drawer" id="othersDrawer" aria-hidden="true" inert>
+      <div class="others-inner">
+        <div class="others-content">
+          <h2 class="sr-only" id="othersHead">Also near you</h2>
+          <label class="find-label" for="q">Find a different mosque</label>
+          <input class="find" id="q" placeholder="Mosque name or town" spellcheck="false" autocomplete="off">
+          <div id="list"></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <div class="foot" id="foot" style="display:none">
-    This page works out where you are once, when it loads. It will not follow you
-    around. If you have moved, <b>refresh</b>.
-    <div id="footnote" style="margin-top:9px"></div>
-    <!-- The hierarchy, stated inside the product rather than only on the
-         landing page. Someone who is handed this URL never sees the pitch, and
-         a page that stays quiet about what it is would let them take the
-         travelling version for the whole of Bilal. -->
-    <div style="margin-top:14px">
-      Bilal is really a fixed screen that lives in one room and calls you there.
-      That is where the habit comes from, and this page is for the days you are
-      away from yours. <a href="tv.html" style="color:var(--clay)">Set one up</a>.
-    </div>
+    Location was used once for this result and is not stored. If you have moved, <b>refresh</b>.
+    <div id="footnote" style="display:none;margin-top:9px"></div>
+    <details class="near-about">
+      <summary>What is Bilal Near?</summary>
+      <p>Near is the travelling companion. Bilal’s fixed screen lives in one room and calls you there. <a href="tv.html" style="color:var(--clay)">Set one up</a>.</p>
+    </details>
     <div class="install" id="install">
       <div class="install-copy">
         <strong>Keep Bilal in your pocket.</strong>
@@ -1039,6 +1071,22 @@ body.guide-open{overflow:hidden}
     $('dayDrawer').inert=!opening;
   };
 
+  function setOthersOpen(opening){
+    $('othersToggle').setAttribute('aria-expanded',opening?'true':'false');
+    $('othersDrawer').className=opening ? 'others-drawer on' : 'others-drawer';
+    $('othersDrawer').setAttribute('aria-hidden',opening?'false':'true');
+    $('othersDrawer').inert=!opening;
+  }
+  $('othersToggle').onclick=function(){
+    setOthersOpen(this.getAttribute('aria-expanded')!=='true');
+  };
+
+  function setLeave(className,html){
+    var el=$('leave');
+    el.className=className;
+    if(el.innerHTML!==html) el.innerHTML=html;
+  }
+
   function paint(){
     if(!PICKED || !ROWS.length) return;
     var nx = nextJamaah(ROWS);
@@ -1047,28 +1095,32 @@ body.guide-open{overflow:hidden}
       $('plabel').textContent='Next jama\'ah';
       $('ptime').textContent='--:--';
       $('pcount').textContent='';
-      $('leave').textContent='No further times published. Refresh later.';
+      setLeave('leave none','<span>No further times</span><small>Refresh later for a new listing.</small>');
       return;
     }
     sky(CORE.currentAtmosphere(ROWS,nowDate()));
+    $('othersHint').textContent='Nearby choices and search';
     $('plabel').textContent = LABEL[nx.prayer]+' jama\'ah'+
-      (iso(nx.at)!==iso(nowDate()) ? ' · tomorrow' : '');
+      (iso(nx.at)!==iso(nowDate()) ? ' tomorrow' : '')+' ·';
     $('ptime').textContent  = hhmm(nx.at);
-    movingText($('pcount'), 'in '+human(nx.at-nowMs()));
+    movingText($('pcount'), 'Jama\'ah in '+human(nx.at-nowMs()));
 
     var journey=journeyFor(PICKED);
-    var el = $('leave');
     if(journey){
       var leaveAt = new Date(nx.at.getTime() - journey.minutes*60000);
       var left = leaveAt-nowMs();
-      el.className='leave';
       if(left>0){
-        el.innerHTML='Leave at <b>'+hhmm(leaveAt)+'</b>, in '+human(left)+'.';
+        if(iso(leaveAt)!==iso(nowDate())){
+          setLeave('leave','<span>Leave tomorrow at <b>'+hhmm(leaveAt)+'</b></span>');
+        }else{
+          setLeave('leave','<span>Leave in <b>'+human(left)+'</b></span><small>At '+hhmm(leaveAt)+'</small>');
+        }
       }else if(nowMs() < nx.at.getTime()){
-        el.innerHTML='<b>'+human(nx.at-nowMs())+' left.</b> This '+journey.minutes+
-          ' min journey will not make this jama\'ah.';
+        setLeave('leave late','<span>This one is too tight</span><small>'+human(nx.at-nowMs())+
+          ' until jama\'ah · about '+journey.minutes+' min away</small>');
+        $('othersHint').textContent='Check for a later jama\'ah';
       }else{
-        el.innerHTML='<b>Leave now.</b>';
+        setLeave('leave late','<span><b>Leave now</b></span>');
       }
       /* The call. Fires once per prayer per page load, inside the window
          between leaving and the jama'ah itself. A reload re-arms it, which is
@@ -1080,8 +1132,7 @@ body.guide-open{overflow:hidden}
     }else{
       /* No journey means no leave-time and no call. Maps can provide the live
          route, but only the person can bring that duration back to Bilal. */
-      el.className='leave none';
-      el.textContent='Open the route, then set your journey time so Bilal knows when to call.';
+      setLeave('leave none','<span>When should you leave?</span><small>Open the route, then set your journey time.</small>');
     }
   }
 
@@ -1137,6 +1188,14 @@ body.guide-open{overflow:hidden}
 
   $('arm').onclick=function(){
     var btn=this, a=$('athan');
+    if(ARMED){
+      ARMED=false;
+      btn.setAttribute('aria-pressed','false');
+      btn.className='btn ghost';
+      $('armText').textContent='Alert me when to leave';
+      note();
+      return;
+    }
     if(!journeyFor(PICKED)){
       $('journeyEdit').click();
       return;
@@ -1146,13 +1205,12 @@ body.guide-open{overflow:hidden}
     function ok(){
       a.pause(); a.currentTime=0; a.volume=1;
       ARMED=true;
-      $('armText').textContent='Leave call is on';
+      $('armText').textContent='Leave alert is on';
       btn.setAttribute('aria-pressed','true');
-      btn.disabled=true;
       btn.className='btn ghost armed';
       note();
     }
-    function no(){ $('armText').textContent='Sound was blocked. Try again'; }
+    function no(){ $('armText').textContent='Could not start the alert'; }
     if(p && p.then) p.then(ok).catch(no); else ok();
     try{
       if(window.Notification && Notification.permission==='default') Notification.requestPermission();
@@ -1254,8 +1312,8 @@ body.guide-open{overflow:hidden}
     $('journeyEdit').setAttribute('aria-expanded','false');
     if(journey){
       $('journeySource').textContent=journey.source==='walk'
-        ? 'Based on about '+journey.minutes+' min on foot'
-        : 'Using a '+journey.minutes+' min journey';
+        ? 'About '+journey.minutes+' min on foot'
+        : journey.minutes+' min journey';
       $('journeyEdit').textContent='Change';
       $('journeyMinutes').value=journey.minutes;
     }else{
@@ -1266,7 +1324,7 @@ body.guide-open{overflow:hidden}
     if(!ARMED){
       arm.disabled=false;
       arm.className='btn ghost';
-      $('armText').textContent=journey ? 'Call me when to leave' : 'Set journey time for call';
+      $('armText').textContent=journey ? 'Alert me when to leave' : 'Set a journey time';
       if(journey) arm.removeAttribute('aria-controls');
       else arm.setAttribute('aria-controls','journeyForm');
     }
@@ -1412,7 +1470,7 @@ body.guide-open{overflow:hidden}
     var offline=!navigator.onLine, net=$('net');
     net.className=offline ? 'net on' : 'net';
     net.setAttribute('aria-hidden',offline ? 'false' : 'true');
-    if(HERO_SHOWN) $('refreshHint').className=offline ? 'refresh-hint' : 'refresh-hint on';
+    if(HERO_SHOWN) $('refreshHint').className='refresh-hint';
   }
   window.addEventListener('online',networkState);
   window.addEventListener('offline',networkState);
@@ -1429,11 +1487,17 @@ body.guide-open{overflow:hidden}
   }
 
   function note(){
-    var bits=[];
-    bits.push(ARMED ? 'Leave call on for this tab.' : 'Leave call off. Nothing will make a sound.');
-    if(ARMED && PICKED && !journeyFor(PICKED)) bits.push('Set a journey time before Bilal can call.');
+    var bits=[], footnote=$('footnote');
+    if(!ARMED){
+      footnote.textContent='';
+      footnote.style.display='none';
+      return;
+    }
+    bits.push('Leave alert on for this visit.');
+    if(ARMED && PICKED && !journeyFor(PICKED)) bits.push('Set a journey time first.');
     else if(ARMED) bits.push('Keep Bilal open; after a refresh, turn it on again.');
-    $('footnote').textContent=bits.join(' ');
+    footnote.textContent=bits.join(' ');
+    footnote.style.display='';
   }
 
   /* ── the flow ────────────────────────────────────────────────────────── */
@@ -1571,13 +1635,13 @@ body.guide-open{overflow:hidden}
         promote(decision.result.m,decision.result.rows,decision.index>0,false,true);
         setTimeout(function(){
           $('hero').className='in'; HERO_SHOWN=true;
-          if(navigator.onLine) $('refreshHint').className='refresh-hint on';
         },30);
       }
       if(completed!==near.length) return;
       RESULTS=settled.filter(Boolean);
       if(revealed){ renderList(); return; }
       dismissSplash();
+      setOthersOpen(true);
       say('None of the mosques near you publish jama\'ah times.',
           'That is a gap in the directory, not in the mosques. '+
           '<a href="add.html" style="color:var(--clay)">Add one</a> if you know its times.');
@@ -1638,6 +1702,7 @@ body.guide-open{overflow:hidden}
     /* A phone user chooses from below the fold. Return the answer to their
        thumb instead of silently changing content several screens above. */
     if(chosen){
+      setOthersOpen(false);
       window.scrollTo({top:0,behavior:REDUCED?'auto':'smooth'});
     }
   }
