@@ -803,6 +803,9 @@ body.guide-open{overflow:hidden}
   var PULL = {threshold:72, maximum:108, resistance:.44, reloadDelay:240};
   var NATIVE_IOS=/iP(?:hone|ad|od)/.test(navigator.platform||'') ||
     ((navigator.platform||'')==='MacIntel' && navigator.maxTouchPoints>1);
+  var STANDALONE=(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+    navigator.standalone===true;
+  var IOS_STANDALONE=NATIVE_IOS && STANDALONE;
 
   /* Time override for previewing, the same ?at=HH:MM the display takes. Every
      clock read below goes through nowMs() so the whole page moves together:
@@ -1347,8 +1350,8 @@ body.guide-open{overflow:hidden}
      release  the surface settles beneath the status, then reloads
 
      It only begins at the document top and never steals a control gesture.
-     That makes it the familiar mobile refresh action without turning every
-     upward page scroll into an accidental loss of state. */
+     Installed iOS keeps Safari's physical rubber-band while Bilal watches the
+     release; other touch browsers use the same restrained translated surface. */
   var PULLING={active:false,startX:0,startY:0,distance:0,ready:false};
   function pullTop(){ return window.scrollY<=.5 && document.documentElement.scrollTop<=.5; }
   function resetPull(){
@@ -1368,9 +1371,10 @@ body.guide-open{overflow:hidden}
     },MOTION.settle);
   }
   document.addEventListener('touchstart',function(e){
-    /* iOS already supplies the physical rubber-band. Fighting it with a
-       translated page is what makes an installed web app feel non-native. */
-    if(NATIVE_IOS || !e.touches || e.touches.length!==1 || !pullTop() ||
+    /* Safari tabs already own pull-to-refresh. A Home Screen PWA still has the
+       rubber-band but cannot be trusted to reload, so watch that gesture
+       without preventing or replacing its native movement. */
+    if((NATIVE_IOS && !STANDALONE) || !e.touches || e.touches.length!==1 || !pullTop() ||
        $('splash').className.indexOf('out')===-1 ||
        $('installSheet').className.indexOf('on')!==-1 ||
        (e.target.closest && e.target.closest('button,input,a'))){ return; }
@@ -1379,7 +1383,7 @@ body.guide-open{overflow:hidden}
     PULLING.startY=e.touches[0].clientY;
     PULLING.distance=0; PULLING.ready=false;
     $('refreshHint').className='refresh-hint';
-    $('app').classList.add('pulling');
+    if(!IOS_STANDALONE) $('app').classList.add('pulling');
   },{passive:true});
   document.addEventListener('touchmove',function(e){
     if(!PULLING.active || !e.touches || e.touches.length!==1) return;
@@ -1390,9 +1394,9 @@ body.guide-open{overflow:hidden}
       if(dy<0 || Math.abs(dx)>Math.abs(dy)*.8) resetPull();
       return;
     }
-    e.preventDefault();
+    if(!IOS_STANDALONE) e.preventDefault();
     PULLING.distance=amount;
-    $('app').style.transform='translateY('+amount+'px)';
+    if(!IOS_STANDALONE) $('app').style.transform='translateY('+amount+'px)';
     $('pullRefresh').className='pull-refresh on'+(amount>=PULL.threshold?' ready':'');
     $('pullRefresh').style.transform='translate(-50%,'+(-54+amount)+'px)';
     $('pullRefresh').setAttribute('aria-hidden','false');
@@ -1409,7 +1413,7 @@ body.guide-open{overflow:hidden}
     PULLING.active=false;
     $('app').classList.remove('pulling');
     $('app').classList.add('pull-settle');
-    $('app').style.transform='translateY(52px)';
+    if(!IOS_STANDALONE) $('app').style.transform='translateY(52px)';
     $('pullRefresh').className='pull-refresh on settle refreshing';
     $('pullRefresh').style.transform='';
     $('pullArrow').style.transform='';
