@@ -101,14 +101,11 @@
     min-height:52px;
   }
   .brand{
-    display:inline-flex;
-    align-items:baseline;
-    gap:1px;
+    display:inline-block;
     text-decoration:none;
     min-height:44px;
     padding:6px 0;
   }
-  .brand img{width:13px;height:26px;object-fit:cover;object-position:top}
   .brand span{font-family:var(--display);font-size:25px;line-height:1;letter-spacing:-.025em}
   .near-nav{
     display:inline-flex;
@@ -442,15 +439,7 @@
   }
 
   @media (max-width:639px){
-    .screen img{object-position:right center}
-    .screen:after{
-      content:'';
-      position:absolute;
-      z-index:2;
-      inset:0;
-      pointer-events:none;
-      background:linear-gradient(90deg,rgba(13,10,9,.94),rgba(13,10,9,.5) 20%,transparent 48%);
-    }
+    .screen{aspect-ratio:16/9}
   }
 
   @media (min-width:960px){
@@ -501,8 +490,7 @@
 <main class="page" id="top">
   <header class="site-header">
     <a class="brand" href="#top" aria-label="Bilal home">
-      <span>bila</span>
-      <img src="bilal-mark-192.png" alt="" width="13" height="26">
+      <span>bilal</span>
     </a>
     <a class="near-nav" href="near">
       <strong>near</strong>

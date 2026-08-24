@@ -244,14 +244,9 @@ body[data-state="leave"] #wash{opacity:1}
 
 /* ── header ─────────────────────────────────────────────────────────────── */
 header{display:flex;justify-content:space-between;align-items:flex-start}
-.mark{display:flex;align-items:baseline}
+.mark{display:block}
 .mark .word{font-family:var(--display);font-size:calc(var(--u)*2.1);line-height:1;
   letter-spacing:-.012em;color:var(--cream)}
-/* Prata's 'l' ascender is ~0.74 of the font size, so the tower is sized to
-   that, not to the em box. As a replaced element its bottom edge IS its
-   baseline, so it sits on the type's baseline on its own. */
-.mark img{height:calc(var(--u)*1.56);width:auto;display:block;
-  margin:0 calc(var(--u)*.055)}
 .masjid{font-size:calc(var(--u)*.94);letter-spacing:.15em;text-transform:uppercase;
   color:var(--veil);font-weight:500;margin-top:calc(var(--u)*.62)}
 .right{text-align:right}
@@ -496,7 +491,6 @@ body.compact{--safe-x:3.2%;--safe-y:3.6%}
 body.compact .masjid{display:none}
 body.compact .hijri-ar{display:none}
 body.compact .mark .word{font-size:calc(var(--u)*1.5)}
-body.compact .mark img{height:calc(var(--u)*1.12)}
 body.compact .now{font-size:calc(var(--u)*3.1)}
 body.compact .greg{font-size:calc(var(--u)*.85)}
 body.compact main{max-width:100%}
@@ -600,7 +594,7 @@ body.compact #driftWrap{
   <header>
     <div>
       <div class="mark rise d1">
-        <span class="word">bila</span><img src="bilal-mark-192.png" alt="">
+        <span class="word">bilal</span>
       </div>
       <div class="masjid rise d1" id="masjidName">loading</div>
     </div>
