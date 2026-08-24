@@ -1581,7 +1581,12 @@ body.compact #driftWrap{
        revealing on load used to replace the good poster with "no connection". */
     if(DEMO && !demoReadySent && window.parent !== window){
       demoReadySent = true;
-      try{ window.parent.postMessage({type:'bilal-demo-ready'},location.origin); }catch(e){}
+      try{
+        window.parent.postMessage({type:'bilal-demo-ready',sky:{
+          from:skyFromKey||'isha',to:skyToKey||'isha',
+          blend:parseFloat($('skyTo').style.opacity||'1')
+        }},location.origin);
+      }catch(e){}
     }
   }
 

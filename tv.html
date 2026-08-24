@@ -77,9 +77,14 @@
     height:42vh;
     background:url('sky/isha.webp') center bottom/cover no-repeat;
     opacity:.22;
+    transition:opacity 1.4s var(--ease);
     -webkit-mask-image:linear-gradient(to top,#000,transparent);
     mask-image:linear-gradient(to top,#000,transparent);
   }
+  body[data-sky="fajr"] .atmosphere{opacity:.13}
+  body[data-sky="dhuhr"] .atmosphere,body[data-sky="asr"] .atmosphere{opacity:.07}
+  body[data-sky="maghrib"] .atmosphere{opacity:.11}
+  body[data-sky="dhuhr"] .star,body[data-sky="asr"] .star{opacity:0;animation:none}
   .star{
     z-index:0;
     width:2px;
@@ -154,7 +159,6 @@
   .button.secondary{background:transparent;color:var(--cream);border-color:var(--hair-strong)}
   .button.secondary:after{content:'↗';color:var(--clay)}
   .button.secondary:hover{background:rgba(246,239,231,.06);border-color:rgba(246,239,231,.4)}
-  .hero-note{margin-top:17px;color:var(--quiet);font-size:13px}
 
   .device-wrap{margin-top:48px;position:relative}
   .device-wrap:before{
@@ -387,8 +391,7 @@
   .near-copy{margin-top:35px}
   .near-copy h2{max-width:10ch}
   .near-copy .lede{margin-top:20px}
-  .near-points{display:flex;gap:16px 24px;flex-wrap:wrap;margin-top:22px;color:var(--quiet);font-size:12px}
-  .near-points span:before{content:'·';margin-right:8px;color:var(--clay);font-size:18px;vertical-align:-2px}
+  .near-note{max-width:36em;margin-top:20px;color:var(--quiet);font-size:13px;line-height:1.65}
   .near-product .button{margin-top:28px}
   .near-product .button:after{content:'↗'}
 
@@ -466,7 +469,7 @@
     .route-tab[aria-selected="true"]:before{left:-15px;right:auto;top:50%;bottom:auto;width:2px;height:34px;transform:translateY(-50%)}
     .route-panel{padding-top:0;min-height:430px}
     .route-panel h3{font-size:36px}
-    .near-product{display:grid;grid-template-columns:minmax(430px,1.15fr) minmax(320px,.85fr);gap:clamp(58px,8vw,118px);align-items:center}
+    .near-product{display:grid;grid-template-columns:minmax(300px,.8fr) minmax(0,1.2fr);gap:clamp(52px,7vw,96px);align-items:center}
     .near-visual{order:1;margin-top:0;border-radius:26px}
     .near-visual img{aspect-ratio:16/9}
     .near-copy{margin-top:0}
@@ -480,9 +483,10 @@
   }
 </style>
 </head>
-<body>
+<body data-sky="isha">
 <div class="atmosphere" aria-hidden="true"></div>
-<div class="horizon" aria-hidden="true"></div>
+<div class="horizon" id="horizonFrom" aria-hidden="true"></div>
+<div class="horizon" id="horizonTo" aria-hidden="true" style="opacity:0"></div>
 <i class="star" aria-hidden="true" style="top:8%;left:9%;--period:3.1s;--delay:.4s"></i>
 <i class="star" aria-hidden="true" style="top:15%;left:89%;--period:4.3s;--delay:1.7s"></i>
 <i class="star" aria-hidden="true" style="top:5%;left:64%;--period:3.7s;--delay:2.9s"></i>
@@ -509,7 +513,6 @@
         <a class="button start-setup" href="#setup">Choose your screen</a>
         <a class="button secondary" href="near">Out now? Open Near</a>
       </div>
-      <p class="hero-note">No account. Set it once. Let the room remember.</p>
     </div>
 
     <div class="device-wrap" aria-label="Bilal running on a home screen">
@@ -639,12 +642,8 @@
     <div class="near-copy">
       <h2 id="near-title">Need to pray somewhere now?</h2>
       <p class="lede">Near finds the next trustworthy jama'ah around you, tells you when to leave and opens the mosque pin in Maps.</p>
-      <div class="near-points" aria-label="Bilal Near privacy and installation details">
-        <span>checks location once</span>
-        <span>never stores it</span>
-        <span>installs like an app</span>
-      </div>
-      <a class="button" href="near">Open Bilal Near</a>
+      <p class="near-note">Location is checked once and never kept. Add Near to your Home Screen when you want it close.</p>
+      <a class="button" href="near">Find jama'ah near me</a>
     </div>
   </section>
 
@@ -683,6 +682,35 @@
   (function(){
     var desktop = window.matchMedia ? window.matchMedia('(min-width:960px)') : null;
     var demoBooted = false;
+    var skyKeys={fajr:1,dhuhr:1,asr:1,maghrib:1,isha:1};
+
+    /* Before the live display answers, the landing still belongs to the hour
+       it is being visited. Once the embedded Bilal has real mosque data, its
+       exact prayer-window blend takes over. Atmosphere is product truth here,
+       not a generic star field pasted behind every visit. */
+    function setLandingSky(from,to,blend){
+      if(!skyKeys[from]) from='isha';
+      if(!skyKeys[to]) to=from;
+      blend=Math.max(0,Math.min(1,Number(blend)||0));
+      var a=document.getElementById('horizonFrom'),b=document.getElementById('horizonTo');
+      a.style.backgroundImage="url('sky/"+from+".jpg')";
+      b.style.backgroundImage="url('sky/"+to+".jpg')";
+      a.style.opacity=(.22*(1-blend)).toFixed(3);
+      b.style.opacity=(.22*blend).toFixed(3);
+      document.body.setAttribute('data-sky',blend>.5?to:from);
+    }
+    function hourSky(){
+      var override=(location.search.match(/[?&]at=(\d{1,2}):(\d{2})/)||[])[1];
+      var hour=override==null ? new Date().getHours() : parseInt(override,10);
+      if(hour<5) return 'isha';
+      if(hour<8) return 'fajr';
+      if(hour<15) return 'dhuhr';
+      if(hour<19) return 'asr';
+      if(hour<21) return 'maghrib';
+      return 'isha';
+    }
+    var initialSky=hourSky();
+    setLandingSky(initialSky,initialSky,0);
 
     function bootDemo(){
       if(demoBooted || !desktop || !desktop.matches || window.innerWidth < 960) return;
@@ -692,7 +720,10 @@
       frame.src = 'index.html?demo=1&tour=1&masjid=darul-ummah-goresbrook-1649608083137&walk=10';
       window.addEventListener('message',function(event){
         if(event.origin !== location.origin || event.source !== frame.contentWindow) return;
-        if(event.data && event.data.type === 'bilal-demo-ready') frame.className = 'ready';
+        if(event.data && event.data.type === 'bilal-demo-ready'){
+          frame.className = 'ready';
+          if(event.data.sky) setLandingSky(event.data.sky.from,event.data.sky.to,event.data.sky.blend);
+        }
       });
     }
 
