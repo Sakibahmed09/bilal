@@ -250,7 +250,7 @@ header{display:flex;justify-content:space-between;align-items:flex-start}
 /* Prata's 'l' ascender is ~0.74 of the font size, so the tower is sized to
    that, not to the em box. As a replaced element its bottom edge IS its
    baseline, so it sits on the type's baseline on its own. */
-.mark svg{height:calc(var(--u)*1.56);width:auto;display:block;
+.mark img{height:calc(var(--u)*1.56);width:auto;display:block;
   margin:0 calc(var(--u)*.055)}
 .masjid{font-size:calc(var(--u)*.94);letter-spacing:.15em;text-transform:uppercase;
   color:var(--veil);font-weight:500;margin-top:calc(var(--u)*.62)}
@@ -272,8 +272,8 @@ header{display:flex;justify-content:space-between;align-items:flex-start}
 /* ── hero ───────────────────────────────────────────────────────────────── */
 main{flex:1;display:flex;flex-direction:column;justify-content:center;
   max-width:74%}                                  /* keep type off the minaret */
-.eyebrow{font-size:calc(var(--u)*.92);letter-spacing:.24em;text-transform:uppercase;
-  color:var(--clay);font-weight:600}
+.status-label{font-size:calc(var(--u)*.9);letter-spacing:-.005em;
+  color:var(--clay);font-weight:500}
 /* Prata's descenders are deep and they are not equal. Measured ink below the
    baseline at display size:  fajr 42.5px · maghrib 37.1px · dhuhr/asr/isha 1.5px.
    'j' is the deepest, and sizing the gap to maghrib (as I first did) still let
@@ -367,7 +367,7 @@ body.pairing #shell{display:none}
   -webkit-overflow-scrolling:touch}
 #pair.show:before,#pair.show:after{content:'';margin:auto}
 #pair.show>*{flex-shrink:0}
-#pair .eyebrow{color:var(--clay)}
+#pair .status-label{color:var(--clay)}
 #pair .head{font-family:var(--display);font-size:calc(var(--u)*5.4);line-height:1.02;
   letter-spacing:-.032em;margin:calc(var(--u)*.5) 0 calc(var(--u)*.9);max-width:17ch}
 /* Wraps, because this screen is not only ever seen on a television: loading it
@@ -496,10 +496,11 @@ body.compact{--safe-x:3.2%;--safe-y:3.6%}
 body.compact .masjid{display:none}
 body.compact .hijri-ar{display:none}
 body.compact .mark .word{font-size:calc(var(--u)*1.5)}
+body.compact .mark img{height:calc(var(--u)*1.12)}
 body.compact .now{font-size:calc(var(--u)*3.1)}
 body.compact .greg{font-size:calc(var(--u)*.85)}
 body.compact main{max-width:100%}
-body.compact .eyebrow{font-size:calc(var(--u)*.82);letter-spacing:.16em}
+body.compact .status-label{font-size:calc(var(--u)*.82)}
 body.compact .prayer{font-size:calc(var(--u)*5.6);margin:calc(var(--u)*.2) 0 calc(var(--u)*.1)}
 body.compact .line .t{font-size:calc(var(--u)*1.9)}
 body.compact .line .c{font-size:calc(var(--u)*1.9)}
@@ -547,17 +548,17 @@ body.compact #hero{display:flex;flex-wrap:wrap;align-items:baseline;
 /* Scoped to #hero, and that scope is the whole bug. flex:0 0 100% is right
    here, where #hero is a wrapping ROW and this forces the label onto its own
    line above the prayer name. Unscoped it also matched the pairing screen's
-   eyebrow, and #pair is a COLUMN, where a 100% basis means 100% of the HEIGHT.
+   status label, and #pair is a COLUMN, where a 100% basis means 100% of the HEIGHT.
    So the word "Set up" claimed 708px of an 800px panel and pushed the QR off
    the bottom. That is what stopped Sakib's sister setting hers up. */
-body.compact #hero .eyebrow{flex:0 0 100%;font-size:calc(var(--u)*.74);
-  letter-spacing:.2em;margin-bottom:calc(var(--u)*.05)}
+body.compact #hero .status-label{flex:0 0 100%;font-size:calc(var(--u)*.74);
+  margin-bottom:calc(var(--u)*.05)}
 body.compact .prayer{font-size:calc(var(--u)*4.5);margin:0}
 body.compact .line{align-items:baseline}
 body.compact .line .t{font-size:calc(var(--u)*2.6);color:var(--cream);opacity:1}
 body.compact .line .c{font-size:calc(var(--u)*2.6)}
 body.compact #hero .leave{flex:0 0 100%;margin-top:calc(var(--u)*.35)}
-body.compact #hero .eyebrow{margin-bottom:calc(var(--u)*.1)}
+body.compact #hero .status-label{margin-bottom:calc(var(--u)*.1)}
 body.compact .prayer{font-size:calc(var(--u)*5.2);margin:calc(var(--u)*.12) 0 calc(var(--u)*.18)}
 body.compact .rail{padding-top:calc(var(--u)*.85)}
 /* a bright grade (dhuhr) put cream on near-white sky in Sakib's photo, so the
@@ -598,10 +599,8 @@ body.compact #driftWrap{
 
   <header>
     <div>
-      <!-- Placeholder: plain wordmark until Sakib's real mark is dropped in.
-           Swap this span for <img src="logo.svg" class="logo"> when we have it. -->
       <div class="mark rise d1">
-        <span class="word">bilal</span>
+        <span class="word">bila</span><img src="bilal-mark-192.png" alt="">
       </div>
       <div class="masjid rise d1" id="masjidName">loading</div>
     </div>
@@ -614,7 +613,7 @@ body.compact #driftWrap{
 
   <main>
     <div id="hero">
-      <div class="eyebrow rise d2">next jama'ah</div>
+      <div class="status-label rise d2">next jama'ah</div>
       <div class="prayer rise d2" id="prayerName">&nbsp;</div>
       <div class="line rise d3">
         <span class="t" id="prayerTime">--:--</span>
@@ -691,6 +690,7 @@ body.compact #driftWrap{
      display) and never makes sound. Everything else runs exactly as the TV
      runs it, which is the point of showing it. */
   var DEMO = Q.get('demo')==='1';
+  var demoReadySent = false;
   /* Config resolves URL > paired > default. The default mosque only applies when
      a URL names none, so every existing bookmark keeps working untouched. */
   var SAVED={};
@@ -1582,6 +1582,13 @@ body.compact #driftWrap{
     }
 
     rail(now,next,started);
+    /* The landing page keeps its static proof visible until this embedded
+       display has real mosque data. iframe load only proves that HTML arrived;
+       revealing on load used to replace the good poster with "no connection". */
+    if(DEMO && !demoReadySent && window.parent !== window){
+      demoReadySent = true;
+      try{ window.parent.postMessage({type:'bilal-demo-ready'},location.origin); }catch(e){}
+    }
   }
 
   function rail(now,next,started){

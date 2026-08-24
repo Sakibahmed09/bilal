@@ -19,11 +19,11 @@
   #grain{position:absolute;inset:0;opacity:.12;mix-blend-mode:soft-light;
     background-image:url('sky/stars.png');background-size:760px auto}
 
-  .brand{position:absolute;top:52px;left:70px;display:flex;align-items:center;gap:14px}
+  .brand{position:absolute;top:52px;left:70px;display:flex;align-items:baseline;gap:1px}
   .brand img{width:17px;height:42px;object-fit:cover;object-position:top}
   .brand .bilal{font-family:Prata,Georgia,serif;font-size:31px;line-height:1;letter-spacing:-.02em}
-  .brand .near{font-size:13px;line-height:1;text-transform:uppercase;letter-spacing:.22em;
-    color:#d9a48f;font-weight:600;padding-top:7px}
+  .brand .near{font-family:Prata,Georgia,serif;font-size:18px;line-height:1;
+    color:#d9a48f;font-weight:400;margin-left:14px}
 
   .name{position:absolute;left:64px;top:117px;font-family:Prata,Georgia,serif;
     font-size:176px;line-height:.94;letter-spacing:-.055em}
@@ -33,14 +33,14 @@
     line-height:1.45;letter-spacing:0;margin-top:15px;max-width:29ch;font-weight:400}
 
   .signal{position:absolute;left:70px;bottom:62px;width:550px}
-  .signal .eyebrow{font-size:13px;line-height:1;text-transform:uppercase;letter-spacing:.21em;
-    color:#d9a48f;font-weight:600}
   .signal .line{height:1px;background:rgba(246,239,231,.24);margin:16px 0 15px;position:relative}
   .signal .line:before{content:'';position:absolute;left:0;top:-1px;width:158px;height:3px;background:#d9a48f}
-  .signal .detail{font-family:Prata,Georgia,serif;font-size:29px;line-height:1.2;
-    letter-spacing:-.025em}
+  .signal .detail{font-family:Prata,Georgia,serif;font-size:39px;line-height:1.1;
+    letter-spacing:-.035em}
+  .signal .detail strong{color:#d9a48f;font-weight:400}
+  .signal .context{font-size:15px;color:rgba(246,239,231,.62);margin-top:9px}
   .url{position:absolute;right:70px;bottom:66px;font-size:14px;line-height:1;
-    letter-spacing:.17em;text-transform:uppercase;color:rgba(246,239,231,.72);font-weight:600}
+    color:rgba(246,239,231,.72);font-weight:500}
 </style>
 </head>
 <body>
@@ -50,8 +50,8 @@
   <div id="grain"></div>
 
   <div class="brand">
+    <span class="bilal">bila</span>
     <img src="bilal-mark-192.png" alt="">
-    <span class="bilal">bilal</span>
     <span class="near">near</span>
   </div>
 
@@ -61,9 +61,9 @@
   </div>
 
   <div class="signal">
-    <div class="eyebrow">where you are now</div>
     <div class="line"></div>
-    <div class="detail">One clear answer, wherever you are.</div>
+    <div class="detail">Leave in <strong>17 min</strong></div>
+    <div class="context">Islamic Centre · Dhuhr jama'ah at 13:30</div>
   </div>
   <div class="url">bilalathan.co.uk/near</div>
 </div>
