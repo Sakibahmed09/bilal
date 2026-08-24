@@ -203,7 +203,10 @@ body.is-loading #app{opacity:0;visibility:hidden}
 .brand{font-family:var(--display);font-size:22px;letter-spacing:-.01em;opacity:.9}
 .brandrow{display:flex;min-height:44px;align-items:center;justify-content:space-between;
   gap:18px;margin-bottom:clamp(38px,8vh,68px)}
-.where{max-width:55%;font-size:13px;color:var(--veil);text-align:right}
+.where{appearance:none;max-width:60%;min-height:44px;margin:-8px 0;padding:8px 0;border:0;
+  background:none;color:var(--veil);font:inherit;font-size:13px;text-align:right;cursor:pointer;
+  text-decoration:underline;text-decoration-color:rgba(217,164,143,.38);text-underline-offset:4px}
+.where:empty{display:none}
 
 /* ── entrance ─────────────────────────────────────────────────────────────
    ANIMATION STORYBOARD
@@ -366,12 +369,26 @@ button.item:active{transform:scale(.985)}
 #arm.armed .armdot{opacity:1;transform:scale(1);
   animation:armed-breathe 2.8s ease-in-out infinite}
 
-#pcform{margin-top:18px;display:none}
-#pcform.on{display:block}
-#pc{font-family:var(--text);font-size:16px;padding:13px 15px;border-radius:11px;
+#placeForm{margin-top:18px;display:none;max-width:520px}
+#placeForm.on{display:block}
+.place-label{display:block;margin-bottom:8px;color:var(--cream);font-size:13px;font-weight:600}
+.place-fields{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:stretch}
+#placeQuery{font-family:var(--text);font-size:16px;padding:13px 15px;border-radius:11px;
   border:1px solid var(--hair);background:rgba(246,239,231,.06);color:var(--cream);
-  width:min(190px,calc(100% - 112px));min-height:50px;letter-spacing:.04em;outline:none}
-#pc::placeholder{color:rgba(246,239,231,.38)}
+  width:100%;min-width:0;min-height:50px;outline:none}
+#placeQuery::placeholder{color:rgba(246,239,231,.38)}
+#placeGo{min-height:50px;white-space:nowrap}
+.place-hint{margin-top:9px;color:var(--veil);font-size:12px;line-height:1.5}
+.place-hint a{color:inherit;text-underline-offset:3px}
+.place-options{display:grid;gap:8px;margin-top:14px}
+.place-choice{appearance:none;width:100%;min-height:62px;padding:12px 14px;border:1px solid var(--hair);
+  border-radius:12px;background:rgba(246,239,231,.045);color:var(--cream);text-align:left;
+  cursor:pointer;transition:background-color var(--swift) ease,border-color var(--swift) ease,
+  transform var(--settle) var(--out)}
+.place-choice:active{transform:scale(.985)}
+.place-choice strong,.place-choice span{display:block}
+.place-choice strong{font-size:14px;line-height:1.35}
+.place-choice span{margin-top:3px;color:var(--veil);font-size:12px;line-height:1.4}
 
 .foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--hair);
   font-size:13px;color:var(--veil);line-height:1.6}
@@ -385,8 +402,8 @@ button.item:active{transform:scale(.985)}
 
 .msg{font-size:16px;line-height:1.55;color:var(--cream)}
 .msg .sub{font-size:14px;color:var(--veil);margin-top:9px}
-.postcode-alt{display:none;margin-top:14px}
-.postcode-alt.on{display:inline-flex}
+.place-alt{display:none;margin-top:14px}
+.place-alt.on{display:inline-flex}
 .spin{display:inline-block;width:12px;height:12px;border-radius:50%;
   border:2px solid rgba(246,239,231,.25);border-top-color:var(--clay);
   animation:sp .8s linear infinite;vertical-align:-1px}
@@ -491,7 +508,7 @@ body.guide-open{overflow:hidden}
 .android-actions{display:flex;justify-content:flex-end;gap:18px;color:#9a5f49;font-size:12px;font-weight:700}
 .install-finish{width:100%;margin-top:3px}
 
-.find:focus,#pc:focus{border-color:var(--clay);box-shadow:0 0 0 3px rgba(217,164,143,.12)}
+.find:focus,#placeQuery:focus{border-color:var(--clay);box-shadow:0 0 0 3px rgba(217,164,143,.12)}
 :focus-visible{outline:2px solid var(--clay-lift);outline-offset:3px}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
   clip:rect(0,0,0,0);white-space:nowrap;border:0}
@@ -537,6 +554,8 @@ body.guide-open{overflow:hidden}
   .item .soon{display:block;text-align:right}
   .item .soon span{display:block;margin-bottom:2px}
   .install-panel{padding-left:18px;padding-right:18px}
+  .place-fields{grid-template-columns:1fr}
+  #placeGo{width:100%}
 }
 
 /* Short phones still deliver the whole decision before asking for a scroll.
@@ -593,7 +612,7 @@ body.guide-open{overflow:hidden}
     <div class="splash-name">bilal</div>
     <div class="splash-status" id="splashStatus" role="status" aria-live="polite">finding where you are</div>
     <div class="splash-progress" aria-hidden="true"><span id="splashProgress"></span></div>
-    <button class="splash-postcode" id="splashPostcode" type="button">Use a postcode instead</button>
+    <button class="splash-postcode" id="splashPlace" type="button">Search an address instead</button>
   </div>
 </div>
 <div class="pull-refresh" id="pullRefresh" role="status" aria-live="polite" aria-hidden="true">
@@ -607,20 +626,27 @@ body.guide-open{overflow:hidden}
 <main id="app">
   <div class="brandrow">
     <div class="brand">bilal</div>
-    <div class="where" id="where"></div>
+    <button class="where" id="where" type="button" aria-label="Change search location"></button>
   </div>
 
   <div id="stage" aria-live="polite">
     <div class="msg" id="msg"><span class="spin"></span> Finding your nearest jama’ah</div>
     <div class="sub" id="sub" style="font-size:14px;color:var(--veil);margin-top:9px">
-      Your browser will ask permission. Nothing is stored and nothing is sent anywhere.
+      Your browser will ask permission. Shared location stays on this device.
     </div>
-    <button class="text-button postcode-alt" id="postcodeInstead" type="button">Use a postcode instead</button>
-    <div id="pcform">
-      <label class="sr-only" for="pc">UK postcode</label>
-      <input id="pc" placeholder="Postcode" autocomplete="postal-code" spellcheck="false">
-      <button class="btn" id="pcgo" style="margin-left:8px">Use this</button>
-    </div>
+    <button class="text-button place-alt" id="placeInstead" type="button">Search an address instead</button>
+    <form id="placeForm">
+      <label class="place-label" for="placeQuery">Address, place or postcode</label>
+      <div class="place-fields">
+        <input id="placeQuery" type="search" placeholder="Try E1 6QL or Brick Lane"
+          autocomplete="street-address" enterkeyhint="search" spellcheck="false"
+          aria-describedby="placeHint">
+        <button class="btn" id="placeGo" type="submit">Find nearest</button>
+      </div>
+      <div class="place-hint" id="placeHint">Searches the UK. No address history is kept in this app.
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener external">Place data © OpenStreetMap contributors</a>.</div>
+      <div class="place-options" id="placeOptions" aria-live="polite"></div>
+    </form>
   </div>
 
   <div id="hero" style="display:none">
@@ -687,7 +713,8 @@ body.guide-open{overflow:hidden}
   </section>
 
   <div class="foot" id="foot" style="display:none">
-    Location was used once for this result and is not stored. If you have moved, <b>refresh</b>.
+    Your current place was used for this result. Bilal keeps no location or address history.
+    Tap the place above to search somewhere else.
     <div id="footnote" style="display:none;margin-top:9px"></div>
     <details class="near-about">
       <summary>What is Bilal Near?</summary>
@@ -854,6 +881,7 @@ body.guide-open{overflow:hidden}
   var DAY_SIGNATURE = '';
   var MANUAL_LOCATION = false;
   var directoryReady = null;
+  var RANK_TOKEN = 0;   // a new place makes any older in-flight ranking irrelevant
 
   /* ── geometry ──────────────────────────────────────────────────────────── */
   function hav(a,b,c,d){
@@ -1580,68 +1608,107 @@ body.guide-open{overflow:hidden}
     });
   }
 
-  function askPostcode(reason){
+  function askPlace(reason, help){
     MANUAL_LOCATION=true;
+    RANK_TOKEN++;
     dismissSplash();
-    $('postcodeInstead').className='text-button postcode-alt';
-    say(reason, 'Bilal can still find your nearest mosque from a postcode.');
-    $('pcform').className='on';
-    $('pc').focus();
+    $('stage').style.display='';
+    $('hero').style.display='none';
+    $('others').style.display='none';
+    $('foot').style.display='none';
+    $('placeInstead').className='text-button place-alt';
+    say(reason, help || 'Type any UK address, place or postcode. Bilal will find the nearest mosque with jama’ah times.');
+    $('placeForm').className='on';
+    $('placeGo').disabled=false;
+    $('placeGo').textContent='Find nearest';
+    $('placeQuery').focus();
   }
 
-  $('postcodeInstead').onclick=function(){
-    askPostcode('Use a postcode instead.');
+  $('placeInstead').onclick=function(){
+    askPlace('Search from somewhere else.');
   };
-  $('splashPostcode').onclick=function(){
-    askPostcode('Use a postcode instead.');
+  $('splashPlace').onclick=function(){
+    askPlace('Search from somewhere else.');
   };
 
-  $('pcgo').onclick=function(){ postcode($('pc').value); };
-  $('pc').addEventListener('keydown', function(e){ if(e.key==='Enter') postcode($('pc').value); });
-
-  /* Full postcode first, then its outcode. A typo in the last two letters is
-     simply not found, and stopping there sends someone away when we can still
-     place them inside a couple of kilometres. */
-  function postcode(raw){
-    var trimmed=String(raw||'').trim().toUpperCase();
-    if(!trimmed) return;
-    var q=trimmed.replace(/\s+/g,'');
-    var outcode=(trimmed.match(/^[A-Z]{1,2}\d[A-Z\d]?/)||[q])[0];
-    var FULL=/^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
-    $('pcform').className='';
-    showSplash('looking up '+trimmed);
-    say('<span class="spin"></span> Looking up '+esc(trimmed));
-
-    function ask(u){ return fetch(u).then(function(r){ return r.json(); }); }
-    var first = FULL.test(trimmed)
-      ? ask('https://api.postcodes.io/postcodes/'+encodeURIComponent(q))
-      : Promise.resolve(null);
-
-    first.then(function(j){
-      if(j && j.result && j.result.latitude!=null) return j;
-      return ask('https://api.postcodes.io/outcodes/'+encodeURIComponent(outcode));
-    }).then(function(j){
-      var r=j && j.result;
-      if(!r || r.latitude==null) throw 0;
-      return (directoryReady||Promise.resolve()).then(function(){
-        HERE={lat:r.latitude, lng:r.longitude};
-        $('where').textContent='near '+trimmed;
-        rank();
-      },function(){
-        throw {directory:true};
-      });
-    }).catch(function(error){
-      if(error && error.directory){
-        dismissSplash();
-        say('Could not load the mosque list.',
-            'Check your connection, then <a href="" style="color:var(--clay)">try again</a>.');
-        return;
-      }
-      askPostcode('Could not find <b>'+esc(trimmed)+'</b>.');
+  function usePlace(place, query){
+    $('placeOptions').innerHTML='';
+    $('placeForm').className='';
+    showSplash('checking jama\'ah near '+place.label);
+    return (directoryReady||Promise.resolve()).then(function(){
+      HERE={lat:Number(place.lat), lng:Number(place.lng)};
+      $('where').textContent='near '+(place.label||query)+' · change';
+      rank();
+    },function(){
+      throw {directory:true};
     });
   }
 
+  function showPlaceChoices(results, query){
+    say('Which place did you mean?', 'Choose the closest match. Bilal will do the mosque search from there.');
+    $('placeForm').className='on';
+    $('placeGo').disabled=false;
+    $('placeGo').textContent='Find nearest';
+    $('placeOptions').innerHTML=results.map(function(place,index){
+      return '<button class="place-choice" type="button" data-place="'+index+'">'+
+        '<strong>'+esc(place.label||query)+'</strong>'+
+        (place.detail?'<span>'+esc(place.detail)+'</span>':'')+'</button>';
+    }).join('');
+    Array.prototype.forEach.call($('placeOptions').querySelectorAll('[data-place]'),function(button){
+      button.onclick=function(){
+        usePlace(results[parseInt(this.getAttribute('data-place'),10)],query).catch(placeFailure);
+      };
+    });
+    var first=$('placeOptions').querySelector('button');
+    if(first) first.focus();
+  }
+
+  function placeFailure(error){
+    dismissSplash();
+    if(error && error.directory){
+      say('Could not load the mosque list.',
+          'Check your connection, then <a href="" style="color:var(--clay)">try again</a>.');
+      return;
+    }
+    askPlace('That place could not be checked.', 'Check your connection or try a postcode, street and town, or nearby landmark.');
+  }
+
+  /* One submit can be a complete postcode, an unfinished inward code, a street,
+     a town or a landmark. Specific queries go straight through. Vague names
+     get a short disambiguation step rather than silently choosing the wrong
+     Victoria, High Street or Richmond. */
+  function searchPlace(raw){
+    var query=String(raw||'').trim().replace(/\s+/g,' ');
+    if(query.length<2){
+      askPlace('Where should Bilal search?', 'Enter at least two characters — an address, place or postcode all work.');
+      return;
+    }
+    $('placeOptions').innerHTML='';
+    $('placeGo').disabled=true;
+    $('placeGo').textContent='Searching…';
+    say('<span class="spin"></span> Finding '+esc(query), 'Looking across the UK, then Bilal will check the nearest jama’ah times.');
+    fetch(TIMES+'/geocode?q='+encodeURIComponent(query))
+      .then(function(response){ if(!response.ok) throw 0; return response.json(); })
+      .then(function(data){
+        var results=(data&&data.results)||[];
+        if(!results.length){
+          askPlace('Could not find <b>'+esc(query)+'</b>.', 'Try a postcode, add the town to a street, or use a nearby landmark.');
+          return;
+        }
+        var landmark=/\b(station|airport|hospital|university|college|school|park|centre|center|stadium|museum|mosque|masjid|mall|market)\b/i.test(query);
+        var specific=/\d/.test(query)||query.indexOf(',')!==-1||landmark||results.length===1;
+        if(specific) usePlace(results[0],query).catch(placeFailure);
+        else showPlaceChoices(results,query);
+      }).catch(placeFailure);
+  }
+
+  $('placeForm').onsubmit=function(e){ e.preventDefault(); searchPlace($('placeQuery').value); };
+  $('where').onclick=function(){
+    askPlace('Search another place.', 'Type where you are going, where you will be, or any UK postcode.');
+  };
+
   function rank(){
+    var token=++RANK_TOKEN;
     var located = LIST.filter(function(m){ return m.y!=null && m.x!=null; });
     located.forEach(function(m){ m._d = hav(HERE.lat, HERE.lng, m.y, m.x); });
     located.sort(function(a,b){ return a._d-b._d; });
@@ -1675,6 +1742,7 @@ body.guide-open{overflow:hidden}
        A farther fast response can never jump a nearer unresolved one. */
     var settled=new Array(near.length), completed=0, revealed=false;
     function maybeReveal(){
+      if(token!==RANK_TOKEN) return;
       var decision=CORE.firstDecidable(settled);
       if(!revealed && decision.decided && decision.index!==-1){
         revealed=true;
@@ -1701,6 +1769,7 @@ body.guide-open{overflow:hidden}
     near.forEach(function(m,i){
       fetchTimes(m.g)
         .then(function(rows){
+          if(token!==RANK_TOKEN) return;
           var v=judge(rows);
           SEEN[m.g]=rows;
           $('s'+i).className='s '+v.kind;
@@ -1708,11 +1777,13 @@ body.guide-open{overflow:hidden}
           settled[i]={m:m, rows:rows, v:v};
         })
         .catch(function(){
+          if(token!==RANK_TOKEN) return;
           $('s'+i).className='s warn';
           $('s'+i).innerHTML='<b></b>'+esc(distLine(m._d))+' · could not check their times';
           settled[i]=null;
         })
         .then(function(){
+          if(token!==RANK_TOKEN) return;
           completed++;
           splashStage(1,'checking jama\'ah nearby',.16+.76*(completed/near.length));
           maybeReveal();
@@ -1863,19 +1934,19 @@ body.guide-open{overflow:hidden}
   directoryReady=loadDirectory();
   var locationReady=locate();
   setTimeout(function(){
-    if(!HERE && $('stage').style.display!=='none' && !$('pcform').className){
-      $('postcodeInstead').className='text-button postcode-alt on';
+    if(!HERE && $('stage').style.display!=='none' && !$('placeForm').className){
+      $('placeInstead').className='text-button place-alt on';
     }
   },700);
   Promise.all([directoryReady,locationReady]).then(function(values){
       if(MANUAL_LOCATION) return;
       HERE=values[1];
-      $('where').textContent='where you are now';
+      $('where').textContent='where you are now · change';
       rank();
     }).catch(function(why){
       if(MANUAL_LOCATION) return;
       directoryReady.then(function(){
-        askPostcode(why==='nogeo'
+        askPlace(why==='nogeo'
           ? 'This browser will not share your location.'
           : 'Location was not shared.');
       }).catch(function(){
