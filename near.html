@@ -549,16 +549,16 @@ body.guide-open{overflow:hidden}
 }
 
 /* Safari clips fixed layers to its visual viewport. In edge-to-edge mode that
-   leaves the root colour visible behind the status icons. Let the living sky
-   and its scrim paint into the document safe area instead; the app content is
-   still inset, so the clock and controls never sit under the notch. */
+   leaves the root colour visible behind the status icons or home indicator.
+   Let the living sky and its scrim paint through both safe areas instead; the
+   app content is still inset, so controls never sit under the hardware. */
 @supports (-webkit-touch-callout:none){
   #sky{position:absolute;top:calc(0px - var(--safe-top));
     height:calc(var(--sky-height) + var(--safe-top))}
   #scrim{position:absolute;top:calc(0px - var(--safe-top));bottom:auto;
-    height:calc(100svh + var(--safe-top))}
+    height:calc(100svh + var(--safe-top) + var(--safe-bottom))}
   .splash{position:absolute;top:calc(0px - var(--safe-top));bottom:auto;
-    min-height:calc(100svh + var(--safe-top))}
+    min-height:calc(100svh + var(--safe-top) + var(--safe-bottom))}
 }
 
 @media(display-mode:standalone){
