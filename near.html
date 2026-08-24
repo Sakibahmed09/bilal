@@ -94,11 +94,13 @@
   --out:cubic-bezier(.16,1,.3,1);
 }
 *{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
 html,body{color:var(--cream);font-family:var(--text);
   font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;min-height:100%;
   -webkit-tap-highlight-color:transparent;text-rendering:optimizeLegibility}
 html{background:var(--chrome);scroll-behavior:smooth;min-height:-webkit-fill-available}
-body{position:relative;overflow-x:hidden;overscroll-behavior-y:none;
+body{position:relative;overflow-x:hidden;overscroll-behavior-y:auto;touch-action:pan-y;
+  -webkit-overflow-scrolling:touch;
   background:linear-gradient(to bottom,var(--chrome) 0,var(--chrome) 66svh,
     var(--deep) 66svh,var(--deep) 100%);
   min-height:100vh;min-height:-webkit-fill-available}
@@ -230,10 +232,11 @@ body.is-loading #app{opacity:0;visibility:hidden}
 .destination{padding-top:clamp(22px,4vh,34px);margin-top:clamp(23px,4.5vh,38px);border-top:1px solid var(--hair)}
 .mname{font-family:var(--display);font-size:clamp(23px,6.7vw,31px);line-height:1.08;
   letter-spacing:-.02em;text-wrap:balance;font-kerning:normal;max-width:22ch;color:rgba(246,239,231,.88)}
-.maddr{font-size:13px;color:var(--veil);margin-top:7px;line-height:1.45}
-.destination-meta{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 7px;margin-top:6px}
-.mdist{font-size:12.5px;color:var(--veil);font-weight:500;
-  display:flex;align-items:baseline;flex-wrap:wrap;gap:7px}
+.destination-meta{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 7px;margin-top:8px;
+  color:var(--veil);font-size:12.5px;line-height:1.45}
+.maddr{color:inherit}
+.mdist{color:inherit;font-weight:500}
+.mdist:before{content:'\00b7';margin-right:7px;color:var(--clay)}
 
 .jamaah-line{display:flex;align-items:baseline;gap:8px;color:var(--veil)}
 .plabel{font-size:14px;letter-spacing:.01em}
@@ -242,13 +245,18 @@ body.is-loading #app{opacity:0;visibility:hidden}
 .leave{margin-top:13px;color:var(--cream)}
 .leave span{display:block;font-family:var(--display);font-size:clamp(48px,13.8vw,66px);
   line-height:1.02;letter-spacing:-.045em;text-wrap:balance}
-.leave b{color:var(--clay-lift);font-weight:400}
+.leave b{color:var(--clay-lift);font-weight:400;white-space:nowrap}
+.leave .countdown-minutes{display:inline;font:inherit;letter-spacing:inherit}
 .leave small{display:block;margin-top:11px;color:var(--veil);font-family:var(--text);
   font-size:13px;line-height:1.45;letter-spacing:0}
 .leave.none span,.leave.late span{font-size:clamp(31px,9vw,43px);line-height:1.12}
-.journey-meta{display:flex;align-items:baseline;gap:8px;
+.second-sweep{width:min(68%,260px);height:1px;margin-top:15px;overflow:hidden;
+  background:rgba(246,239,231,.13);opacity:0;transition:opacity var(--swift) ease}
+.second-sweep.on{opacity:1}
+.second-sweep span{display:block;width:100%;height:100%;background:var(--clay);
+  transform:scaleX(1);transform-origin:left center;transition:transform 1s linear}
+.journey-meta{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 8px;margin-top:7px;
   color:var(--veil);font-size:12.5px;line-height:1.45}
-.journey-meta:before{content:'·';color:var(--clay)}
 .text-button{appearance:none;border:0;background:none;color:var(--clay);font:inherit;
   display:inline-flex;align-items:center;min-height:44px;margin:-10px 0;font-weight:600;padding:10px 0;
   cursor:pointer;text-decoration:underline;
@@ -534,7 +542,6 @@ body.guide-open{overflow:hidden}
   .brandrow{margin-bottom:clamp(21px,4.4svh,32px)}
   .mname{max-width:92%;font-size:clamp(23px,6.3vw,27px);line-height:1.1;
     letter-spacing:-.025em;text-wrap:pretty}
-  .maddr{max-width:88%;font-size:13px;margin-top:7px}
   .ptime{font-size:19px}
   .leave{margin-top:13px}
   .leave span{font-size:clamp(48px,14.2vw,62px)}
@@ -593,6 +600,7 @@ body.guide-open{overflow:hidden}
 
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
+  .second-sweep{display:none}
   *,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;
     transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
@@ -650,15 +658,9 @@ body.guide-open{overflow:hidden}
       <span class="ptime" id="ptime">--:--</span>
     </div>
     <div class="leave" id="leave" role="status" aria-live="polite"></div>
+    <div class="second-sweep" id="secondSweep" aria-hidden="true"><span></span></div>
     <div class="pcount sr-only" id="pcount"></div>
-    <div class="destination">
-      <div class="mname" id="mname"></div>
-      <div class="maddr" id="maddr"></div>
-      <div class="destination-meta">
-        <div class="mdist"><span id="mdist"></span></div>
-        <div class="journey-meta" id="journeyMeta"><span id="journeySource"></span><button class="text-button" id="journeyEdit" type="button" aria-expanded="false" aria-controls="journeyForm">Change</button></div>
-      </div>
-    </div>
+    <div class="journey-meta" id="journeyMeta"><span id="journeySource"></span><button class="text-button" id="journeyEdit" type="button" aria-expanded="false" aria-controls="journeyForm">Change</button></div>
     <form class="journey-form" id="journeyForm" aria-hidden="true" inert>
       <div class="journey-inner">
         <label for="journeyMinutes">How many minutes from here?</label>
@@ -669,12 +671,19 @@ body.guide-open{overflow:hidden}
         <div class="journey-hint">Walk, drive, transit, cycle or a lift. Bilal only needs the minutes.</div>
       </div>
     </form>
+    <div class="destination">
+      <div class="mname" id="mname"></div>
+      <div class="destination-meta">
+        <span class="maddr" id="maddr"></span>
+        <span class="mdist" id="mdist"></span>
+      </div>
+    </div>
     <div class="actions">
       <a class="route route-primary" id="route" target="_blank" rel="noopener external">
         <span class="route-copy"><strong class="route-label">Take me there</strong></span>
         <span class="route-arrow" aria-hidden="true">↗</span>
       </a>
-      <button class="btn ghost" id="arm" aria-pressed="false"><span class="armdot" aria-hidden="true"></span><span class="arm-copy"><span id="armText">Alert me when to leave</span><small>Bilal needs to stay open</small></span></button>
+      <button class="btn ghost" id="arm" aria-pressed="false" hidden><span class="armdot" aria-hidden="true"></span><span class="arm-copy"><span id="armText">Alert me when to leave</span><small>Bilal needs to stay open</small></span></button>
     </div>
     <section class="day" id="daySection">
       <button class="day-toggle" id="dayToggle" type="button" aria-expanded="false" aria-controls="dayDrawer">
@@ -786,6 +795,8 @@ body.guide-open{overflow:hidden}
   var MOTION = {swift:160, settle:420, grand:760, out:'cubic-bezier(.16,1,.3,1)'};
   var SPLASH = {minimum:900, maximum:1450};
   var PULL = {threshold:72, maximum:108, resistance:.44, reloadDelay:240};
+  var NATIVE_IOS=/iP(?:hone|ad|od)/.test(navigator.platform||'') ||
+    ((navigator.platform||'')==='MacIntel' && navigator.maxTouchPoints>1);
 
   /* Time override for previewing, the same ?at=HH:MM the display takes. Every
      clock read below goes through nowMs() so the whole page moves together:
@@ -1086,6 +1097,17 @@ body.guide-open{overflow:hidden}
     return h+'h '+pad(m%60)+'m';
   }
 
+  /* Seconds carry urgency, but stay optically subordinate to the useful unit:
+     the minutes remaining. VoiceOver receives a calm minute-level update. */
+  function leaveCountdown(ms){
+    var total=Math.max(0,Math.floor(ms/1000));
+    return {
+      minutes:Math.max(1,Math.ceil(total/60)),
+      seconds:total%60,
+      sweep:total>0 ? (((total-1)%60)+1)/60 : 0
+    };
+  }
+
   function dayName(date){
     var today=iso(nowDate());
     var tomorrow=iso(new Date(nowMs()+86400000));
@@ -1162,7 +1184,20 @@ body.guide-open{overflow:hidden}
   function setLeave(className,html){
     var el=$('leave');
     el.className=className;
+    $('secondSweep').className='second-sweep';
     if(el.innerHTML!==html) el.innerHTML=html;
+  }
+
+  function setCountdown(ms){
+    var el=$('leave'), remaining=leaveCountdown(ms);
+    el.className='leave';
+    if(!el.querySelector('.countdown-minutes')){
+      el.innerHTML='<span aria-hidden="true">Leave in <b><strong class="countdown-minutes"></strong> min</b></span><span class="sr-only countdown-spoken"></span>';
+    }
+    el.querySelector('.countdown-minutes').textContent=remaining.minutes;
+    $('secondSweep').className='second-sweep on';
+    $('secondSweep').firstElementChild.style.transform='scaleX('+remaining.sweep+')';
+    movingText(el.querySelector('.countdown-spoken'),'Leave in '+Math.max(1,Math.ceil(ms/60000))+' minutes');
   }
 
   function paint(){
@@ -1179,7 +1214,7 @@ body.guide-open{overflow:hidden}
     sky(CORE.currentAtmosphere(ROWS,nowDate()));
     $('othersHint').textContent='Nearby choices and search';
     $('plabel').textContent = LABEL[nx.prayer]+' jama\'ah'+
-      (iso(nx.at)!==iso(nowDate()) ? ' tomorrow' : '')+' ·';
+      (iso(nx.at)!==iso(nowDate()) ? ' tomorrow' : '')+' at';
     $('ptime').textContent  = hhmm(nx.at);
     movingText($('pcount'), 'Jama\'ah in '+human(nx.at-nowMs()));
 
@@ -1191,8 +1226,9 @@ body.guide-open{overflow:hidden}
         if(iso(leaveAt)!==iso(nowDate())){
           setLeave('leave','<span>'+(journey.source==='estimate'?'Aim to leave':'Leave')+' tomorrow at <b>'+hhmm(leaveAt)+'</b></span>');
         }else{
-          setLeave('leave','<span>'+(journey.source==='estimate'?'Leave around <b>'+hhmm(leaveAt):'Leave in <b>'+human(left))+'</b></span><small>'+
-            (journey.source==='estimate'?journey.minutes+' min walk estimate · check the live route':'At '+hhmm(leaveAt))+'</small>');
+          setCountdown(left);
+          $('journeySource').textContent=(journey.source==='estimate'?'Aim for ':'Leave at ')+hhmm(leaveAt)+' · '+
+            (journey.source==='estimate'?'estimated '+journey.minutes+' min walk':journey.minutes+' min journey');
         }
       }else if(nowMs() < nx.at.getTime()){
         setLeave('leave late','<span>'+(journey.source==='estimate'?'Likely too tight':'This one is too tight')+'</span><small>'+human(nx.at-nowMs())+
@@ -1211,7 +1247,7 @@ body.guide-open{overflow:hidden}
     }else{
       /* No journey means no leave-time and no call. Maps can provide the live
          route, but only the person can bring that duration back to Bilal. */
-      setLeave('leave none','<span>When should you leave?</span><small>Check the live route, then add your journey time.</small>');
+      setLeave('leave none','<span>When should you leave?</span><small>Open Maps, then add your journey time.</small>');
     }
   }
 
@@ -1325,7 +1361,9 @@ body.guide-open{overflow:hidden}
     },MOTION.settle);
   }
   document.addEventListener('touchstart',function(e){
-    if(!e.touches || e.touches.length!==1 || !pullTop() ||
+    /* iOS already supplies the physical rubber-band. Fighting it with a
+       translated page is what makes an installed web app feel non-native. */
+    if(NATIVE_IOS || !e.touches || e.touches.length!==1 || !pullTop() ||
        $('splash').className.indexOf('out')===-1 ||
        $('installSheet').className.indexOf('on')!==-1 ||
        (e.target.closest && e.target.closest('button,input,a'))){ return; }
@@ -1401,6 +1439,7 @@ body.guide-open{overflow:hidden}
       $('journeyEdit').textContent='Set time';
       $('journeyMinutes').value='';
     }
+    arm.hidden=!(journey && journey.source==='set');
     if(!ARMED){
       arm.disabled=false;
       arm.className='btn ghost';
