@@ -382,7 +382,8 @@
     background:#17130f;
     box-shadow:0 35px 70px -42px rgba(0,0,0,.9);
   }
-  .near-visual img{width:100%;height:auto}
+  .near-visual img{width:100%;height:auto;aspect-ratio:390/844}
+  .near-visual picture{display:block}
   .near-copy{margin-top:35px}
   .near-copy h2{max-width:10ch}
   .near-copy .lede{margin-top:20px}
@@ -440,6 +441,7 @@
 
   @media (max-width:639px){
     .screen{aspect-ratio:16/9}
+    .near-visual{max-width:390px}
   }
 
   @media (min-width:960px){
@@ -466,6 +468,7 @@
     .route-panel h3{font-size:36px}
     .near-product{display:grid;grid-template-columns:minmax(430px,1.15fr) minmax(320px,.85fr);gap:clamp(58px,8vw,118px);align-items:center}
     .near-visual{order:1;margin-top:0;border-radius:26px}
+    .near-visual img{aspect-ratio:16/9}
     .near-copy{margin-top:0}
     footer{grid-template-columns:1fr auto;align-items:end}
     .footer-links{justify-content:flex-end}
@@ -628,7 +631,10 @@
 
   <section class="chapter near-product" aria-labelledby="near-title">
     <div class="near-visual">
-      <img src="near-og.jpg" alt="Bilal Near showing the next jama'ah and when to leave" width="1200" height="630" loading="lazy">
+      <picture>
+        <source media="(min-width:640px)" srcset="near-screenshot-wide.webp">
+        <img src="near-screenshot.webp" alt="Bilal Near finding a nearby mosque, showing when to leave and opening directions" width="390" height="844" loading="lazy">
+      </picture>
     </div>
     <div class="near-copy">
       <h2 id="near-title">Need to pray somewhere now?</h2>
