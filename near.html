@@ -1111,15 +1111,16 @@ body.guide-open{overflow:hidden}
 
   /* Seconds carry urgency, but stay optically subordinate to the useful unit:
      the time remaining. VoiceOver receives a calm minute-level update. */
-  /* Past an hour the lead slot carries h:mm, so a Fajr counted from the night
-     before reads 4:20:56 rather than 260:56. */
+  /* Past an hour it reads 3h 12m 4s, spelling the units out rather than
+     stacking a second colon: a four-hour wait is a duration to weigh, not a
+     clock to read down to the second. Inside the hour it stays the tight
+     12:04, which is the number people watch as they put their shoes on. */
   function leaveCountdown(ms){
-    var total=Math.max(0,Math.floor(ms/1000)), mins=Math.floor(total/60);
-    return {
-      lead:mins<60 ? String(mins) : Math.floor(mins/60)+':'+pad(mins%60),
-      seconds:total%60,
-      sweep:total>0 ? (((total-1)%60)+1)/60 : 0
-    };
+    var total=Math.max(0,Math.floor(ms/1000)),
+        mins=Math.floor(total/60), secs=total%60, hrs=Math.floor(mins/60),
+        sweep=total>0 ? (((total-1)%60)+1)/60 : 0;
+    if(hrs) return {lead:hrs+'h '+(mins%60)+'m', sep:'\u00a0', tail:secs+'s', sweep:sweep};
+    return {lead:String(mins), sep:':', tail:pad(secs), sweep:sweep};
   }
 
   function spokenLeave(ms){
@@ -1216,7 +1217,8 @@ body.guide-open{overflow:hidden}
       el.innerHTML='<span aria-hidden="true">Leave in <b><strong class="countdown-minutes"></strong><i class="countdown-colon">:</i><small class="countdown-seconds"></small></b></span><span class="sr-only countdown-spoken"></span>';
     }
     el.querySelector('.countdown-minutes').textContent=remaining.lead;
-    el.querySelector('.countdown-seconds').textContent=pad(remaining.seconds);
+    el.querySelector('.countdown-colon').textContent=remaining.sep;
+    el.querySelector('.countdown-seconds').textContent=remaining.tail;
     $('secondSweep').className='second-sweep on';
     $('secondSweep').firstElementChild.style.transform='scaleX('+remaining.sweep+')';
     movingText(el.querySelector('.countdown-spoken'),'Leave in '+spokenLeave(ms));
