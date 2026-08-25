@@ -4,7 +4,14 @@
  * the site root. That gives it a broad technical scope, so the fetch handler
  * is intentionally narrow: every route that is not part of Near falls straight
  * through to the network and remains owned by the television experience. */
-const VERSION = 'bilal-near-v16';
+/* The page is served cache-first, so a shipped change to the shell is invisible
+ * until this file's own bytes change and the browser reinstalls the worker.
+ * SHELL_FINGERPRINT is that guarantee: it tracks near.html and near-core.js, a
+ * test fails the build when it drifts, and updating it is what makes the
+ * browser notice. Shipping the page without it strands everyone on the old
+ * copy, which is exactly how the 260:56 countdown survived its own fix. */
+const SHELL_FINGERPRINT = '070559e2bc14';
+const VERSION = 'bilal-near-v17';
 const SHELL = VERSION + '-shell';
 const DATA = VERSION + '-data';
 const TIMES_HOST = 'bilal-times.ahmed-sakib.workers.dev';
