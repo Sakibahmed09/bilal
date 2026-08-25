@@ -596,8 +596,11 @@ body.guide-open{overflow:hidden}
     height:calc(var(--sky-height) + var(--safe-top))}
   #scrim{position:absolute;top:calc(0px - var(--safe-top));bottom:auto;
     height:calc(100svh + var(--safe-top) + var(--safe-bottom))}
+  /* lvh, not svh: svh is the viewport with Safari's chrome showing, so sizing
+     a full-cover layer from it leaves the collapsed-chrome strip at the foot
+     of the screen unpainted and the root colour banded through. */
   .splash{position:absolute;top:calc(0px - var(--safe-top));bottom:auto;
-    min-height:calc(100svh + var(--safe-top) + var(--safe-bottom))}
+    min-height:calc(100lvh + var(--safe-top) + var(--safe-bottom))}
 }
 
 @media(display-mode:standalone){
@@ -1107,14 +1110,23 @@ body.guide-open{overflow:hidden}
   }
 
   /* Seconds carry urgency, but stay optically subordinate to the useful unit:
-     the minutes remaining. VoiceOver receives a calm minute-level update. */
+     the time remaining. VoiceOver receives a calm minute-level update. */
+  /* Past an hour the lead slot carries h:mm, so a Fajr counted from the night
+     before reads 4:20:56 rather than 260:56. */
   function leaveCountdown(ms){
-    var total=Math.max(0,Math.floor(ms/1000));
+    var total=Math.max(0,Math.floor(ms/1000)), mins=Math.floor(total/60);
     return {
-      minutes:Math.floor(total/60),
+      lead:mins<60 ? String(mins) : Math.floor(mins/60)+':'+pad(mins%60),
       seconds:total%60,
       sweep:total>0 ? (((total-1)%60)+1)/60 : 0
     };
+  }
+
+  function spokenLeave(ms){
+    var m=Math.max(1,Math.ceil(ms/60000)), h;
+    if(m<60) return m+' minutes';
+    h=Math.floor(m/60);
+    return h+(h===1?' hour':' hours')+(m%60 ? ' '+(m%60)+' minutes' : '');
   }
 
   function dayName(date){
@@ -1203,11 +1215,11 @@ body.guide-open{overflow:hidden}
     if(!el.querySelector('.countdown-minutes')){
       el.innerHTML='<span aria-hidden="true">Leave in <b><strong class="countdown-minutes"></strong><i class="countdown-colon">:</i><small class="countdown-seconds"></small></b></span><span class="sr-only countdown-spoken"></span>';
     }
-    el.querySelector('.countdown-minutes').textContent=remaining.minutes;
+    el.querySelector('.countdown-minutes').textContent=remaining.lead;
     el.querySelector('.countdown-seconds').textContent=pad(remaining.seconds);
     $('secondSweep').className='second-sweep on';
     $('secondSweep').firstElementChild.style.transform='scaleX('+remaining.sweep+')';
-    movingText(el.querySelector('.countdown-spoken'),'Leave in '+Math.max(1,Math.ceil(ms/60000))+' minutes');
+    movingText(el.querySelector('.countdown-spoken'),'Leave in '+spokenLeave(ms));
   }
 
   function paint(){
