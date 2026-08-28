@@ -228,7 +228,8 @@ body.is-loading #app{opacity:0;visibility:hidden}
 #hero .destination{transition-delay:210ms}
 #hero .journey-form{transition-delay:260ms}
 #hero .actions{transition-delay:390ms}
-#hero .day{transition-delay:450ms}
+#hero #others{transition-delay:450ms}
+#hero .day{transition-delay:510ms}
 .destination{padding-top:clamp(22px,4vh,34px);margin-top:clamp(23px,4.5vh,38px);border-top:1px solid var(--hair)}
 .mname{font-family:var(--display);font-size:clamp(23px,6.7vw,31px);line-height:1.08;
   letter-spacing:-.02em;text-wrap:balance;font-kerning:normal;max-width:22ch;color:rgba(246,239,231,.88)}
@@ -313,6 +314,7 @@ body.is-loading #app{opacity:0;visibility:hidden}
    directory. They use the same quiet disclosure language and only become a
    surface after someone asks for them. */
 #others{border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}
+#hero #others + .day{margin-top:0;border-top:0}
 .others-toggle{appearance:none;width:100%;min-height:56px;border:0;background:none;color:var(--cream);
   display:flex;align-items:center;justify-content:space-between;gap:18px;text-align:left;
   padding:10px 0;cursor:pointer}
@@ -694,6 +696,22 @@ body.guide-open{overflow:hidden}
       </a>
       <button class="btn ghost" id="arm" aria-pressed="false" hidden><span class="armdot" aria-hidden="true"></span><span class="arm-copy"><span id="armText">Alert me when to leave</span><small>Bilal needs to stay open</small></span></button>
     </div>
+    <section id="others" style="display:none">
+      <button class="others-toggle" id="othersToggle" type="button" aria-expanded="false" aria-controls="othersDrawer">
+        <span class="others-title">Other mosques<small id="othersHint">Nearby choices and search</small></span>
+        <span class="chev" aria-hidden="true"></span>
+      </button>
+      <div class="others-drawer" id="othersDrawer" aria-hidden="true" inert>
+        <div class="others-inner">
+          <div class="others-content">
+            <h2 class="sr-only" id="othersHead">Also near you</h2>
+            <label class="find-label" for="q">Find a different mosque</label>
+            <input class="find" id="q" placeholder="Mosque name or town" spellcheck="false" autocomplete="off">
+            <div id="list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
     <section class="day" id="daySection">
       <button class="day-toggle" id="dayToggle" type="button" aria-expanded="false" aria-controls="dayDrawer">
         <span class="day-title"><span id="dayTitle">Today’s jama’ah</span><small id="dayHint"></small></span>
@@ -710,23 +728,6 @@ body.guide-open{overflow:hidden}
       </div>
     </section>
   </div>
-
-  <section id="others" style="display:none">
-    <button class="others-toggle" id="othersToggle" type="button" aria-expanded="false" aria-controls="othersDrawer">
-      <span class="others-title">Other mosques<small id="othersHint">Nearby choices and search</small></span>
-      <span class="chev" aria-hidden="true"></span>
-    </button>
-    <div class="others-drawer" id="othersDrawer" aria-hidden="true" inert>
-      <div class="others-inner">
-        <div class="others-content">
-          <h2 class="sr-only" id="othersHead">Also near you</h2>
-          <label class="find-label" for="q">Find a different mosque</label>
-          <input class="find" id="q" placeholder="Mosque name or town" spellcheck="false" autocomplete="off">
-          <div id="list"></div>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <div class="foot" id="foot" style="display:none">
     Your current place was used for this result. Bilal keeps no location or address history.
@@ -769,7 +770,7 @@ body.guide-open{overflow:hidden}
   </div>
 </section>
 
-<script src="near-core.js?v=7"></script>
+<script src="near-core.js?v=8"></script>
 <script>
 (function(){
   'use strict';
@@ -1059,7 +1060,7 @@ body.guide-open{overflow:hidden}
      questionable prayer is quarantined on its own; the four sound times stay
      useful, and neither the countdown nor an athan can target the bad value. */
   function auditRows(rows){ return CORE.auditRows(rows); }
-  function judge(rows){ return CORE.judge(rows,nowDate()); }
+  function judge(rows,place){ return CORE.judge(rows,nowDate(),place); }
   function nextJamaah(rows){ return CORE.nextJamaah(rows,nowMs()); }
 
   /* Scoped to the mosque as well as the prayer. Switching target must not
@@ -1176,7 +1177,7 @@ body.guide-open{overflow:hidden}
         '<span class="day-state">'+state+'</span></div>';
     }).join('');
 
-    var verdict=judge(ROWS);
+    var verdict=judge(ROWS,PICKED);
     $('dayTrust').textContent=verdict.why+'.';
     var params=new URLSearchParams({
       from:'near',kind:'times',mosque:PICKED.g,name:PICKED.n,date:row.date,
@@ -1834,7 +1835,7 @@ body.guide-open{overflow:hidden}
       fetchTimes(m.g)
         .then(function(rows){
           if(token!==RANK_TOKEN) return;
-          var v=judge(rows);
+          var v=judge(rows,m);
           SEEN[m.g]=rows;
           $('s'+i).className='s '+v.kind;
           $('s'+i).innerHTML='<b></b>'+esc(distLine(m._d))+' · '+esc(v.why);
@@ -1933,7 +1934,7 @@ body.guide-open{overflow:hidden}
     if(btn){ btn.className='s pend'; btn.innerHTML='<b></b>'+esc(distLine(m._d))+' · checking their times'; }
     fetchTimes(id).then(function(rows){
       SEEN[id]=rows;
-      var v=judge(rows);
+      var v=judge(rows,m);
       /* A mosque you asked for by name is shown even when its listing is poor.
          The badge still tells the truth, and paint() says so plainly if there
          is nothing to count to. Refusing to show it would just look broken. */
@@ -2008,7 +2009,7 @@ body.guide-open{overflow:hidden}
     var previewRows=[previewRow(0),previewRow(1)];
     showSplash('checking jama\'ah nearby');
     HERE={lat:51.5210,lng:-.1416}; LIST=[previewMosque];
-    RESULTS=[{m:previewMosque,rows:previewRows,v:judge(previewRows)}];
+    RESULTS=[{m:previewMosque,rows:previewRows,v:judge(previewRows,previewMosque)}];
     SEEN.preview=previewRows;
     $('where').textContent='Soho, London · change';
     $('stage').style.display='none';
@@ -2050,5 +2051,9 @@ body.guide-open{overflow:hidden}
     });
 })();
 </script>
+<!-- Same instrument as the television, in the mode a phone needs: one row per
+     open, no heartbeat. Near shipped without it, so its use has been invisible
+     since launch while every other page in the site was counted. -->
+<script src="diag.js?v=2"></script>
 </body>
 </html>
