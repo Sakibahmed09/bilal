@@ -395,6 +395,46 @@
   .near-product .button{margin-top:28px}
   .near-product .button:after{content:'↗'}
 
+
+  .film{border-top:1px solid var(--hair)}
+  .film-head{max-width:720px}
+  .film-head h2{max-width:16ch}
+  .film-head .lede{margin-top:19px}
+  .film-frame{
+    position:relative;
+    margin-top:clamp(34px,5vw,52px);
+    background:var(--deep);
+    border:1px solid var(--hair);
+    border-radius:4px;
+    overflow:hidden;
+    aspect-ratio:16/9;
+  }
+  .film-frame img,.film-frame video{width:100%;height:100%;display:block;object-fit:cover}
+  .film-frame video{background:#000}
+  .film-play{
+    position:absolute;inset:0;width:100%;height:100%;
+    display:flex;align-items:flex-end;justify-content:flex-start;
+    gap:0;padding:clamp(18px,3vw,30px);
+    background:linear-gradient(180deg,rgba(23,20,15,0) 28%,rgba(23,20,15,.55) 62%,rgba(23,20,15,.9) 100%);
+    border:0;cursor:pointer;color:var(--cream);text-align:left;
+    font-family:var(--text);transition:background .4s var(--ease);
+  }
+  .film-play:hover{background:linear-gradient(180deg,rgba(23,20,15,0) 20%,rgba(23,20,15,.66) 58%,rgba(23,20,15,.95) 100%)}
+  .film-play span{display:flex;align-items:center;gap:14px;font-size:15px;letter-spacing:.01em;text-shadow:0 1px 12px rgba(23,20,15,.9)}
+  .film-play i{
+    width:44px;height:44px;flex:none;border-radius:50%;
+    background:var(--clay);display:grid;place-items:center;
+    transition:transform .4s var(--ease),background .4s var(--ease);
+  }
+  .film-play:hover i{transform:scale(1.07);background:var(--clay-bright)}
+  .film-play i:after{
+    content:'';width:0;height:0;margin-left:3px;
+    border-left:11px solid var(--deep);
+    border-top:7px solid transparent;border-bottom:7px solid transparent;
+  }
+  .film-play b{font-weight:600}
+  .film-play em{font-style:normal;color:var(--cream-soft);opacity:.72}
+  .film-note{margin-top:14px;color:var(--quiet);font-size:12.5px;line-height:1.6}
   .letter{max-width:760px}
   .letter-mark{width:48px;height:2px;background:var(--clay);margin-bottom:24px}
   .letter .open{font-family:var(--display);font-size:clamp(30px,8vw,45px);line-height:1.22;letter-spacing:-.025em;color:var(--cream)}
@@ -528,6 +568,24 @@
         <span>your mosque · your journey</span>
       </div>
     </div>
+  </section>
+
+  <section class="chapter film" aria-labelledby="film-title">
+    <div class="film-head">
+      <h2 id="film-title">Where the athan has been for 1,400 years.</h2>
+      <p class="lede">A short film about the call to prayer, the rooms it has filled, and the one it lost.</p>
+    </div>
+    <div class="film-frame">
+      <video id="film" preload="none" playsinline controls hidden
+             poster="film-poster.webp?v=1" src="film.mp4?v=1"></video>
+      <img id="filmPoster" src="film-poster.webp?v=1"
+           alt="A terraced street at dusk with minarets risen above the rooftops"
+           width="1280" height="720" loading="lazy" decoding="async">
+      <button class="film-play" id="filmPlay" type="button">
+        <span><i aria-hidden="true"></i><b>Watch the film</b><em>1 min 29</em></span>
+      </button>
+    </div>
+    <p class="film-note">Best with sound on.</p>
   </section>
 
   <section class="chapter thesis" aria-labelledby="thesis-title">
@@ -791,6 +849,17 @@
           if(other !== item) other.open = false;
         });
       });
+    });
+  })();
+
+  (function(){
+    var b=document.getElementById('filmPlay'),
+        v=document.getElementById('film'),
+        p=document.getElementById('filmPoster');
+    if(!b||!v||!p) return;
+    b.addEventListener('click',function(){
+      v.hidden=false; p.hidden=true; b.hidden=true;
+      v.play().catch(function(){});
     });
   })();
 </script>

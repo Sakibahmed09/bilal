@@ -394,12 +394,16 @@
       message: message || null, diag: diag
     };
     try {
+      /* A failed report must not become the next thing reported. Without this
+         catch the rejected fetch reaches window.onunhandledrejection, which
+         calls send() again: while the backend is down every heartbeat spends
+         the hourly error budget filing "Failed to fetch" about itself. */
       return fetch(SB, {
         method: 'POST', keepalive: true,
         headers: { 'apikey': SBK, 'Authorization': 'Bearer ' + SBK,
                    'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
         body: JSON.stringify(body)
-      });
+      }).catch(function () {});
     } catch (e) { return Promise.resolve(); }
   }
 
@@ -409,14 +413,37 @@
                   at: new Date().toISOString() });
   }
 
+  /* MAX_ERRORS bounds what a report CONTAINS. Nothing bounded what a screen
+     SENDS: every window error called send() directly, one row per error, with
+     no ceiling. So the flood the cap above was written to stop went out anyway,
+     a POST at a time.
+
+     Measured 30 Aug while the backend was timing out: the busiest screen filed
+     10.8 reports an hour against a design rate of 2. That is the wrong shape.
+     A page errors most when the backend is least able to answer, so the volume
+     of complaint rises exactly as the capacity to receive it falls.
+
+     Six an hour is enough to see a screen in trouble and few enough that a
+     screen in a loop cannot become the load. Heartbeats are not spent from this
+     budget: two an hour is the signal that a display is alive. */
+  var ERROR_SENDS_PER_HOUR = 6;
+  var errorSends = [];
+  function errorBudgetOk() {
+    var cutoff = Date.now() - 3600000;
+    while (errorSends.length && errorSends[0] < cutoff) errorSends.shift();
+    if (errorSends.length >= ERROR_SENDS_PER_HOUR) return false;
+    errorSends.push(Date.now());
+    return true;
+  }
+
   global.addEventListener('error', function (e) {
     note('error', e.message, (e.filename || '').replace(/^.*\//, '') + ':' + e.lineno);
-    send('error', e.message);
+    if (errorBudgetOk()) send('error', e.message);
   });
   global.addEventListener('unhandledrejection', function (e) {
     var r = e.reason;
     note('rejection', (r && r.message) || r);
-    send('error', 'unhandled rejection: ' + ((r && r.message) || r));
+    if (errorBudgetOk()) send('error', 'unhandled rejection: ' + ((r && r.message) || r));
   });
 
   /* A screen that stops reporting is the signal. Half-hourly is often enough to
