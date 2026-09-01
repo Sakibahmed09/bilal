@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>bilal · jama'ah times on your phone and at home</title>
+<title>bilal · the athan that tells you when to leave</title>
 <meta name="theme-color" content="#17140f">
-<meta name="description" content="Bilal Near is the mobile app that finds the next trustworthy jama'ah and tells you when to leave. Try Bilal on a home screen too.">
-<meta property="og:title" content="bilal · make the next jama'ah">
-<meta property="og:description" content="The next trustworthy jama'ah around you, when to leave, and directions to the mosque, all on your phone.">
+<meta name="description" content="Bilal is a screen for your home that calls you at leave time, using your mosque's real jama'ah timetable and your journey.">
+<meta property="og:title" content="bilal · the screen that calls you to jama'ah">
+<meta property="og:description" content="Your mosque's real jama'ah time, your journey counted, and the athan when it is time to leave.">
 <meta property="og:image" content="https://bilalathan.co.uk/og.jpg">
 <meta property="og:url" content="https://bilalathan.co.uk/tv.html">
 <meta property="og:type" content="website">
@@ -122,7 +122,7 @@
     color:var(--veil);
   }
   .near-nav strong{font-family:var(--display);font-size:17px;font-weight:400;color:var(--cream)}
-  .near-nav span{display:block;font-size:12px;color:var(--quiet)}
+  .near-nav span{display:none;font-size:12px;color:var(--quiet)}
   .near-nav:after{content:'↗';color:var(--clay);font-size:17px;transition:transform .35s var(--ease)}
   .near-nav:hover:after{transform:translate(2px,-2px)}
 
@@ -134,13 +134,7 @@
   .lede strong{color:var(--cream);font-weight:600}
 
   .hero{padding:clamp(46px,10vw,96px) 0 clamp(76px,15vw,138px)}
-  .product-label{margin-bottom:14px;color:var(--clay);font-size:13px;font-weight:700;letter-spacing:.025em}
   .hero-copy .lede{margin-top:21px;max-width:31em}
-  .hero-near{position:relative;margin-top:48px}
-  .hero-near:before{content:'';position:absolute;inset:10% 5% -8%;background:radial-gradient(50% 55% at 50% 45%,rgba(217,164,143,.24),transparent 72%);pointer-events:none}
-  .hero-near picture{position:relative;display:block;overflow:hidden;border:1px solid var(--hair);border-radius:20px;background:#17130f;box-shadow:0 35px 70px -42px rgba(0,0,0,.9)}
-  .hero-near img{width:100%;height:auto;aspect-ratio:390/844;object-fit:cover}
-  .hero-near .device-caption{position:relative}
   .actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:30px}
   .button{
     display:inline-flex;
@@ -383,6 +377,25 @@
   .alternative-body strong{color:var(--cream)}
   .alternative-body a{color:var(--clay);text-underline-offset:3px}
 
+  .near-product{overflow:hidden}
+  .near-visual{
+    position:relative;
+    margin-top:42px;
+    border-radius:20px;
+    overflow:hidden;
+    background:#17130f;
+    box-shadow:0 35px 70px -42px rgba(0,0,0,.9);
+  }
+  .near-visual img{width:100%;height:auto;aspect-ratio:390/844}
+  .near-visual picture{display:block}
+  .near-copy{margin-top:35px}
+  .near-copy h2{max-width:10ch}
+  .near-copy .lede{margin-top:20px}
+  .near-note{max-width:36em;margin-top:20px;color:var(--quiet);font-size:13px;line-height:1.65}
+  .near-product .button{margin-top:28px}
+  .near-product .button:after{content:'↗'}
+
+
   .film{border-top:1px solid var(--hair)}
   .film-head{max-width:720px}
   .film-head h2{max-width:16ch}
@@ -524,6 +537,7 @@
 
   @media (max-width:639px){
     .screen{aspect-ratio:16/9}
+    .near-visual{max-width:390px}
     .film{padding-bottom:0}
     .film-stage{
       left:50%;width:100vw;height:180vh;height:180svh;margin:34px 0 0 -50vw;
@@ -567,9 +581,7 @@
     .site-header{min-height:58px}
     .hero{display:grid;grid-template-columns:minmax(0,5fr) minmax(480px,6.7fr);gap:clamp(54px,6vw,92px);align-items:center;min-height:650px}
     h1{font-size:clamp(52px,5vw,72px)}
-    .hero-near{margin-top:0}
-    .hero-near img{aspect-ratio:16/9}
-    .device-wrap{max-width:820px;margin:46px auto 0}
+    .device-wrap{margin-top:0}
     .screen{aspect-ratio:16/9}
     .device{padding:10px;border-radius:30px}
     .screen{border-radius:22px}
@@ -586,6 +598,10 @@
     .route-tab[aria-selected="true"]:before{left:-15px;right:auto;top:50%;bottom:auto;width:2px;height:34px;transform:translateY(-50%)}
     .route-panel{padding-top:0;min-height:430px}
     .route-panel h3{font-size:36px}
+    .near-product{display:grid;grid-template-columns:minmax(300px,.8fr) minmax(0,1.2fr);gap:clamp(52px,7vw,96px);align-items:center}
+    .near-visual{order:1;margin-top:0;border-radius:26px}
+    .near-visual img{aspect-ratio:16/9}
+    .near-copy{margin-top:0}
     footer{grid-template-columns:1fr auto;align-items:end}
     .footer-links{justify-content:flex-end}
   }
@@ -620,29 +636,31 @@
     </a>
     <a class="near-nav" href="near">
       <strong>near</strong>
-      <span>mobile</span>
+      <span>jama'ah around you</span>
     </a>
   </header>
 
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-copy">
-      <p class="product-label">Bilal Near · mobile app</p>
-      <h1 id="hero-title">Make the next jama'ah.</h1>
-      <p class="lede">Bilal Near finds the next trustworthy jama'ah around you, tells you when to leave and opens the mosque in Maps. Built for your phone. No account. No location history.</p>
+      <h1 id="hero-title">The athan that plays when it's time to leave.</h1>
+      <p class="lede">Bilal shows your mosque's own jama'ah times, counts your journey, then calls the house at the moment you need to move.</p>
       <div class="actions">
-        <a class="button" href="near">Open Bilal Near</a>
-        <a class="button secondary start-setup" href="#setup">Try Bilal at home</a>
+        <a class="button start-setup" href="#setup">Choose your screen</a>
+        <a class="button secondary" href="near">Out now? Open Near</a>
       </div>
     </div>
 
-    <div class="hero-near" aria-label="Bilal Near running on a mobile phone">
-      <picture>
-        <source media="(min-width:640px)" srcset="near-screenshot-wide.webp">
-        <img src="near-screenshot.webp" alt="Bilal Near showing the next trustworthy jama'ah, when to leave and directions" width="390" height="844" fetchpriority="high">
-      </picture>
+    <div class="device-wrap" aria-label="Bilal running on a home screen">
+      <div class="device">
+        <div class="screen">
+          <img src="landing-display.webp?v=2" alt="The Bilal home display against the living night sky" width="1280" height="720" fetchpriority="high">
+          <iframe id="demo" title="A live Bilal home display" tabindex="-1" aria-hidden="true"></iframe>
+        </div>
+      </div>
+      <div class="device-base" aria-hidden="true"></div>
       <div class="device-caption">
-        <span><i class="live-dot"></i><strong>Bilal Near</strong></span>
-        <span>mobile · ready now</span>
+        <span><i class="live-dot"></i><strong>Bilal at home</strong></span>
+        <span>your mosque · your journey</span>
       </div>
     </div>
   </section>
@@ -684,7 +702,7 @@
   <section class="chapter thesis" aria-labelledby="thesis-title">
     <div class="chapter-head">
       <h2 id="thesis-title">The moment that matters is when you must move.</h2>
-      <p class="lede">Bilal turns your mosque's real jama'ah time and your journey into one clear instruction: when to leave.</p>
+      <p class="lede">A start time is information. An athan in the room, timed to your actual jama'ah, is a call.</p>
     </div>
     <div class="thesis-grid">
       <article class="truth">
@@ -697,36 +715,21 @@
       </article>
       <article class="truth">
         <span class="truth-num">3</span>
-        <div><h3>One clear moment to move</h3><p>When Bilal says leave, there is no calculation left to do. Go now and you will make the jama'ah.</p></div>
+        <div><h3>The athan at leave time</h3><p>When Bilal sounds, there is no calculation left to do. Go now and you will make the jama'ah.</p></div>
       </article>
     </div>
   </section>
 
   <section class="chapter" id="setup" aria-labelledby="setup-title">
     <div class="chapter-head">
-      <p class="product-label">Bilal at home · experiment</p>
-      <h2 id="setup-title">Want the athan in the room?</h2>
-      <p class="lede">The home display can run on a screen you already own, but reliability depends on the device. Choose yours and we will show you the honest route.</p>
-    </div>
-
-    <div class="device-wrap" aria-label="The experimental Bilal home display running on a room screen">
-      <div class="device">
-        <div class="screen">
-          <img src="landing-display.webp?v=2" alt="The Bilal home display against the living night sky" width="1280" height="720" loading="lazy">
-          <iframe id="demo" title="A live Bilal home display" tabindex="-1" aria-hidden="true"></iframe>
-        </div>
-      </div>
-      <div class="device-base" aria-hidden="true"></div>
-      <div class="device-caption">
-        <span><i class="live-dot"></i><strong>Bilal at home</strong></span>
-        <span>experimental · device-dependent</span>
-      </div>
+      <h2 id="setup-title">Choose the screen in your room.</h2>
+      <p class="lede">Start with what you already own. We will show you one route, from first open to first athan.</p>
     </div>
 
     <div class="setup-layout">
       <div class="route-tabs" role="tablist" aria-label="Choose a screen">
-        <button class="route-tab" type="button" role="tab" id="tab-show" aria-selected="true" aria-controls="panel-show" tabindex="0" data-route="show">Echo Show<small>a quick browser route</small></button>
-        <button class="route-tab" type="button" role="tab" id="tab-tv" aria-selected="false" aria-controls="panel-tv" tabindex="-1" data-route="tv">Fire TV or Android TV<small>the dependable TV route</small></button>
+        <button class="route-tab" type="button" role="tab" id="tab-show" aria-selected="true" aria-controls="panel-show" tabindex="0" data-route="show">Echo Show<small>the easiest route</small></button>
+        <button class="route-tab" type="button" role="tab" id="tab-tv" aria-selected="false" aria-controls="panel-tv" tabindex="-1" data-route="tv">Fire TV or Android TV<small>the best TV route</small></button>
         <button class="route-tab" type="button" role="tab" id="tab-other" aria-selected="false" aria-controls="panel-other" tabindex="-1" data-route="other">Something else<small>four good fallbacks</small></button>
       </div>
 
@@ -742,7 +745,7 @@
             <span class="copy-value">bilalathan.co.uk</span>
             <button class="copy-button" type="button" data-copy="https://bilalathan.co.uk">Copy</button>
           </div>
-          <p class="route-note"><strong>What to know:</strong> it is already a room-scale screen with a speaker and touchscreen. Bilal keeps the page awake when Silk would normally close it, but Amazon can still change how the browser behaves.</p>
+          <p class="route-note"><strong>Why we recommend it:</strong> it is already a room-scale screen with a speaker and touchscreen. Bilal keeps the page awake when Silk would normally close it.</p>
         </section>
 
         <section class="route-panel" role="tabpanel" id="panel-tv" aria-labelledby="tab-tv" data-panel="tv" hidden>
@@ -798,6 +801,21 @@
     </div>
   </section>
 
+  <section class="chapter near-product" aria-labelledby="near-title">
+    <div class="near-visual">
+      <picture>
+        <source media="(min-width:640px)" srcset="near-screenshot-wide.webp">
+        <img src="near-screenshot.webp" alt="Bilal Near finding a nearby mosque, showing when to leave and opening directions" width="390" height="844" loading="lazy">
+      </picture>
+    </div>
+    <div class="near-copy">
+      <h2 id="near-title">Need to pray somewhere now?</h2>
+      <p class="lede">Near finds the next trustworthy jama'ah around you, tells you when to leave and opens the mosque pin in Maps.</p>
+      <p class="near-note">Location is checked once and never kept. Add Near to your Home Screen when you want it close.</p>
+      <a class="button" href="near">Find jama'ah near me</a>
+    </div>
+  </section>
+
   <section class="chapter letter" aria-label="Why I built this">
     <div class="letter-mark" aria-hidden="true"></div>
     <p class="open">The first athan was a man.</p>
@@ -809,18 +827,18 @@
   </section>
 
   <section class="chapter closing" aria-labelledby="closing-title">
-    <h2 id="closing-title">Find the next jama'ah.</h2>
-    <p class="lede">Open Bilal Near on your phone. Your next trustworthy jama'ah and the moment to leave are waiting.</p>
+    <h2 id="closing-title">Give jama'ah a voice in the room.</h2>
+    <p class="lede">Choose the screen you already have. Bilal will guide you from there.</p>
     <div class="actions">
-      <a class="button" href="near">Open Bilal Near</a>
-      <a class="button secondary start-setup" href="#setup">Try the home display</a>
+      <a class="button start-setup" href="#setup">Choose your screen</a>
+      <a class="button secondary" href="near">Open Near instead</a>
     </div>
   </section>
 
   <footer>
     <p>Times come straight from your mosque's own timetable, not a calculation.<br>Made by <a href="https://x.com/mertesakib">Sakib</a>.</p>
     <nav class="footer-links" aria-label="Help and product links">
-      <a href="near">Bilal Near mobile app</a>
+      <a href="near">Bilal Near</a>
       <a href="app.html">TV app</a>
       <a href="help.html">Help</a>
       <a href="bug.html">Report a problem</a>

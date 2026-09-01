@@ -2,7 +2,7 @@
   "id": "/near",
   "name": "Bilal Near",
   "short_name": "Bilal",
-  "description": "The mobile app that finds the next trustworthy jama'ah near you and tells you when to leave.",
+  "description": "Find the next trustworthy jama'ah near you and know when to leave.",
   "start_url": "/near",
   "scope": "/near",
   "display": "standalone",
