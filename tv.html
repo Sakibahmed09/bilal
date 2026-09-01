@@ -400,6 +400,7 @@
   .film-head{max-width:720px}
   .film-head h2{max-width:16ch}
   .film-head .lede{margin-top:19px}
+  .film-stage{position:relative}
   .film-frame{
     position:relative;
     margin-top:clamp(34px,5vw,52px);
@@ -469,7 +470,7 @@
   .film-loader{
     position:absolute;z-index:4;left:50%;top:50%;width:38px;height:38px;margin:-19px 0 0 -19px;
     border:2px solid rgba(246,239,231,.18);border-top-color:var(--clay);border-radius:50%;
-    opacity:0;pointer-events:none;animation:film-spin .85s linear infinite;transition:opacity .18s ease;
+    opacity:0;pointer-events:none;animation:film-spin .85s linear infinite;transition:opacity 180ms cubic-bezier(.23,1,.32,1);
   }
   .film-frame.is-loading .film-loader{opacity:1}
   @keyframes film-spin{to{transform:rotate(360deg)}}
@@ -481,12 +482,7 @@
   .film-rail{position:relative;flex:1;height:2px;background:rgba(246,239,231,.24);overflow:hidden}
   .film-progress{position:absolute;inset:0;background:var(--clay);transform:scaleX(0);transform-origin:left center;will-change:transform}
   .film-time{min-width:36px;color:rgba(246,239,231,.76);font-size:11px;line-height:1;text-align:right;font-variant-numeric:tabular-nums}
-  .film-frame.is-immersive{
-    position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;max-width:none;margin:0;z-index:200;
-    border:0;border-radius:0;aspect-ratio:auto;background:#090806;touch-action:none;contain:strict;
-  }
-  .film-frame.is-immersive video{object-fit:contain;background:#090806}
-  body.film-lock{overflow:hidden}
+  .film-scroll-cue,.film-sound{display:none}
   @media (hover:hover) and (pointer:fine){
     .film-play:hover{background:linear-gradient(180deg,rgba(23,20,15,0) 20%,rgba(23,20,15,.66) 58%,rgba(23,20,15,.95) 100%)}
     .film-play:hover i{transform:scale(1.05);background:var(--clay-bright)}
@@ -542,12 +538,42 @@
   @media (max-width:639px){
     .screen{aspect-ratio:16/9}
     .near-visual{max-width:390px}
-    .film-frame{aspect-ratio:9/16;max-width:430px;margin-left:auto;margin-right:auto}
-    .film-play{justify-content:space-between;touch-action:pan-y}
-    .film-cta-copy{display:block}
-    .film-play em{display:block;margin-top:2px;font-size:12px}
-    .film-swipe{display:flex;align-items:center;gap:9px;color:rgba(246,239,231,.78);font-size:12px;letter-spacing:.035em}
-    .film-note{text-align:center}
+    .film{padding-bottom:0}
+    .film-stage{
+      left:50%;width:100vw;height:180vh;height:180svh;margin:34px 0 0 -50vw;
+    }
+    .film-frame{
+      position:sticky;top:0;width:100%;height:100vh;height:100svh;max-width:none;margin:0;
+      border:0;border-radius:0;aspect-ratio:auto;background:#090806;contain:paint;
+      transform:scale(.9);transform-origin:center;opacity:.5;will-change:transform,opacity;
+    }
+    .film-frame video{object-fit:contain;background:#090806}
+    .film-frame picture img{object-fit:contain;background:#090806}
+    .film-play{display:none}
+    .film-close{display:none}
+    .film-scroll-cue{
+      position:absolute;z-index:5;left:0;right:0;bottom:max(28px,env(safe-area-inset-bottom));
+      display:flex;flex-direction:column;align-items:center;gap:10px;color:rgba(246,239,231,.84);
+      font-size:12px;letter-spacing:.045em;text-shadow:0 1px 10px rgba(9,8,6,.9);pointer-events:none;
+      transform:translate3d(0,0,0);will-change:transform,opacity;
+    }
+    .film-scroll-cue:after{
+      content:'';width:9px;height:9px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;
+      transform:rotate(45deg);
+    }
+    .film-sound{
+      position:absolute;z-index:6;top:max(17px,env(safe-area-inset-top));right:max(17px,env(safe-area-inset-right));
+      display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:9px 13px;border:1px solid rgba(246,239,231,.22);
+      border-radius:999px;background:rgba(23,20,15,.84);color:var(--cream);font-size:12px;font-weight:600;
+      -webkit-appearance:none;appearance:none;opacity:0;pointer-events:none;
+      transition:opacity 180ms cubic-bezier(.23,1,.32,1),transform 180ms cubic-bezier(.23,1,.32,1);
+      transform:translate3d(0,-5px,0);
+    }
+    .film-frame.is-scroll-playing .film-sound{opacity:1;pointer-events:auto;transform:translate3d(0,0,0)}
+    .film-sound:before{content:'';width:6px;height:6px;border-radius:50%;background:var(--clay)}
+    .film-frame.is-sounding .film-sound{opacity:.5;pointer-events:auto;transform:translate3d(0,0,0)}
+    .film-timeline{bottom:max(17px,env(safe-area-inset-bottom))}
+    .film-note{display:none}
   }
 
   @media (min-width:960px){
@@ -584,6 +610,11 @@
     html{scroll-behavior:auto}
     *,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
     .film-loader{animation:none;border-color:var(--clay)}
+  }
+  @media (max-width:639px) and (prefers-reduced-motion:reduce){
+    .film-stage{height:100vh;height:100svh}
+    .film-frame{position:relative;opacity:1!important;transform:none!important;will-change:auto}
+    .film-scroll-cue{display:none}
   }
 </style>
 </head>
@@ -639,6 +670,7 @@
       <h2 id="film-title">Where the athan has been for 1,400 years.</h2>
       <p class="lede">A short film about the call to prayer, the rooms it has filled, and the one it lost.</p>
     </div>
+    <div class="film-stage" id="filmStage">
     <div class="film-frame">
       <video id="film" preload="none" playsinline controls hidden
              data-landscape-src="film.mp4?v=1"
@@ -655,11 +687,14 @@
       </button>
       <button class="film-close" id="filmClose" type="button" aria-label="Close film" hidden></button>
       <button class="film-toggle" id="filmToggle" type="button" aria-label="Play film" hidden></button>
+      <button class="film-sound" id="filmSound" type="button" aria-label="Turn film sound on" hidden>Sound</button>
+      <span class="film-scroll-cue" id="filmScrollCue">Keep scrolling</span>
       <i class="film-loader" id="filmLoader" aria-hidden="true" hidden></i>
       <div class="film-timeline" id="filmTimeline" aria-hidden="true" hidden>
         <span class="film-rail"><i class="film-progress" id="filmProgress"></i></span>
         <time class="film-time" id="filmTime">1:29</time>
       </div>
+    </div>
     </div>
     <p class="film-note">Best with sound on.</p>
   </section>
@@ -933,29 +968,28 @@
         v=document.getElementById('film'),
         p=document.getElementById('filmPoster'),
         pp=document.getElementById('filmPosterPicture'),
+        stage=document.getElementById('filmStage'),
         frame=b&&b.parentNode,
-        close=document.getElementById('filmClose'),
         toggle=document.getElementById('filmToggle'),
+        sound=document.getElementById('filmSound'),
+        cue=document.getElementById('filmScrollCue'),
         loader=document.getElementById('filmLoader'),
         timeline=document.getElementById('filmTimeline'),
         progress=document.getElementById('filmProgress'),
         time=document.getElementById('filmTime'),
         mobile=window.matchMedia&&window.matchMedia('(max-width:639px)'),
         reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)'),
-        immersive=false,origin=null,pageScroll=0,progressFrame=0,activeMotion=null,lastTouch=0,
-        hintTouch=null,dragTouch=null,suppressClick=0;
-    if(!b||!v||!p||!pp||!frame||!close||!toggle||!loader||!timeline||!progress||!time) return;
+        started=false,userPaused=false,filmActive=false,scrollAmount=0,
+        progressFrame=0,scrollFrame=0;
+    if(!b||!v||!p||!pp||!stage||!frame||!toggle||!sound||!cue||!loader||!timeline||!progress||!time) return;
 
     function isMobile(){return !!(mobile&&mobile.matches)}
     function wantsStillness(){return !!(reduced&&reduced.matches)}
-    function filmHeight(){return (window.visualViewport&&window.visualViewport.height)||window.innerHeight}
-    function sourceFor(portrait){
-      return v.getAttribute(portrait?'data-portrait-src':'data-landscape-src');
-    }
+    function clamp(value){return Math.max(0,Math.min(1,value))}
+    function sourceFor(portrait){return v.getAttribute(portrait?'data-portrait-src':'data-landscape-src')}
     function prepare(portrait){
       var source=sourceFor(portrait);
-      v.poster=p.currentSrc||p.src;
-      v.controls=!portrait;
+      v.poster=p.currentSrc||p.src;v.controls=!portrait;
       if(v.getAttribute('src')!==source){v.src=source;v.load()}
     }
     function clock(seconds){
@@ -964,41 +998,13 @@
     }
     function paintProgress(){
       var duration=isFinite(v.duration)?v.duration:89;
-      progress.style.transform='scaleX('+Math.max(0,Math.min(1,v.currentTime/duration))+')';
+      progress.style.transform='scaleX('+clamp(v.currentTime/duration)+')';
       time.textContent=clock(duration-v.currentTime);
     }
     function progressLoop(){
-      if(!immersive) return;
+      if(!filmActive) return;
       paintProgress();
       if(!v.paused&&!v.ended) progressFrame=requestAnimationFrame(progressLoop);
-    }
-    function showChrome(show){
-      close.hidden=!show;toggle.hidden=!show;loader.hidden=!show;timeline.hidden=!show;
-      toggle.tabIndex=-1;
-    }
-    function lockPage(){
-      pageScroll=window.pageYOffset||document.documentElement.scrollTop||0;
-      document.body.classList.add('film-lock');
-      document.body.style.position='fixed';
-      document.body.style.top=(-pageScroll)+'px';
-      document.body.style.left='0';document.body.style.right='0';document.body.style.width='100%';
-    }
-    function unlockPage(){
-      document.body.classList.remove('film-lock');
-      document.body.style.position='';document.body.style.top='';document.body.style.left='';
-      document.body.style.right='';document.body.style.width='';
-      window.scrollTo(0,pageScroll);
-    }
-    function animateFrame(keyframes,duration,done){
-      if(wantsStillness()||!frame.animate){done();return}
-      if(activeMotion){
-        activeMotion.onfinish=null;activeMotion.oncancel=null;activeMotion.cancel();activeMotion=null;
-      }
-      var motion=frame.animate(keyframes,{duration:duration,easing:'cubic-bezier(.16,1,.3,1)',fill:'both'});
-      activeMotion=motion;
-      function complete(){if(activeMotion!==motion) return;activeMotion=null;done()}
-      motion.onfinish=complete;
-      motion.oncancel=complete;
     }
     function playMobile(){
       frame.classList.add('is-loading');
@@ -1008,137 +1014,67 @@
         toggle.setAttribute('aria-label','Play film');toggle.tabIndex=0;
       });
     }
-    function openCinema(fromSwipe){
-      if(immersive) return;
-      origin=frame.getBoundingClientRect();
-      immersive=true;
-      prepare(true);
-      showChrome(true);
+    function startScrollFilm(){
+      if(started) return;
+      started=true;filmActive=true;userPaused=false;
+      prepare(true);v.muted=true;
       b.hidden=true;pp.hidden=true;v.hidden=false;
-      frame.classList.add('is-immersive','is-loading');
-      frame.setAttribute('role','dialog');
-      frame.setAttribute('aria-label','Bilal launch film');
-      frame.setAttribute('aria-modal','true');
-      lockPage();
-      var sx=origin.width/window.innerWidth,
-          sy=origin.height/filmHeight(),
-          from='translate3d('+origin.left+'px,'+origin.top+'px,0) scale('+sx+','+sy+')';
-      frame.style.transform='';frame.style.borderRadius='';frame.style.transformOrigin='top left';
-      animateFrame([
-        {transform:from},
-        {transform:'translate3d(0,0,0) scale(1,1)'}
-      ],480,function(){
-        frame.style.transform='';frame.style.borderRadius='';frame.style.transformOrigin='';
-        if(immersive&&Date.now()-lastTouch>800) close.focus({preventScroll:true});
-      });
-      if(fromSwipe&&navigator.vibrate) navigator.vibrate(8);
+      toggle.hidden=false;toggle.tabIndex=-1;sound.hidden=false;loader.hidden=false;timeline.hidden=false;
+      frame.classList.add('is-scroll-playing','is-loading');
+      sound.textContent='Sound';sound.setAttribute('aria-label','Turn film sound on');
       playMobile();
     }
-    function finishClose(){
-      immersive=false;
-      cancelAnimationFrame(progressFrame);
-      frame.classList.remove('is-immersive','is-loading','is-paused','is-ended');
-      frame.removeAttribute('role');frame.removeAttribute('aria-label');frame.removeAttribute('aria-modal');
-      frame.style.transform='';frame.style.transformOrigin='';frame.style.borderRadius='';
-      showChrome(false);v.hidden=true;pp.hidden=false;b.hidden=false;
-      unlockPage();
-      if(Date.now()-lastTouch>800) b.focus({preventScroll:true});
+    function updateFilmScroll(){
+      scrollFrame=0;
+      if(!isMobile()){frame.style.transform='';frame.style.opacity='';return}
+      var rect=stage.getBoundingClientRect(),height=(window.visualViewport&&window.visualViewport.height)||window.innerHeight,
+          enter=clamp((height*.92-rect.top)/(height*.84)),
+          leave=clamp((rect.bottom-height*.12)/height),
+          amount=Math.min(enter,leave),scale=.9+.1*amount;
+      scrollAmount=amount;filmActive=amount>.1;
+      if(wantsStillness()){frame.style.transform='none';frame.style.opacity='1'}
+      else{
+        frame.style.transform='scale('+scale+')';
+        frame.style.opacity=String(.5+amount*.5);
+        cue.style.opacity=String(clamp(1-enter*1.8));
+        cue.style.transform='translate3d(0,'+(-enter*14)+'px,0)';
+      }
+      if(enter>.04) startScrollFilm();
+      if(!started) return;
+      if(filmActive&&!userPaused&&v.paused&&!v.ended) playMobile();
+      if(!filmActive&&!v.paused) v.pause();
     }
-    function closeCinema(){
-      if(!immersive) return;
-      v.pause();frame.classList.remove('is-loading');
-      var current=getComputedStyle(frame).transform,
-          sx=origin.width/window.innerWidth,
-          sy=origin.height/filmHeight(),
-          target='translate3d('+origin.left+'px,'+origin.top+'px,0) scale('+sx+','+sy+')';
-      frame.style.transformOrigin='top left';
-      animateFrame([
-        {transform:current==='none'?'translate3d(0,0,0) scale(1,1)':current},
-        {transform:target}
-      ],390,finishClose);
+    function requestScrollPaint(){
+      if(!scrollFrame) scrollFrame=requestAnimationFrame(updateFilmScroll);
+    }
+    function unlockSound(event){
+      if(event.target===sound||event.target===toggle) return;
+      if(!isMobile()||!started||scrollAmount<.28||!v.muted) return;
+      v.muted=false;frame.classList.add('is-sounding');
+      sound.textContent='Sound on';sound.setAttribute('aria-label','Mute film');
+    }
+    function toggleSound(event){
+      event.stopPropagation();v.muted=!v.muted;
+      frame.classList.toggle('is-sounding',!v.muted);
+      sound.textContent=v.muted?'Sound':'Sound on';
+      sound.setAttribute('aria-label',v.muted?'Turn film sound on':'Mute film');
+      if(v.paused&&!userPaused) playMobile();
+    }
+    function togglePlayback(){
+      if(v.ended){v.currentTime=0;userPaused=false;playMobile();return}
+      if(v.paused){userPaused=false;playMobile()}else{userPaused=true;v.pause()}
     }
     function playDesktop(){
       prepare(false);v.hidden=false;pp.hidden=true;b.hidden=true;
       var promise=v.play();
       if(promise&&promise.catch) promise.catch(function(){v.hidden=true;pp.hidden=false;b.hidden=false});
     }
-    function togglePlayback(){
-      if(v.ended){v.currentTime=0;playMobile();return}
-      if(v.paused) playMobile();else v.pause();
-    }
-    function springHintBack(){
-      var current=getComputedStyle(frame).transform;
-      frame.style.transform='';
-      animateFrame([{transform:current},{transform:'translate3d(0,0,0) scale(1)'}],260,function(){frame.style.transform=''});
-    }
 
-    b.addEventListener('touchstart',function(event){
-      if(!isMobile()||!event.changedTouches[0]) return;
-      lastTouch=Date.now();
-      var touch=event.changedTouches[0];
-      hintTouch={y:touch.clientY,time:Date.now(),prevY:touch.clientY,prevTime:Date.now(),lastY:touch.clientY,lastTime:Date.now()};
-    },{passive:true});
-    b.addEventListener('touchmove',function(event){
-      if(!hintTouch||!event.changedTouches[0]) return;
-      var touch=event.changedTouches[0],dy=touch.clientY-hintTouch.y;
-      hintTouch.prevY=hintTouch.lastY;hintTouch.prevTime=hintTouch.lastTime;
-      hintTouch.lastY=touch.clientY;hintTouch.lastTime=Date.now();
-      if(dy>=0) return;
-      var amount=Math.min(1,-dy/120);
-      frame.style.transform='translate3d(0,'+(-amount*11)+'px,0) scale('+(1+amount*.018)+')';
-    },{passive:true});
-    b.addEventListener('touchend',function(event){
-      if(!hintTouch||!event.changedTouches[0]) return;
-      var touch=event.changedTouches[0],dy=touch.clientY-hintTouch.y,
-          velocity=(touch.clientY-hintTouch.prevY)/Math.max(16,Date.now()-hintTouch.prevTime)*1000,
-          commit=dy<-54||velocity<-520;
-      hintTouch=null;
-      if(commit){suppressClick=Date.now()+500;openCinema(true)}else springHintBack();
-    },{passive:true});
-    b.addEventListener('touchcancel',function(){hintTouch=null;springHintBack()},{passive:true});
-    b.addEventListener('click',function(){
-      if(Date.now()<suppressClick) return;
-      if(isMobile()) openCinema(false);else playDesktop();
-    });
-
-    frame.addEventListener('touchstart',function(event){
-      if(!immersive||event.target===close||event.target===toggle||!event.changedTouches[0]) return;
-      var touch=event.changedTouches[0];
-      dragTouch={x:touch.clientX,y:touch.clientY,time:Date.now(),prevY:touch.clientY,prevTime:Date.now(),lastY:touch.clientY,lastTime:Date.now(),active:false};
-    },{passive:true});
-    frame.addEventListener('touchmove',function(event){
-      if(!dragTouch||!event.changedTouches[0]) return;
-      var touch=event.changedTouches[0],dy=touch.clientY-dragTouch.y,dx=touch.clientX-dragTouch.x;
-      dragTouch.prevY=dragTouch.lastY;dragTouch.prevTime=dragTouch.lastTime;
-      dragTouch.lastY=touch.clientY;dragTouch.lastTime=Date.now();
-      if(dy<8||Math.abs(dx)>dy) return;
-      event.preventDefault();dragTouch.active=true;
-      var h=filmHeight(),rubber=(dy*h*.55)/(h+.55*dy),scale=1-Math.min(.035,rubber/h*.13);
-      frame.style.transform='translate3d(0,'+rubber+'px,0) scale('+scale+')';
-    },{passive:false});
-    frame.addEventListener('touchend',function(event){
-      if(!dragTouch||!event.changedTouches[0]) return;
-      var touch=event.changedTouches[0],dy=touch.clientY-dragTouch.y,
-          velocity=(touch.clientY-dragTouch.prevY)/Math.max(16,Date.now()-dragTouch.prevTime)*1000,
-          active=dragTouch.active;
-      dragTouch=null;
-      if(!active) return;
-      suppressClick=Date.now()+450;
-      if(dy>110||velocity>680){closeCinema();return}
-      var current=getComputedStyle(frame).transform;
-      animateFrame([{transform:current},{transform:'translate3d(0,0,0) scale(1)'}],280,function(){
-        frame.style.transform='';
-      });
-    },{passive:true});
-    frame.addEventListener('touchcancel',function(){
-      if(!dragTouch) return;dragTouch=null;
-      frame.style.transform='';
-    },{passive:true});
-
-    close.addEventListener('click',function(event){event.stopPropagation();closeCinema()});
+    b.addEventListener('click',function(){if(!isMobile()) playDesktop()});
+    sound.addEventListener('click',toggleSound);
     toggle.addEventListener('click',function(event){event.stopPropagation();togglePlayback()});
-    v.addEventListener('click',function(){if(immersive&&Date.now()>=suppressClick) togglePlayback()});
-    v.addEventListener('waiting',function(){if(immersive&&!v.paused) frame.classList.add('is-loading')});
+    v.addEventListener('click',function(){if(isMobile()) togglePlayback()});
+    v.addEventListener('waiting',function(){if(filmActive&&!v.paused) frame.classList.add('is-loading')});
     v.addEventListener('playing',function(){
       frame.classList.remove('is-loading','is-paused','is-ended');
       toggle.setAttribute('aria-label','Pause film');toggle.tabIndex=-1;
@@ -1146,23 +1082,17 @@
     });
     v.addEventListener('pause',function(){
       cancelAnimationFrame(progressFrame);paintProgress();
-      if(immersive&&!v.ended){frame.classList.add('is-paused');toggle.setAttribute('aria-label','Play film');toggle.tabIndex=0}
+      if(filmActive&&userPaused&&!v.ended){frame.classList.add('is-paused');toggle.setAttribute('aria-label','Play film');toggle.tabIndex=0}
     });
     v.addEventListener('ended',function(){
-      frame.classList.remove('is-loading');frame.classList.add('is-paused','is-ended');
+      userPaused=true;frame.classList.remove('is-loading');frame.classList.add('is-paused','is-ended');
       toggle.setAttribute('aria-label','Replay film');toggle.tabIndex=0;paintProgress();
     });
     v.addEventListener('loadedmetadata',paintProgress);
-    document.addEventListener('keydown',function(event){
-      if(!immersive) return;
-      if(event.key==='Escape') closeCinema();
-      if(event.key===' '){event.preventDefault();togglePlayback()}
-      if(event.key==='Tab'){
-        if(toggle.tabIndex<0){event.preventDefault();close.focus()}
-        else if(event.shiftKey&&document.activeElement===close){event.preventDefault();toggle.focus()}
-        else if(!event.shiftKey&&document.activeElement===toggle){event.preventDefault();close.focus()}
-      }
-    });
+    document.addEventListener('touchend',unlockSound,{passive:true});
+    window.addEventListener('scroll',requestScrollPaint,{passive:true});
+    window.addEventListener('resize',requestScrollPaint,{passive:true});
+    requestScrollPaint();
   })();
 </script>
 </body>
