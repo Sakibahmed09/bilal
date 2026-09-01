@@ -409,6 +409,7 @@
     overflow:hidden;
     aspect-ratio:16/9;
   }
+  .film-frame picture{display:block;width:100%;height:100%}
   .film-frame img,.film-frame video{width:100%;height:100%;display:block;object-fit:cover}
   .film-frame video{background:#000}
   .film-play{
@@ -485,6 +486,7 @@
   @media (max-width:639px){
     .screen{aspect-ratio:16/9}
     .near-visual{max-width:390px}
+    .film-frame{aspect-ratio:9/16;max-width:430px;margin-left:auto;margin-right:auto}
   }
 
   @media (min-width:960px){
@@ -577,10 +579,14 @@
     </div>
     <div class="film-frame">
       <video id="film" preload="none" playsinline controls hidden
-             poster="film-poster.webp?v=1" src="film.mp4?v=1"></video>
-      <img id="filmPoster" src="film-poster.webp?v=1"
-           alt="A terraced street at dusk with minarets risen above the rooftops"
-           width="1280" height="720" loading="lazy" decoding="async">
+             data-landscape-src="film.mp4?v=1"
+             data-portrait-src="film-portrait.mp4?v=1"></video>
+      <picture id="filmPosterPicture">
+        <source media="(max-width:639px)" srcset="film-poster-portrait.webp?v=1">
+        <img id="filmPoster" src="film-poster.webp?v=1"
+             alt="A terraced street at dusk with minarets risen above the rooftops"
+             width="1280" height="720" loading="lazy" decoding="async">
+      </picture>
       <button class="film-play" id="filmPlay" type="button">
         <span><i aria-hidden="true"></i><b>Watch the film</b><em>1 min 29</em></span>
       </button>
@@ -855,11 +861,20 @@
   (function(){
     var b=document.getElementById('filmPlay'),
         v=document.getElementById('film'),
-        p=document.getElementById('filmPoster');
-    if(!b||!v||!p) return;
+        p=document.getElementById('filmPoster'),
+        pp=document.getElementById('filmPosterPicture');
+    if(!b||!v||!p||!pp) return;
     b.addEventListener('click',function(){
-      v.hidden=false; p.hidden=true; b.hidden=true;
-      v.play().catch(function(){});
+      /* Assign one source only after intent. preload=none already prevents an
+         eager movie request; deferring src as well guarantees a phone never
+         discovers/downloads the landscape file (and vice versa). */
+      var portrait=window.matchMedia && window.matchMedia('(max-width:639px)').matches;
+      v.src=portrait?v.getAttribute('data-portrait-src'):v.getAttribute('data-landscape-src');
+      v.poster=p.currentSrc||p.src;
+      v.hidden=false; pp.hidden=true; b.hidden=true;
+      v.play().catch(function(){
+        v.hidden=true; pp.hidden=false; b.hidden=false;
+      });
     });
   })();
 </script>
