@@ -1,137 +1,807 @@
 {
-  "generated": "2026-09-05T23:09:47.951Z",
+  "generated": "2026-09-05T23:18:13.180Z",
   "candidates": 200,
   "published": 174,
   "results": [
     {
+      "id": "thm-aberfeldymasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-alaqsa",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-albarakah",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-alhudamosque",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-ashaadibi",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-baitulaman",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-baitulislah",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-baitulmamur",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-bbcmasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-bishopsway",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-bowcentralmosque",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-bowcommonmasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-bmcc",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-bwo",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-bricklanemasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-britishestatemasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-bbbmasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-bbcamasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-burhanuddinmasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-collingwoodmasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-coventrycrossmasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-daralarqam",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-darulkhidmah",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-darulummah",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-dco",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-dorsetmasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-elm",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-eastside",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-eshaatulislam",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-globetownmasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-hamletswaymasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-hifzulquran",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-hindgrovemasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-jazari",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-lansburymasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-leopold",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-limehousemasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-locksleymasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-madinamasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-markazimasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-mazahirululoom",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-mimbar",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-poplarcentralmasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-pmcc",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-poplarshahjalal",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-redcoatmasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-shadwellmasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-shahporanmasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-shoreditchmasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-ssmacc",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-teviotmasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-turnersmasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-wappingmasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-weaversmasjid",
+      "result": "eligible"
+    },
+    {
+      "id": "thm-wco",
+      "result": "eligible"
+    },
+    {
+      "id": "dpt-alhijrahtrust-org",
+      "result": "eligible"
+    },
+    {
+      "id": "dpt-thehelpfoundation-org-uk",
+      "result": "eligible"
+    },
+    {
+      "id": "dpt-www-peacecentre-org-uk",
+      "result": "eligible"
+    },
+    {
+      "id": "dpt-irlammosque-org",
+      "result": "eligible"
+    },
+    {
+      "id": "dpt-camberwellislamiccentre-co-uk",
+      "result": "eligible"
+    },
+    {
+      "id": "dpt-dagenhamjammemasjid-org-uk",
+      "result": "eligible"
+    },
+    {
+      "id": "dpt-dunstablemasjid-org-uk",
+      "result": "eligible"
+    },
+    {
+      "id": "dpt-bahutrust-org",
+      "result": "eligible"
+    },
+    {
+      "id": "dpt-www-hmct-org",
+      "result": "eligible"
+    },
+    {
+      "id": "dpt-leagravehallmasjid-com",
+      "result": "eligible"
+    },
+    {
+      "id": "dpt-www-madinafoundationdagenham-org",
+      "result": "eligible"
+    },
+    {
+      "id": "dpt-masjidzeenatulislam-org-uk",
+      "result": "eligible"
+    },
+    {
       "id": "dpt-www-nbicc-org-uk",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "Times look automatic, not set by the mosque"
+    },
+    {
+      "id": "dpt-plaistowjamiaislamia-co-uk",
+      "result": "eligible"
+    },
+    {
+      "id": "dpt-shahjalaljamemasjid-com",
+      "result": "eligible"
+    },
+    {
+      "id": "dpt-southbedfordicc-org-uk",
+      "result": "eligible"
+    },
+    {
+      "id": "dpt-www-suttonislamiccentre-co-uk",
+      "result": "eligible"
+    },
+    {
+      "id": "dpt-dairatul-amni-com",
+      "result": "eligible"
+    },
+    {
+      "id": "abu-bakar-mosque-1711984707419",
+      "result": "eligible"
+    },
+    {
+      "id": "1st-4-education",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000311",
+      "result": "eligible"
+    },
+    {
+      "id": "aberdeen-mosque-and-islamic-centre-scio",
+      "result": "eligible"
     },
     {
       "id": "mosque-000591",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "No jama'ah times published"
+    },
+    {
+      "id": "abu-bakr-islamic-centre-reading",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000522",
+      "result": "eligible"
     },
     {
       "id": "acton-mosque",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "Times look automatic, not set by the mosque"
+    },
+    {
+      "id": "ad-duha-institute",
+      "result": "eligible"
+    },
+    {
+      "id": "adam-masjid",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000611",
+      "result": "eligible"
+    },
+    {
+      "id": "adil-anisa-masjid",
+      "result": "eligible"
+    },
+    {
+      "id": "adur-muslim-centre",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000137",
+      "result": "eligible"
     },
     {
       "id": "mosque-000187",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "No jama'ah times published"
+    },
+    {
+      "id": "aisha-islamic-centre",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000429",
+      "result": "eligible"
+    },
+    {
+      "id": "aisha-mosque-walsall",
+      "result": "eligible"
     },
     {
       "id": "al-marifah-academy",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "Times look automatic, not set by the mosque"
+    },
+    {
+      "id": "4dc0674f-c55a-4d7d-b0aa-15054975117f",
+      "result": "eligible"
+    },
+    {
+      "id": "al-amin-jam-e-masjid",
+      "result": "eligible"
+    },
+    {
+      "id": "al-bayaan-academy",
+      "result": "eligible"
+    },
+    {
+      "id": "8a9b19ce-13ed-4438-a0ca-ae6f3bca6629",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000245",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000599",
+      "result": "eligible"
+    },
+    {
+      "id": "JAm7JRKR",
+      "result": "eligible"
+    },
+    {
+      "id": "al-farooq-academy-and-masjid",
+      "result": "eligible"
+    },
+    {
+      "id": "furqan-community-centre",
+      "result": "eligible"
+    },
+    {
+      "id": "al-furqan-1721239006128",
+      "result": "eligible"
+    },
+    {
+      "id": "46f6cfd3-fab8-4482-adfe-d654b830202f",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000273",
+      "result": "eligible"
+    },
+    {
+      "id": "23a6f2bc-5c65-4e79-af36-195c2ec5fa84",
+      "result": "eligible"
+    },
+    {
+      "id": "a9c7f3d3-d82e-4a23-89ef-cd08cd446a6f",
+      "result": "eligible"
     },
     {
       "id": "mosque-000521",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "Only a partial listing passed its checks"
+    },
+    {
+      "id": "mosque-000364",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000447",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000483",
+      "result": "eligible"
+    },
+    {
+      "id": "al-madina-trust",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000225",
+      "result": "eligible"
     },
     {
       "id": "masjid-al-aqsa-1718026216931",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "Times look automatic, not set by the mosque"
+    },
+    {
+      "id": "al-mustafa-centre",
+      "result": "eligible"
     },
     {
       "id": "mosque-000205",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "No trustworthy jama'ah times published"
     },
     {
       "id": "mosque-000344",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "No jama'ah times published"
+    },
+    {
+      "id": "al-noor-masjid-and-education-trust",
+      "result": "eligible"
+    },
+    {
+      "id": "al-noor-mosque-1682769994447",
+      "result": "eligible"
     },
     {
       "id": "mosque-000024",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "No jama'ah times published"
+    },
+    {
+      "id": "al-sunnah-community-education-and-recreation-centre",
+      "result": "eligible"
+    },
+    {
+      "id": "al-ansar-iec",
+      "result": "eligible"
+    },
+    {
+      "id": "al-aqsa-islamic-centre",
+      "result": "eligible"
     },
     {
       "id": "mosque-000194",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "No jama'ah times published"
     },
     {
       "id": "mosque-000117",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "No jama'ah times published"
+    },
+    {
+      "id": "al-buraq-masjid",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000510",
+      "result": "eligible"
+    },
+    {
+      "id": "e7a33f5a-881a-49a7-b369-cc611ff4d028",
+      "result": "eligible"
+    },
+    {
+      "id": "markaz-al-furqaan",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000592",
+      "result": "eligible"
+    },
+    {
+      "id": "al-furqan-mosque-glasgow",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000037",
+      "result": "eligible"
     },
     {
       "id": "mosque-000460",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "No trustworthy jama'ah times published"
+    },
+    {
+      "id": "al-hira-education-and-culture-centre",
+      "result": "eligible"
     },
     {
       "id": "mosque-000403",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "Times look automatic, not set by the mosque"
+    },
+    {
+      "id": "al-ikhlas-centre",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000585",
+      "result": "eligible"
     },
     {
       "id": "mosque-000038",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "No jama'ah times published"
+    },
+    {
+      "id": "al-madina-masjid-worcester",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000488",
+      "result": "eligible"
+    },
+    {
+      "id": "southfields-masjid",
+      "result": "eligible"
     },
     {
       "id": "al-masjid-al-munawarah-and-islamic-education-centre",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "Times look automatic, not set by the mosque"
+    },
+    {
+      "id": "mosque-000389",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000326",
+      "result": "eligible"
+    },
+    {
+      "id": "d800ff38-f9cc-4f14-86b5-a52a3023a39d",
+      "result": "eligible"
     },
     {
       "id": "mosque-000294",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "Times look automatic, not set by the mosque"
     },
     {
       "id": "al-rahman-mosque-and-education-centre",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "Times look automatic, not set by the mosque"
+    },
+    {
+      "id": "mosque-000070",
+      "result": "eligible"
+    },
+    {
+      "id": "4e8e37c2-b929-412d-b535-d9a689de1087",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000191",
+      "result": "eligible"
+    },
+    {
+      "id": "al-tawbah-mosque",
+      "result": "eligible"
     },
     {
       "id": "mosque-000152",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "Times look automatic, not set by the mosque"
+    },
+    {
+      "id": "albaraka-islamic-resource-centre",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000334",
+      "result": "eligible"
+    },
+    {
+      "id": "albirr-mosque-basingstoke",
+      "result": "eligible"
+    },
+    {
+      "id": "alfurqan-education-trust",
+      "result": "eligible"
+    },
+    {
+      "id": "alfurqan-islamic-centre-1741893173365",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000247",
+      "result": "eligible"
+    },
+    {
+      "id": "alhikmah-project",
+      "result": "eligible"
     },
     {
       "id": "alhira",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "Times look automatic, not set by the mosque"
+    },
+    {
+      "id": "mosque-000430",
+      "result": "eligible"
+    },
+    {
+      "id": "alnagashi-mosque-and-centre",
+      "result": "eligible"
     },
     {
       "id": "alrahman",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "Times look automatic, not set by the mosque"
+    },
+    {
+      "id": "alrisaalah",
+      "result": "eligible"
+    },
+    {
+      "id": "alton-islamic-centre",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000544",
+      "result": "eligible"
     },
     {
       "id": "alyaqeen-academy-1739810890452",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "Only a partial listing passed its checks"
+    },
+    {
+      "id": "mosque-000279",
+      "result": "eligible"
+    },
+    {
+      "id": "ameenia-sultania-educational-trust",
+      "result": "eligible"
+    },
+    {
+      "id": "amic",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000550",
+      "result": "eligible"
+    },
+    {
+      "id": "an-noor-masjid-and-community-centre-1731509151593",
+      "result": "eligible"
+    },
+    {
+      "id": "markazi-jamia-masjid-newham",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000310",
+      "result": "eligible"
+    },
+    {
+      "id": "annoor-cultural-and-community-centre",
+      "result": "eligible"
+    },
+    {
+      "id": "2aacc4fb-7520-4abc-82a4-f3af70f431c5",
+      "result": "eligible"
+    },
+    {
+      "id": "north-manchester-jame-masjid-1692530540078",
+      "result": "eligible"
     },
     {
       "id": "as-sabr-institute",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "Times look automatic, not set by the mosque"
+    },
+    {
+      "id": "asha-islamic-centre",
+      "result": "eligible"
+    },
+    {
+      "id": "ascc",
+      "result": "eligible"
+    },
+    {
+      "id": "ashrafistudycentre",
+      "result": "eligible"
+    },
+    {
+      "id": "ajmic",
+      "result": "eligible"
     },
     {
       "id": "broomhouse-mosque-1762346242638",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "Only a partial listing passed its checks"
+    },
+    {
+      "id": "assunnah-islamic-centre",
+      "result": "eligible"
+    },
+    {
+      "id": "at-taqwa-centre-birmingham",
+      "result": "eligible"
+    },
+    {
+      "id": "at-taqwa-islamic-and-family-centre",
+      "result": "eligible"
+    },
+    {
+      "id": "at-tawheed-masjid-and-community-centre-1717955904990",
+      "result": "eligible"
+    },
+    {
+      "id": "aylesbury-ghausia-mosque",
+      "result": "eligible"
     },
     {
       "id": "mosque-000471",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "Times look automatic, not set by the mosque"
+    },
+    {
+      "id": "ayrshire-central-mosque",
+      "result": "eligible"
+    },
+    {
+      "id": "4294c894-c695-4ad6-8911-1f5fef8dcbe4",
+      "result": "eligible"
+    },
+    {
+      "id": "azhar-academy-masjid",
+      "result": "eligible"
+    },
+    {
+      "id": "bab-ul-islam-wakefield",
+      "result": "eligible"
+    },
+    {
+      "id": "baitulaziz-icc",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000043",
+      "result": "eligible"
+    },
+    {
+      "id": "mosque-000301",
+      "result": "eligible"
+    },
+    {
+      "id": "baitul-mukarram-masjid-1753324172690",
+      "result": "eligible"
+    },
+    {
+      "id": "balham-masjid-and-tooting-islamic-centre",
+      "result": "eligible"
     },
     {
       "id": "banbury-madni-masjid",
-      "result": "fetch failed; preserve dated evidence",
-      "error": "No saved listing"
+      "result": "Times look automatic, not set by the mosque"
+    },
+    {
+      "id": "feb5299c-1a8d-4043-a215-ca9fa9f60103",
+      "result": "eligible"
+    },
+    {
+      "id": "barakah-educational-and-cultural-association",
+      "result": "eligible"
     }
   ]
 }
