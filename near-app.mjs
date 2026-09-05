@@ -254,6 +254,7 @@ function render() {
     offline: "Showing saved times · check with the mosque if unsure",
     refreshError: "Couldn’t update · showing previous times",
     locationError: "Couldn’t update your location · previous result kept",
+    locationImprecise: "Location isn’t precise enough · change location to search your area",
     locationUnknown: selected?.mosque.saved
       ? "Location unavailable · showing saved times"
       : "Location unavailable · journey and distance aren’t known",
@@ -1154,6 +1155,11 @@ function renderStatus(status) {
       "Location access is off. Search a postcode or area to find jama’ahs nearby.",
       "Search a postcode or area",
     ],
+    imprecise: [
+      "Let’s find your area",
+      "Your device couldn’t pinpoint your location. Search a postcode or address to find jama’ahs nearby.",
+      "Search a postcode or area",
+    ],
     location: [
       "Where shall we look?",
       "Search a UK address, place or postcode, or try your location again.",
@@ -1175,7 +1181,7 @@ function renderStatus(status) {
   if (signature === renderSignature) return;
   renderSignature = signature;
   $("statusScreen").innerHTML =
-    `<h2>${title}</h2><p>${body}</p>${["locate", "loading"].includes(status) ? '<div class="loading-rule" aria-hidden="true"></div>' : ""}<button class="${["locate", "loading"].includes(status) ? "text-link" : "solid"}" id="statusAction">${action}</button>${status === "location" ? '<button class="text-link" id="statusRetry">Try my location again</button>' : ""}${["empty", "failure"].includes(status) ? '<button class="text-link" id="statusSearch">Search another area</button>' : ""}${["empty", "failure"].includes(status) && (pool.length || session.state.unavailable.length) ? '<button class="text-link" id="statusMosques">See the mosques in this area</button>' : ""}`;
+    `<h2>${title}</h2><p>${body}</p>${["locate", "loading"].includes(status) ? '<div class="loading-rule" aria-hidden="true"></div>' : ""}<button class="${["locate", "loading"].includes(status) ? "text-link" : "solid"}" id="statusAction">${action}</button>${["location", "imprecise"].includes(status) ? '<button class="text-link" id="statusRetry">Try my location again</button>' : ""}${["empty", "failure"].includes(status) ? '<button class="text-link" id="statusSearch">Search another area</button>' : ""}${["empty", "failure"].includes(status) && (pool.length || session.state.unavailable.length) ? '<button class="text-link" id="statusMosques">See the mosques in this area</button>' : ""}`;
   $("statusAction").onclick =
     status === "failure"
       ? () => session.start({ refresh: true })

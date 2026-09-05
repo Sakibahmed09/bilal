@@ -107,7 +107,15 @@ export function createNearSession({
       // Preserve a useful answer when GPS is denied or unavailable; never
       // claim the location was refreshed using the old coordinates.
       state.busy = false;
-      state.notice = "locationError";
+      state.notice = position.reason?.code === "imprecise"
+        ? "locationImprecise" : "locationError";
+      if (position.reason?.code === "imprecise") {
+        state.here = null;
+        state.area = "Location uncertain";
+        for (const m of state.pool) { m.distance = null; m.walk = null; }
+        state.selected.mosque.distance = null;
+        state.selected.mosque.walk = null;
+      }
       emit();
       return;
     } else {
@@ -117,7 +125,8 @@ export function createNearSession({
       if (!preferred) {
         state.busy = false;
         state.screen =
-          position.reason?.code === "permission" ? "permission" : "location";
+          position.reason?.code === "permission" ? "permission" :
+          position.reason?.code === "imprecise" ? "imprecise" : "location";
         emit();
         return;
       }

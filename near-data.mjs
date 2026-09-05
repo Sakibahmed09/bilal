@@ -374,17 +374,32 @@ export function locate({
       abort();
       return;
     }
-    geolocation.getCurrentPosition(
-      (p) =>
-        finish(resolve, { lat: p.coords.latitude, lng: p.coords.longitude }),
-      (e) =>
-        finish(reject, new NearError(e.code === 1 ? "permission" : "location")),
-      {
-        enableHighAccuracy: false,
-        timeout: 12000,
-        maximumAge: fresh ? 0 : 600000,
+    // A precise-location permission does not guarantee a precise fix. Never
+    // turn a network-sized accuracy radius into a confident five-minute walk.
+    const request = (retry = false) => geolocation.getCurrentPosition(
+      (p) => {
+        if (ended) return;
+        const { latitude: lat, longitude: lng, accuracy } = p.coords;
+        if (!Number.isFinite(lat) || !Number.isFinite(lng) ||
+            Math.abs(lat) > 90 || Math.abs(lng) > 180 ||
+            !Number.isFinite(accuracy) || accuracy < 0) {
+          finish(reject, new NearError("location"));
+          return;
+        }
+        if (accuracy > 250) {
+          // Give GPS one more chance to improve an initial network fix.
+          if (!retry) request(true);
+          else finish(reject, new NearError("imprecise"));
+          return;
+        }
+        finish(resolve, { lat, lng, accuracy });
       },
+      (e) => finish(reject, new NearError(
+        e.code === 1 ? "permission" : retry ? "imprecise" : "location",
+      )),
+      { enableHighAccuracy: true, timeout: retry ? 6000 : 12000, maximumAge: 0 },
     );
+    request();
   });
 }
 export function distance(a, b) {
