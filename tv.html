@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>bilal · the athan that tells you when to leave</title>
-<meta name="theme-color" content="#17140f">
-<meta name="description" content="Bilal is a screen for your home that calls you at leave time, using your mosque's real jama'ah timetable and your journey.">
-<meta property="og:title" content="bilal · the screen that calls you to jama'ah">
-<meta property="og:description" content="Your mosque's real jama'ah time, your journey counted, and the athan when it is time to leave.">
+<title>Bilal · Find your next jama’ah</title>
+<meta name="theme-color" content="#ede9df">
+<meta name="description" content="Find nearby jama’ah times, plan your journey and get directions with Bilal Near. Missing your mosque? Send us its website.">
+<meta property="og:title" content="Bilal · Find your next jama’ah">
+<meta property="og:description" content="A place for you in the jama’ah. Find nearby mosque times with Bilal Near, or help bring your mosque to Bilal.">
 <meta property="og:image" content="https://bilalathan.co.uk/og.jpg">
 <meta property="og:url" content="https://bilalathan.co.uk/tv.html">
 <meta property="og:type" content="website">
@@ -16,673 +16,47 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="preload" href="fonts/prata-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
-<style>
-  @font-face{font-family:Prata;src:url('fonts/prata-latin.woff2') format('woff2');font-display:swap}
-  @font-face{font-family:Archivo;src:url('fonts/archivo-latin.woff2') format('woff2');font-display:swap}
-  :root{
-    --clay:#d9a48f;
-    --clay-bright:#efbba5;
-    --cream:#f6efe7;
-    --cream-soft:#ded3c8;
-    --char:#221e1c;
-    --deep:#17140f;
-    --deep-warm:#211913;
-    --veil:rgba(246,239,231,.72);
-    --quiet:rgba(246,239,231,.5);
-    --hair:rgba(246,239,231,.14);
-    --hair-strong:rgba(246,239,231,.24);
-    --display:Prata,Georgia,serif;
-    --text:Archivo,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-    --ease:cubic-bezier(.22,1,.36,1);
-    --safe-x:max(22px,env(safe-area-inset-left),env(safe-area-inset-right));
-  }
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html{scroll-behavior:smooth;background:var(--deep)}
-  body{
-    min-height:100vh;
-    background:var(--deep);
-    color:var(--cream);
-    font-family:var(--text);
-    -webkit-font-smoothing:antialiased;
-    line-height:1.55;
-    overflow-x:hidden;
-    padding-top:max(20px,env(safe-area-inset-top));
-    padding-right:max(22px,env(safe-area-inset-right));
-    padding-bottom:calc(56px + env(safe-area-inset-bottom));
-    padding-left:max(22px,env(safe-area-inset-left));
-  }
-  button,a{font:inherit}
-  button{color:inherit}
-  a{color:inherit}
-  img{max-width:100%;display:block}
-  [hidden]{display:none!important}
-  ::selection{background:var(--clay);color:var(--char)}
-
-  .atmosphere,.horizon,.star{position:fixed;pointer-events:none}
-  .atmosphere{
-    inset:0;
-    z-index:0;
-    background:
-      radial-gradient(60% 42% at 72% 10%,rgba(112,74,53,.24),transparent 70%),
-      url('sky/landing-stars.webp') repeat;
-    background-size:auto,760px auto;
-    opacity:.16;
-    animation:sky-drift 1054s linear infinite;
-  }
-  .horizon{
-    z-index:0;
-    left:0;
-    right:0;
-    bottom:0;
-    height:42vh;
-    background:url('sky/isha.webp') center bottom/cover no-repeat;
-    opacity:.22;
-    transition:opacity 1.4s var(--ease);
-    -webkit-mask-image:linear-gradient(to top,#000,transparent);
-    mask-image:linear-gradient(to top,#000,transparent);
-  }
-  body[data-sky="fajr"] .atmosphere{opacity:.13}
-  body[data-sky="dhuhr"] .atmosphere,body[data-sky="asr"] .atmosphere{opacity:.07}
-  body[data-sky="maghrib"] .atmosphere{opacity:.11}
-  body[data-sky="dhuhr"] .star,body[data-sky="asr"] .star{opacity:0;animation:none}
-  .star{
-    z-index:0;
-    width:2px;
-    height:2px;
-    border-radius:50%;
-    background:var(--cream);
-    opacity:.14;
-    animation:twinkle var(--period) ease-in-out var(--delay) infinite;
-  }
-  @keyframes sky-drift{to{background-position:0 0,-760px -40px}}
-  @keyframes twinkle{0%,100%{opacity:.06}50%{opacity:.34}}
-
-  .page{position:relative;z-index:1;max-width:1180px;margin:0 auto}
-  .site-header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:24px;
-    min-height:52px;
-  }
-  .brand{
-    display:inline-block;
-    text-decoration:none;
-    min-height:44px;
-    padding:6px 0;
-  }
-  .brand span{font-family:var(--display);font-size:25px;line-height:1;letter-spacing:-.025em}
-  .near-nav{
-    display:inline-flex;
-    align-items:center;
-    gap:9px;
-    min-height:44px;
-    padding:7px 0;
-    text-decoration:none;
-    color:var(--veil);
-  }
-  .near-nav strong{font-family:var(--display);font-size:17px;font-weight:400;color:var(--cream)}
-  .near-nav span{display:none;font-size:12px;color:var(--quiet)}
-  .near-nav:after{content:'↗';color:var(--clay);font-size:17px;transition:transform .35s var(--ease)}
-  .near-nav:hover:after{transform:translate(2px,-2px)}
-
-  h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:-.028em}
-  h1{font-size:clamp(42px,12vw,64px);line-height:1.03;max-width:11ch}
-  h2{font-size:clamp(34px,9.5vw,55px);line-height:1.08}
-  h3{font-size:clamp(25px,7vw,32px);line-height:1.17}
-  .lede{color:var(--veil);font-size:17px;line-height:1.65;max-width:35em}
-  .lede strong{color:var(--cream);font-weight:600}
-
-  .hero{padding:clamp(46px,10vw,96px) 0 clamp(76px,15vw,138px)}
-  .hero-copy .lede{margin-top:21px;max-width:31em}
-  .actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:30px}
-  .button{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    gap:11px;
-    min-height:48px;
-    border:1px solid transparent;
-    border-radius:9px;
-    padding:12px 20px;
-    background:var(--clay);
-    color:var(--char);
-    font-size:15px;
-    font-weight:700;
-    text-decoration:none;
-    transition:background .25s ease,transform .35s var(--ease),border-color .25s ease;
-  }
-  .button:after{content:'↓';font-size:16px;line-height:1;transition:transform .35s var(--ease)}
-  .button:hover{background:var(--clay-bright);transform:translateY(-2px)}
-  .button:hover:after{transform:translateY(2px)}
-  .button:active{transform:translateY(0)}
-  .button.secondary{background:transparent;color:var(--cream);border-color:var(--hair-strong)}
-  .button.secondary:after{content:'↗';color:var(--clay)}
-  .button.secondary:hover{background:rgba(246,239,231,.06);border-color:rgba(246,239,231,.4)}
-
-  .device-wrap{margin-top:48px;position:relative}
-  .device-wrap:before{
-    content:'';
-    position:absolute;
-    left:8%;
-    right:8%;
-    bottom:-24px;
-    height:50%;
-    background:radial-gradient(50% 72% at 50% 65%,rgba(217,164,143,.27),transparent 72%);
-    opacity:.75;
-  }
-  .device{
-    position:relative;
-    z-index:2;
-    border-radius:24px;
-    background:#0d0a09;
-    padding:7px;
-    box-shadow:0 28px 60px -28px rgba(0,0,0,.88);
-    transform:perspective(1200px) rotateX(1.5deg);
-    transform-origin:50% 100%;
-  }
-  .device:after{
-    content:'';
-    position:absolute;
-    top:3px;
-    left:50%;
-    width:3px;
-    height:3px;
-    margin-left:-1.5px;
-    border-radius:50%;
-    background:rgba(246,239,231,.24);
-  }
-  .screen{
-    position:relative;
-    aspect-ratio:4/3;
-    overflow:hidden;
-    border-radius:17px;
-    background:#2c211b url('sky/maghrib.webp') center/cover;
-  }
-  .screen img,.screen iframe{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    object-position:center;
-    border:0;
-  }
-  .screen iframe{pointer-events:none;opacity:0;transition:opacity .8s ease}
-  .screen iframe.ready{opacity:1}
-  .device-base{
-    position:relative;
-    z-index:1;
-    height:44px;
-    margin:-13px 24px 0;
-    border-radius:0 0 19px 19px;
-    -webkit-clip-path:polygon(4% 0,96% 0,100% 100%,0 100%);
-    clip-path:polygon(4% 0,96% 0,100% 100%,0 100%);
-    background:
-      radial-gradient(circle at 1.5px 1.5px,rgba(246,239,231,.09) 1px,transparent 1.7px) 0 0/4px 4px,
-      linear-gradient(#2b2621,#191612);
-  }
-  .device-base:after{
-    content:'';
-    position:absolute;
-    left:5%;
-    right:5%;
-    bottom:-16px;
-    height:23px;
-    background:radial-gradient(50% 100% at 50% 20%,rgba(0,0,0,.64),transparent 74%);
-  }
-  .device-caption{display:flex;justify-content:space-between;gap:16px;margin-top:24px;color:var(--quiet);font-size:12px}
-  .device-caption strong{color:var(--veil);font-weight:600}
-  .live-dot{display:inline-block;width:6px;height:6px;margin-right:7px;border-radius:50%;background:var(--clay);vertical-align:1px}
-
-  .chapter{position:relative;padding:clamp(76px,14vw,140px) 0;border-top:1px solid var(--hair)}
-  .chapter-head{max-width:720px}
-  .chapter-head .lede{margin-top:21px}
-
-  .thesis{padding-top:clamp(82px,14vw,148px)}
-  .thesis h2{max-width:14ch}
-  .thesis-grid{margin-top:52px}
-  .truth{
-    display:grid;
-    grid-template-columns:38px 1fr;
-    gap:18px;
-    padding:23px 0;
-    border-top:1px solid var(--hair);
-  }
-  .truth:first-child{border-top-color:var(--hair-strong)}
-  .truth-num{font-family:var(--display);font-size:22px;color:var(--clay)}
-  .truth h3{font-family:var(--text);font-size:16px;font-weight:700;letter-spacing:0}
-  .truth p{margin-top:7px;color:var(--veil);font-size:15px;line-height:1.65;max-width:42em}
-
-  #setup{scroll-margin-top:22px}
-  .setup-shell{margin-top:44px}
-  .route-tabs{
-    display:grid;
-    grid-template-columns:1fr;
-    border-top:1px solid var(--hair-strong);
-  }
-  .route-tab{
-    position:relative;
-    min-height:58px;
-    border:0;
-    border-bottom:1px solid var(--hair);
-    background:transparent;
-    color:var(--quiet);
-    text-align:left;
-    cursor:pointer;
-    padding:15px 34px 15px 0;
-    font-size:15px;
-    font-weight:600;
-    transition:color .25s ease,background .25s ease;
-  }
-  .route-tab:after{
-    content:'+';
-    position:absolute;
-    right:3px;
-    top:50%;
-    color:var(--clay);
-    font-family:var(--display);
-    font-size:22px;
-    font-weight:400;
-    transform:translateY(-52%);
-  }
-  .route-tab[aria-selected="true"]{color:var(--cream)}
-  .route-tab[aria-selected="true"]:after{content:'●';font-size:9px}
-  .route-tab small{display:block;margin-top:2px;color:var(--quiet);font-size:12px;font-weight:400}
-  .route-panel{max-width:38rem;padding:36px 0 4px;animation:panel-in .48s var(--ease) both}
-  @keyframes panel-in{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
-  .route-panel h3{max-width:20ch}
-  .steps{list-style:none;counter-reset:steps;margin-top:27px}
-  .steps li{
-    counter-increment:steps;
-    position:relative;
-    padding:19px 0 19px 47px;
-    border-top:1px solid var(--hair);
-    color:var(--veil);
-    font-size:15.5px;
-    line-height:1.65;
-  }
-  .steps li:before{
-    content:counter(steps);
-    position:absolute;
-    top:17px;
-    left:0;
-    font-family:var(--display);
-    font-size:24px;
-    color:var(--clay);
-  }
-  .steps li strong{color:var(--cream);font-weight:600}
-  .route-note{max-width:53em;margin-top:22px;color:var(--quiet);font-size:13.5px;line-height:1.7}
-  .route-note strong{color:var(--veil);font-weight:600}
-  .copy-row{display:flex;align-items:stretch;max-width:560px;margin-top:24px}
-  .copy-value{
-    flex:1;
-    min-width:0;
-    border:1px solid var(--hair-strong);
-    border-right:0;
-    border-radius:8px 0 0 8px;
-    padding:12px 14px;
-    color:var(--cream);
-    font-size:13px;
-    overflow-wrap:anywhere;
-    background:rgba(246,239,231,.025);
-  }
-  .copy-button{
-    flex:0 0 auto;
-    min-width:72px;
-    min-height:46px;
-    border:1px solid var(--hair-strong);
-    border-radius:0 8px 8px 0;
-    background:transparent;
-    color:var(--clay);
-    font-size:13px;
-    font-weight:700;
-    cursor:pointer;
-    transition:background .25s ease,color .25s ease;
-  }
-  .copy-button:hover{background:rgba(246,239,231,.06);color:var(--cream)}
-
-  .alternatives{margin-top:28px;border-top:1px solid var(--hair-strong)}
-  .alternative{border-bottom:1px solid var(--hair)}
-  .alternative summary{
-    position:relative;
-    min-height:58px;
-    display:flex;
-    align-items:center;
-    cursor:pointer;
-    list-style:none;
-    padding:15px 38px 15px 0;
-    color:var(--veil);
-    font-size:15px;
-    font-weight:600;
-  }
-  .alternative summary::-webkit-details-marker{display:none}
-  .alternative summary::marker{content:''}
-  .alternative summary:after{
-    content:'+';
-    position:absolute;
-    right:2px;
-    top:50%;
-    color:var(--clay);
-    font-family:var(--display);
-    font-size:22px;
-    font-weight:400;
-    transform:translateY(-54%) rotate(0);
-    transition:transform .35s var(--ease);
-  }
-  .alternative[open] summary{color:var(--cream)}
-  .alternative[open] summary:after{transform:translateY(-54%) rotate(45deg)}
-  .alternative-body{padding:0 0 25px;color:var(--veil);font-size:14px;line-height:1.7;max-width:54em}
-  .alternative-body p+p{margin-top:10px}
-  .alternative-body strong{color:var(--cream)}
-  .alternative-body a{color:var(--clay);text-underline-offset:3px}
-
-  .near-product{overflow:hidden}
-  .near-visual{
-    position:relative;
-    margin-top:42px;
-    border-radius:20px;
-    overflow:hidden;
-    background:#17130f;
-    box-shadow:0 35px 70px -42px rgba(0,0,0,.9);
-  }
-  .near-visual img{width:100%;height:auto;aspect-ratio:390/844}
-  .near-visual picture{display:block}
-  .near-copy{margin-top:35px}
-  .near-copy h2{max-width:10ch}
-  .near-copy .lede{margin-top:20px}
-  .near-note{max-width:36em;margin-top:20px;color:var(--quiet);font-size:13px;line-height:1.65}
-  .near-product .button{margin-top:28px}
-  .near-product .button:after{content:'↗'}
-
-
-  .film{border-top:1px solid var(--hair)}
-  .film-head{max-width:720px}
-  .film-head h2{max-width:16ch}
-  .film-head .lede{margin-top:19px}
-  .film-stage{position:relative}
-  .film-frame{
-    position:relative;
-    margin-top:clamp(34px,5vw,52px);
-    background:var(--deep);
-    border:1px solid var(--hair);
-    border-radius:4px;
-    overflow:hidden;
-    aspect-ratio:16/9;
-    transform-origin:center;
-  }
-  .film-frame picture{display:block;width:100%;height:100%}
-  .film-frame img,.film-frame video{width:100%;height:100%;display:block;object-fit:cover}
-  .film-frame video{background:#000}
-  .film-play{
-    position:absolute;inset:0;width:100%;height:100%;
-    display:flex;align-items:flex-end;justify-content:flex-start;
-    gap:0;padding:clamp(18px,3vw,30px);
-    background:linear-gradient(180deg,rgba(23,20,15,0) 28%,rgba(23,20,15,.55) 62%,rgba(23,20,15,.9) 100%);
-    border:0;cursor:pointer;color:var(--cream);text-align:left;
-    font-family:var(--text);transition:background .4s var(--ease);
-  }
-  .film-play .film-cta{display:flex;align-items:center;gap:14px;font-size:15px;letter-spacing:.01em;text-shadow:0 1px 12px rgba(23,20,15,.9)}
-  .film-cta-copy{display:flex;align-items:baseline;gap:10px}
-  .film-play i{
-    width:44px;height:44px;flex:none;border-radius:50%;
-    background:var(--clay);display:grid;place-items:center;
-    transition:transform 140ms cubic-bezier(.23,1,.32,1),background 180ms cubic-bezier(.23,1,.32,1);
-  }
-  .film-play:active i{transform:scale(.96)}
-  .film-play i:after{
-    content:'';width:0;height:0;margin-left:3px;
-    border-left:11px solid var(--deep);
-    border-top:7px solid transparent;border-bottom:7px solid transparent;
-  }
-  .film-play b{font-weight:600}
-  .film-play em{font-style:normal;color:var(--cream-soft);opacity:.72}
-  .film-swipe{display:none}
-  .film-swipe:after{
-    content:'';width:8px;height:8px;border-top:1.5px solid currentColor;border-left:1.5px solid currentColor;
-    transform:rotate(45deg) translateY(2px);opacity:.82;
-  }
-  .film-close,.film-toggle{
-    position:absolute;z-index:5;border:1px solid rgba(246,239,231,.2);border-radius:50%;
-    background:rgba(23,20,15,.82);color:var(--cream);cursor:pointer;
-    -webkit-appearance:none;appearance:none;
-  }
-  .film-close{
-    top:max(15px,env(safe-area-inset-top));left:max(15px,env(safe-area-inset-left));
-    width:46px;height:46px;
-  }
-  .film-close:before,.film-close:after{
-    content:'';position:absolute;left:14px;top:22px;width:17px;height:1.5px;background:currentColor;border-radius:2px;
-  }
-  .film-close:before{transform:rotate(45deg)}
-  .film-close:after{transform:rotate(-45deg)}
-  .film-toggle{
-    left:50%;top:50%;width:66px;height:66px;transform:translate(-50%,-50%) scale(.86);
-    opacity:0;pointer-events:none;transition:opacity 160ms cubic-bezier(.23,1,.32,1),transform 240ms cubic-bezier(.23,1,.32,1);
-  }
-  .film-frame.is-paused .film-toggle,.film-frame.is-ended .film-toggle{
-    opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);
-  }
-  .film-toggle:before{
-    content:'';position:absolute;left:27px;top:22px;width:0;height:0;
-    border-left:15px solid var(--cream);border-top:10px solid transparent;border-bottom:10px solid transparent;
-  }
-  .film-loader{
-    position:absolute;z-index:4;left:50%;top:50%;width:38px;height:38px;margin:-19px 0 0 -19px;
-    border:2px solid rgba(246,239,231,.18);border-top-color:var(--clay);border-radius:50%;
-    opacity:0;pointer-events:none;animation:film-spin .85s linear infinite;transition:opacity 180ms cubic-bezier(.23,1,.32,1);
-  }
-  .film-frame.is-loading .film-loader{opacity:1}
-  @keyframes film-spin{to{transform:rotate(360deg)}}
-  .film-timeline{
-    position:absolute;z-index:5;left:max(18px,env(safe-area-inset-left));right:max(18px,env(safe-area-inset-right));
-    bottom:max(17px,env(safe-area-inset-bottom));height:24px;display:flex;align-items:center;gap:12px;
-    pointer-events:none;
-  }
-  .film-rail{position:relative;flex:1;height:2px;background:rgba(246,239,231,.24);overflow:hidden}
-  .film-progress{position:absolute;inset:0;background:var(--clay);transform:scaleX(0);transform-origin:left center;will-change:transform}
-  .film-time{min-width:36px;color:rgba(246,239,231,.76);font-size:11px;line-height:1;text-align:right;font-variant-numeric:tabular-nums}
-  .film-scroll-cue,.film-sound{display:none}
-  @media (hover:hover) and (pointer:fine){
-    .film-play:hover{background:linear-gradient(180deg,rgba(23,20,15,0) 20%,rgba(23,20,15,.66) 58%,rgba(23,20,15,.95) 100%)}
-    .film-play:hover i{transform:scale(1.05);background:var(--clay-bright)}
-  }
-  .film-note{margin-top:14px;color:var(--quiet);font-size:12.5px;line-height:1.6}
-  .letter{max-width:760px}
-  .letter-mark{width:48px;height:2px;background:var(--clay);margin-bottom:24px}
-  .letter .open{font-family:var(--display);font-size:clamp(30px,8vw,45px);line-height:1.22;letter-spacing:-.025em;color:var(--cream)}
-  .letter p{max-width:42em;margin-top:20px;color:var(--veil);font-size:16px;line-height:1.78}
-  .letter .sign{font-family:var(--display);font-size:24px;color:var(--clay);line-height:1.2;margin-top:29px}
-
-  .closing{text-align:left;padding-bottom:clamp(62px,12vw,110px)}
-  .closing h2{max-width:13ch}
-  .closing .lede{margin-top:19px}
-  .closing .actions{margin-top:27px}
-
-  footer{
-    display:grid;
-    gap:19px;
-    border-top:1px solid var(--hair);
-    padding-top:28px;
-    color:var(--quiet);
-    font-size:12.5px;
-    line-height:1.65;
-  }
-  footer a{color:var(--clay);text-underline-offset:3px}
-  .footer-links{display:flex;gap:10px 17px;flex-wrap:wrap}
-  .footer-links a{display:inline-flex;align-items:center;min-height:44px}
-  footer p a{display:inline-flex;align-items:center;min-height:44px}
-
-  :focus-visible{outline:2px solid var(--clay-bright);outline-offset:4px}
-
-  @media (min-width:640px){
-    :root{--safe-x:max(32px,env(safe-area-inset-left),env(safe-area-inset-right))}
-    body{padding-left:var(--safe-x);padding-right:var(--safe-x)}
-    .near-nav span{display:block}
-    .route-tabs{grid-template-columns:repeat(3,1fr)}
-    .route-tab{padding-right:24px;border-right:1px solid var(--hair)}
-    .route-tab:last-child{border-right:0}
-    .route-tab:after{display:none}
-    .route-tab[aria-selected="true"]:before{
-      content:'';
-      position:absolute;
-      left:0;
-      right:0;
-      bottom:-1px;
-      height:2px;
-      background:var(--clay);
-    }
-    .steps li{padding-left:58px}
-  }
-
-  @media (max-width:639px){
-    .screen{aspect-ratio:16/9}
-    .near-visual{max-width:390px}
-    .film{padding-bottom:0}
-    .film-stage{
-      left:50%;width:100vw;height:180vh;height:180svh;margin:34px 0 0 -50vw;
-    }
-    .film-frame{
-      position:sticky;top:0;width:100%;height:100vh;height:100svh;max-width:none;margin:0;
-      border:0;border-radius:0;aspect-ratio:auto;background:#090806;contain:paint;
-      transform:scale(.9);transform-origin:center;opacity:.5;will-change:transform,opacity;
-    }
-    .film-frame video{object-fit:contain;background:#090806}
-    .film-frame picture img{object-fit:contain;background:#090806}
-    .film-play{display:none}
-    .film-close{display:none}
-    .film-scroll-cue{
-      position:absolute;z-index:5;left:0;right:0;bottom:max(28px,env(safe-area-inset-bottom));
-      display:flex;flex-direction:column;align-items:center;gap:10px;color:rgba(246,239,231,.84);
-      font-size:12px;letter-spacing:.045em;text-shadow:0 1px 10px rgba(9,8,6,.9);pointer-events:none;
-      transform:translate3d(0,0,0);will-change:transform,opacity;
-    }
-    .film-scroll-cue:after{
-      content:'';width:9px;height:9px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;
-      transform:rotate(45deg);
-    }
-    .film-sound{
-      position:absolute;z-index:6;top:max(17px,env(safe-area-inset-top));right:max(17px,env(safe-area-inset-right));
-      display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:9px 13px;border:1px solid rgba(246,239,231,.22);
-      border-radius:999px;background:rgba(23,20,15,.84);color:var(--cream);font-size:12px;font-weight:600;
-      -webkit-appearance:none;appearance:none;opacity:0;pointer-events:none;
-      transition:opacity 180ms cubic-bezier(.23,1,.32,1),transform 180ms cubic-bezier(.23,1,.32,1);
-      transform:translate3d(0,-5px,0);
-    }
-    .film-frame.is-scroll-playing .film-sound{opacity:1;pointer-events:auto;transform:translate3d(0,0,0)}
-    .film-sound:before{content:'';width:6px;height:6px;border-radius:50%;background:var(--clay)}
-    .film-frame.is-sounding .film-sound{opacity:.5;pointer-events:auto;transform:translate3d(0,0,0)}
-    .film-timeline{bottom:max(17px,env(safe-area-inset-bottom))}
-    .film-note{display:none}
-  }
-
-  @media (min-width:960px){
-    body{padding-top:max(28px,env(safe-area-inset-top));padding-left:max(46px,env(safe-area-inset-left));padding-right:max(46px,env(safe-area-inset-right))}
-    .site-header{min-height:58px}
-    .hero{display:grid;grid-template-columns:minmax(0,5fr) minmax(480px,6.7fr);gap:clamp(54px,6vw,92px);align-items:center;min-height:650px}
-    h1{font-size:clamp(52px,5vw,72px)}
-    .device-wrap{margin-top:0}
-    .screen{aspect-ratio:16/9}
-    .device{padding:10px;border-radius:30px}
-    .screen{border-radius:22px}
-    .device-base{height:57px;margin:-17px 36px 0;border-radius:0 0 26px 26px}
-    .device-caption{padding:0 4px;margin-top:29px}
-    .thesis{display:grid;grid-template-columns:minmax(0,1.03fr) minmax(480px,.97fr);gap:clamp(70px,9vw,130px);align-items:start}
-    .thesis-grid{margin-top:2px}
-    .truth{grid-template-columns:42px 1fr;padding:26px 0}
-    .setup-layout{display:grid;grid-template-columns:minmax(260px,.58fr) minmax(0,1.42fr);gap:clamp(62px,9vw,130px);align-items:start;margin-top:50px}
-    .setup-shell{margin-top:0}
-    .route-tabs{display:block;border-top:1px solid var(--hair-strong)}
-    .route-tab{display:block;width:100%;min-height:72px;border-right:0;padding:18px 35px 18px 0}
-    .route-tab:after{display:block}
-    .route-tab[aria-selected="true"]:before{left:-15px;right:auto;top:50%;bottom:auto;width:2px;height:34px;transform:translateY(-50%)}
-    .route-panel{padding-top:0;min-height:430px}
-    .route-panel h3{font-size:36px}
-    .near-product{display:grid;grid-template-columns:minmax(300px,.8fr) minmax(0,1.2fr);gap:clamp(52px,7vw,96px);align-items:center}
-    .near-visual{order:1;margin-top:0;border-radius:26px}
-    .near-visual img{aspect-ratio:16/9}
-    .near-copy{margin-top:0}
-    footer{grid-template-columns:1fr auto;align-items:end}
-    .footer-links{justify-content:flex-end}
-  }
-
-  @media (prefers-reduced-motion:reduce){
-    html{scroll-behavior:auto}
-    *,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
-    .film-loader{animation:none;border-color:var(--clay)}
-  }
-  @media (max-width:639px) and (prefers-reduced-motion:reduce){
-    .film-stage{height:100vh;height:100svh}
-    .film-frame{position:relative;opacity:1!important;transform:none!important;will-change:auto}
-    .film-scroll-cue{display:none}
-  }
-</style>
+<link rel="stylesheet" href="landing-near.css">
 </head>
-<body data-sky="isha">
-<div class="atmosphere" aria-hidden="true"></div>
-<div class="horizon" id="horizonFrom" aria-hidden="true"></div>
-<div class="horizon" id="horizonTo" aria-hidden="true" style="opacity:0"></div>
-<i class="star" aria-hidden="true" style="top:8%;left:9%;--period:3.1s;--delay:.4s"></i>
-<i class="star" aria-hidden="true" style="top:15%;left:89%;--period:4.3s;--delay:1.7s"></i>
-<i class="star" aria-hidden="true" style="top:5%;left:64%;--period:3.7s;--delay:2.9s"></i>
-<i class="star" aria-hidden="true" style="top:28%;left:4%;--period:5.1s;--delay:.9s"></i>
-<i class="star" aria-hidden="true" style="top:10%;left:39%;--period:4.7s;--delay:3.6s"></i>
-<i class="star" aria-hidden="true" style="top:33%;left:95%;--period:3.4s;--delay:2.2s"></i>
-
-<main class="page" id="top">
-  <header class="site-header">
-    <a class="brand" href="#top" aria-label="Bilal home">
-      <span>bilal</span>
-    </a>
-    <a class="near-nav" href="near">
-      <strong>near</strong>
-      <span>jama'ah around you</span>
-    </a>
-  </header>
-
-  <section class="hero" aria-labelledby="hero-title">
-    <div class="hero-copy">
-      <h1 id="hero-title">The athan that plays when it's time to leave.</h1>
-      <p class="lede">Bilal shows your mosque's own jama'ah times, counts your journey, then calls the house at the moment you need to move.</p>
-      <div class="actions">
-        <a class="button start-setup" href="#setup">Choose your screen</a>
-        <a class="button secondary" href="near">Out now? Open Near</a>
-      </div>
+<body>
+<a class="skip" href="#main-content">Skip to content</a>
+<main id="main-content">
+  <section class="threshold" id="top" aria-labelledby="hero-title">
+    <div class="threshold-stage">
+      <header class="site-header"><a class="brand" href="#top" aria-label="Bilal home"><span>bilal</span></a><nav aria-label="Main navigation"><a href="near?request=1">Your mosque missing?</a><a href="near">Open Near <span aria-hidden="true">↗</span></a></nav></header>
+      <div class="hero-copy"><h1 id="hero-title"><span>There’s a place</span><span>for you in</span><span>the jama’ah.</span></h1><p>Find jama’ah times at mosques near you.<br>Know when to go, and how to get there.</p><a class="go" href="near"><span>Find a jama’ah</span><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 26 26 6M7 6h19v19"/></svg></a><p class="free-note">Bilal Near. Free, with no account needed.</p></div>
+      <div class="portal-art"><img src="landing-portal.webp" width="1792" height="2400" alt="Sunlight crossing the prayer rows beyond a stone arch" fetchpriority="high"><video id="portalMotion" muted playsinline loop preload="none" data-src="landing-portal-hd.mp4" data-mobile-src="landing-portal-mobile.mp4" aria-hidden="true"></video><div class="portal-shade"></div><button id="pausePortal" type="button" aria-label="Pause ambient motion">Pause motion Ⅱ</button></div>
+      <a class="scroll-invitation" href="#moment"><span>A little nearer.</span><span aria-hidden="true">↓</span></a>
+      <p class="threshold-thought" aria-hidden="true">See you in<br>the jama’ah.</p>
     </div>
-
-    <div class="device-wrap" aria-label="Bilal running on a home screen">
-      <div class="device">
-        <div class="screen">
-          <img src="landing-display.webp?v=2" alt="The Bilal home display against the living night sky" width="1280" height="720" fetchpriority="high">
-          <iframe id="demo" title="A live Bilal home display" tabindex="-1" aria-hidden="true"></iframe>
+  </section>
+  <section class="day-story" id="moment" aria-labelledby="moment-title">
+    <div class="day-stage">
+      <div class="day-copy"><h2 id="moment-title">Your next jama’ah.<br>Right here.</h2><p>The mosque’s time. The way there.<br>Another jama’ah nearby if you need it.</p><p class="day-description">From the quiet of Fajr to the last prayer of the night, Near moves with your day.</p><button id="tryNear" class="text-link" type="button">Try Bilal Near <span aria-hidden="true">↗</span></button></div>
+      <div class="day-experience">
+        <div class="day-screens" aria-live="off">
+          <div class="day-phone" id="dayScreen" role="group" aria-label="Bilal Near through the day">
+<img data-moment="fajr" src="landing-near-fajr.webp" alt="Bilal Near at Fajr, showing nearby jama’ah and directions" width="780" height="1688" loading="lazy" class="active"><img data-moment="duha" src="landing-near-duha.webp" alt="Bilal Near at sunrise, showing nearby jama’ah and directions" width="780" height="1688" loading="lazy" aria-hidden="true"><img data-moment="dhuhr" src="landing-near-dhuhr.webp" alt="Bilal Near at Dhuhr, showing nearby jama’ah and directions" width="780" height="1688" loading="lazy" aria-hidden="true"><img data-moment="asr" src="landing-near-asr.webp" alt="Bilal Near at Asr, showing nearby jama’ah and directions" width="780" height="1688" loading="lazy" aria-hidden="true"><img data-moment="maghrib" src="landing-near-maghrib.webp" alt="Bilal Near at Maghrib, showing nearby jama’ah and directions" width="780" height="1688" loading="lazy" aria-hidden="true"><img data-moment="isha" src="landing-near-isha.webp" alt="Bilal Near at Isha, showing nearby jama’ah and directions" width="780" height="1688" loading="lazy" aria-hidden="true"></div>
         </div>
-      </div>
-      <div class="device-base" aria-hidden="true"></div>
-      <div class="device-caption">
-        <span><i class="live-dot"></i><strong>Bilal at home</strong></span>
-        <span>your mosque · your journey</span>
+        <div class="day-passage" aria-hidden="true"><div class="day-now"><span id="dayName">Fajr</span><time id="dayTime">05:25</time></div><div class="day-line"><i></i></div><p>From first light to night.</p></div><p class="day-example">Actual Near screens. Illustrative times.</p>
       </div>
     </div>
   </section>
-
-  <section class="chapter film" aria-labelledby="film-title">
-    <div class="film-head">
-      <h2 id="film-title">Where the athan has been for 1,400 years.</h2>
-      <p class="lede">A short film about the call to prayer, the rooms it has filled, and the one it lost.</p>
-    </div>
+  <div class="request" id="request"><p>Your masjid belongs here, too.</p><div><p>Send its name and website. If it publishes prayer times, we’ll try to add it within <strong>24 hours.</strong> Leave your email to hear when it’s ready.</p><a class="request-link" href="near?request=1"><span>Request your mosque</span><span aria-hidden="true">↗</span></a></div></div>
+  <section class="chapter film" aria-label="The vision behind Bilal">
     <div class="film-stage" id="filmStage">
     <div class="film-frame">
       <video id="film" preload="none" playsinline controls hidden
              data-landscape-src="film.mp4?v=1"
              data-portrait-src="film-portrait.mp4?v=1"></video>
       <picture id="filmPosterPicture">
-        <source media="(max-width:639px)" srcset="film-poster-portrait.webp?v=1">
-        <img id="filmPoster" src="film-poster.webp?v=1"
-             alt="A terraced street at dusk with minarets risen above the rooftops"
+        <source media="(max-width:639px)" srcset="landing-film-portrait.webp">
+        <img id="filmPoster" src="landing-film.webp"
+             alt="An archival mosque scene from the Bilal launch film"
              width="1280" height="720" loading="lazy" decoding="async">
       </picture>
       <button class="film-play" id="filmPlay" type="button">
-        <span class="film-cta"><i aria-hidden="true"></i><span class="film-cta-copy"><b>Watch the film</b><em>1 min 29</em></span></span>
+        <span class="film-cta"><i aria-hidden="true"></i><span class="film-cta-copy"><b id="film-title">The call that brings us together.</b><em>1 min 29</em></span></span>
         <span class="film-swipe">Swipe up</span>
       </button>
       <button class="film-close" id="filmClose" type="button" aria-label="Close film" hidden></button>
@@ -699,38 +73,12 @@
     <p class="film-note">Best with sound on.</p>
   </section>
 
-  <section class="chapter thesis" aria-labelledby="thesis-title">
-    <div class="chapter-head">
-      <h2 id="thesis-title">The moment that matters is when you must move.</h2>
-      <p class="lede">A start time is information. An athan in the room, timed to your actual jama'ah, is a call.</p>
-    </div>
-    <div class="thesis-grid">
-      <article class="truth">
-        <span class="truth-num">1</span>
-        <div><h3>Your mosque's real time</h3><p>Bilal reads the timetable your mosque publishes. It does not guess jama'ah from a calculation.</p></div>
-      </article>
-      <article class="truth">
-        <span class="truth-num">2</span>
-        <div><h3>Your journey already counted</h3><p>Tell it how long you need to get there, whether you walk, drive, cycle, take transit or get a lift.</p></div>
-      </article>
-      <article class="truth">
-        <span class="truth-num">3</span>
-        <div><h3>The athan at leave time</h3><p>When Bilal sounds, there is no calculation left to do. Go now and you will make the jama'ah.</p></div>
-      </article>
-    </div>
-  </section>
-
-  <section class="chapter" id="setup" aria-labelledby="setup-title">
-    <div class="chapter-head">
-      <h2 id="setup-title">Choose the screen in your room.</h2>
-      <p class="lede">Start with what you already own. We will show you one route, from first open to first athan.</p>
-    </div>
-
-    <div class="setup-layout">
+<section class="home-vision" aria-labelledby="home-title"><div><h2 id="home-title">On your TV.<br>On your smart screen.</h2><p>Our vision is to make the call to jama’ah part of everyday life, on the screens around us.</p><p>Bilal for TVs and smart screens is still an experiment. Try it on an Echo Show, Fire TV or another screen, and help us get it right.</p><a class="text-link" href="https://x.com/mertesakib">Share your feedback ↗</a></div><img src="landing-display.webp?v=2" width="1280" height="720" alt="Bilal showing prayer times on a home display" loading="lazy"></section>
+<details class="home-setup" id="setup"><summary><span>Set up your screen</span><span>Experimental <i aria-hidden="true">+</i></span></summary><div class="setup-layout">
       <div class="route-tabs" role="tablist" aria-label="Choose a screen">
-        <button class="route-tab" type="button" role="tab" id="tab-show" aria-selected="true" aria-controls="panel-show" tabindex="0" data-route="show">Echo Show<small>the easiest route</small></button>
-        <button class="route-tab" type="button" role="tab" id="tab-tv" aria-selected="false" aria-controls="panel-tv" tabindex="-1" data-route="tv">Fire TV or Android TV<small>the best TV route</small></button>
-        <button class="route-tab" type="button" role="tab" id="tab-other" aria-selected="false" aria-controls="panel-other" tabindex="-1" data-route="other">Something else<small>four good fallbacks</small></button>
+        <button class="route-tab" type="button" role="tab" id="tab-show" aria-selected="true" aria-controls="panel-show" tabindex="0" data-route="show">Echo Show<small>browser setup</small></button>
+        <button class="route-tab" type="button" role="tab" id="tab-tv" aria-selected="false" aria-controls="panel-tv" tabindex="-1" data-route="tv">Fire TV or Android TV<small>app setup</small></button>
+        <button class="route-tab" type="button" role="tab" id="tab-other" aria-selected="false" aria-controls="panel-other" tabindex="-1" data-route="other">Something else<small>more screen options</small></button>
       </div>
 
       <div class="route-panels">
@@ -799,109 +147,12 @@
         </section>
       </div>
     </div>
-  </section>
-
-  <section class="chapter near-product" aria-labelledby="near-title">
-    <div class="near-visual">
-      <picture>
-        <source media="(min-width:640px)" srcset="near-screenshot-wide.webp">
-        <img src="near-screenshot.webp" alt="Bilal Near finding a nearby mosque, showing when to leave and opening directions" width="390" height="844" loading="lazy">
-      </picture>
-    </div>
-    <div class="near-copy">
-      <h2 id="near-title">Need to pray somewhere now?</h2>
-      <p class="lede">Near finds the next trustworthy jama'ah around you, tells you when to leave and opens the mosque pin in Maps.</p>
-      <p class="near-note">Location is checked once and never kept. Add Near to your Home Screen when you want it close.</p>
-      <a class="button" href="near">Find jama'ah near me</a>
-    </div>
-  </section>
-
-  <section class="chapter letter" aria-label="Why I built this">
-    <div class="letter-mark" aria-hidden="true"></div>
-    <p class="open">The first athan was a man.</p>
-    <p>The Prophet ﷺ asked Bilal (RA) to call people to prayer, and when his voice went up over Madinah people left what they were doing and walked.</p>
-    <p>If you can hear that from your house, you do not need this. I cannot, and most of us cannot. What we have instead is athan apps, and they are not fit for purpose. Most do not even make a sound anymore. The ones that do play give you the prayer's start time, which is not when anything happens at your masjid.</p>
-    <p>So that is the experiment. If I hear the athan out loud at the time I was meant to leave, the way it was always meant to work, can I build the habit? Set it up once and find out.</p>
-    <p>I hope it does for your house what it has done for mine.</p>
-    <p class="sign">Sakib</p>
-  </section>
-
-  <section class="chapter closing" aria-labelledby="closing-title">
-    <h2 id="closing-title">Give jama'ah a voice in the room.</h2>
-    <p class="lede">Choose the screen you already have. Bilal will guide you from there.</p>
-    <div class="actions">
-      <a class="button start-setup" href="#setup">Choose your screen</a>
-      <a class="button secondary" href="near">Open Near instead</a>
-    </div>
-  </section>
-
-  <footer>
-    <p>Times come straight from your mosque's own timetable, not a calculation.<br>Made by <a href="https://x.com/mertesakib">Sakib</a>.</p>
-    <nav class="footer-links" aria-label="Help and product links">
-      <a href="near">Bilal Near</a>
-      <a href="app.html">TV app</a>
-      <a href="help.html">Help</a>
-      <a href="bug.html">Report a problem</a>
-    </nav>
-  </footer>
+</details><section class="return-near" aria-label="Find your next jama’ah"><p>A place in the jama’ah.<br>A little closer.</p><a class="go" href="near"><span>Find a jama’ah</span><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 26 26 6M7 6h19v19"/></svg></a></section><footer><a class="footer-brand" href="#top" aria-label="Back to top">bilal</a><p>Bringing us together in the masjid.<br>By <a href="https://x.com/mertesakib">Sakib</a>.</p><nav class="footer-links" aria-label="Help and product links"><a href="near">Open Near ↗</a><a href="help.html">Help</a><a href="bug.html">Report a problem</a></nav></footer>
 </main>
-
+<dialog id="nearPreview" aria-labelledby="previewTitle"><div class="preview-head"><div><h2 id="previewTitle">A moment in Near.</h2><p>Illustrative times. Your location isn’t used.</p></div><button id="closePreview" aria-label="Close Near preview" type="button">×</button></div><div class="preview-body"><img src="near-screenshot.webp" width="390" height="844" alt="Bilal Near preview"><iframe id="nearDemo" title="Try Bilal Near with illustrative times" data-src="near.html?preview=1&amp;at=18:04"></iframe></div></dialog>
 <p id="copy-status" role="status" aria-live="polite" hidden></p>
 <script>
   (function(){
-    var desktop = window.matchMedia ? window.matchMedia('(min-width:960px)') : null;
-    var demoBooted = false;
-    var skyKeys={fajr:1,dhuhr:1,asr:1,maghrib:1,isha:1};
-
-    /* Before the live display answers, the landing still belongs to the hour
-       it is being visited. Once the embedded Bilal has real mosque data, its
-       exact prayer-window blend takes over. Atmosphere is product truth here,
-       not a generic star field pasted behind every visit. */
-    function setLandingSky(from,to,blend){
-      if(!skyKeys[from]) from='isha';
-      if(!skyKeys[to]) to=from;
-      blend=Math.max(0,Math.min(1,Number(blend)||0));
-      var a=document.getElementById('horizonFrom'),b=document.getElementById('horizonTo');
-      a.style.backgroundImage="url('sky/"+from+".jpg')";
-      b.style.backgroundImage="url('sky/"+to+".jpg')";
-      a.style.opacity=(.22*(1-blend)).toFixed(3);
-      b.style.opacity=(.22*blend).toFixed(3);
-      document.body.setAttribute('data-sky',blend>.5?to:from);
-    }
-    function hourSky(){
-      var override=(location.search.match(/[?&]at=(\d{1,2}):(\d{2})/)||[])[1];
-      var hour=override==null ? new Date().getHours() : parseInt(override,10);
-      if(hour<5) return 'isha';
-      if(hour<8) return 'fajr';
-      if(hour<15) return 'dhuhr';
-      if(hour<19) return 'asr';
-      if(hour<21) return 'maghrib';
-      return 'isha';
-    }
-    var initialSky=hourSky();
-    setLandingSky(initialSky,initialSky,0);
-
-    function bootDemo(){
-      if(demoBooted || !desktop || !desktop.matches || window.innerWidth < 960) return;
-      var frame = document.getElementById('demo');
-      if(!frame) return;
-      demoBooted = true;
-      frame.src = 'index.html?demo=1&tour=1&masjid=darul-ummah-goresbrook-1649608083137&walk=10';
-      window.addEventListener('message',function(event){
-        if(event.origin !== location.origin || event.source !== frame.contentWindow) return;
-        if(event.data && event.data.type === 'bilal-demo-ready'){
-          frame.className = 'ready';
-          if(event.data.sky) setLandingSky(event.data.sky.from,event.data.sky.to,event.data.sky.blend);
-        }
-      });
-    }
-
-    if(desktop){
-      if(desktop.addEventListener) desktop.addEventListener('change',bootDemo);
-      else if(desktop.addListener) desktop.addListener(bootDemo);
-    }
-    bootDemo();
-
     var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
     var panels = Array.prototype.slice.call(document.querySelectorAll('[role="tabpanel"]'));
 
@@ -1039,7 +290,7 @@
         cue.style.opacity=String(clamp(1-enter*1.8));
         cue.style.transform='translate3d(0,'+(-enter*14)+'px,0)';
       }
-      if(enter>.04) startScrollFilm();
+      if(!wantsStillness()){if(enter>.04) startScrollFilm();}
       if(!started) return;
       if(filmActive&&!userPaused&&v.paused&&!v.ended) playMobile();
       if(!filmActive&&!v.paused) v.pause();
@@ -1070,7 +321,7 @@
       if(promise&&promise.catch) promise.catch(function(){v.hidden=true;pp.hidden=false;b.hidden=false});
     }
 
-    b.addEventListener('click',function(){if(!isMobile()) playDesktop()});
+    b.addEventListener('click',function(){if(isMobile()) startScrollFilm();else playDesktop()});
     sound.addEventListener('click',toggleSound);
     toggle.addEventListener('click',function(event){event.stopPropagation();togglePlayback()});
     v.addEventListener('click',function(){if(isMobile()) togglePlayback()});
@@ -1095,5 +346,6 @@
     requestScrollPaint();
   })();
 </script>
+<script src="landing-motion.js" defer></script>
 </body>
 </html>

@@ -1531,6 +1531,11 @@ if (preview) {
   );
   await startPreview(session, previewNow, query.get("state"));
   syncState(session.state);
+} else if (query.get("request") === "1") {
+  // Direct entry from the landing: requesting a mosque never needs GPS.
+  session.state.screen = "location";
+  syncState(session.state);
+  mosqueRequests.show();
 } else {
   syncState(session.state);
   session.start();
