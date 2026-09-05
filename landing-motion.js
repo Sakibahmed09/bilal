@@ -90,10 +90,4 @@
   setup.addEventListener('toggle',()=>{if(!setupAnimation)setupOpen=setup.open});
   reduced.addEventListener('change',()=>{if(setupAnimation){setupAnimation.cancel();setupAnimation=null;setup.open=setupOpen;setup.style.removeProperty('height');setup.style.removeProperty('overflow')}});
 
-  const dialog=document.getElementById('nearPreview'),preview=document.getElementById('nearDemo'),trigger=document.getElementById('tryNear');
-  trigger.addEventListener('click',()=>{dialog.showModal();document.body.classList.add('demo-open');if(!preview.hasAttribute('src'))preview.src=preview.dataset.src;if(!reduced.matches)dialog.animate([{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:350,easing:'cubic-bezier(.22,1,.36,1)'})});
-  document.getElementById('closePreview').addEventListener('click',()=>dialog.close());
-  dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
-  dialog.addEventListener('close',()=>{document.body.classList.remove('demo-open');trigger.focus({preventScroll:true})});
-  preview.addEventListener('load',()=>{if(preview.hasAttribute('src'))preview.parentElement.classList.add('ready')});
 })();
