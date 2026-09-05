@@ -2,7 +2,7 @@
 
 // A release is one complete shell. Never refresh HTML or modules separately
 // inside the active cache: that can combine a new view with an old controller.
-const SHELL_FINGERPRINT = 'f4f49d47e9f0';
+const SHELL_FINGERPRINT = '4553929c9c77';
 const VERSION = 'bilal-near-v28';
 const SHELL = VERSION + '-' + SHELL_FINGERPRINT + '-shell';
 const TIMETABLE_CACHE = 'bilal-near-timetables-v1';
@@ -15,8 +15,8 @@ const SHELL_PATHS = [
   '/near-opening.mjs', '/near-opening.css', '/bilal-mark-192.png',
   '/near-native.css', '/near-atmosphere.css', '/near-install.css',
   '/near-preference.css', '/near.webmanifest', '/near-qr.svg',
-  '/diag.js', '/near-icon-copper-32.png', '/near-icon-copper-180.png', '/near-icon-copper-192.png',
-  '/near-icon-copper-512.png', '/near-icon-copper-1024.png', '/mosques.json',
+  '/diag.js', '/near-icon-b-a-32.png', '/near-icon-b-a-180.png', '/near-icon-b-a-192.png',
+  '/near-icon-b-a-512.png', '/near-icon-b-a-1024.png', '/mosques.json',
   '/sky/m/fajr.webp', '/sky/m/duha.webp', '/sky/m/dhuhr.webp',
   '/sky/m/asr.webp', '/sky/m/maghrib.webp', '/sky/m/isha.webp',
   '/fonts/prata-latin.woff2', '/fonts/archivo-latin.woff2'
