@@ -1542,6 +1542,9 @@ if (preview) {
   session.state.screen = "location";
   syncState(session.state);
   mosqueRequests.show();
+} else if (query.get("mosque")) {
+  syncState(session.state);
+  session.start({ mosque: query.get("mosque") });
 } else {
   syncState(session.state);
   session.start();

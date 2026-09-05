@@ -2,7 +2,7 @@
 
 // A release is one complete shell. Never refresh HTML or modules separately
 // inside the active cache: that can combine a new view with an old controller.
-const SHELL_FINGERPRINT = '3bab65513113';
+const SHELL_FINGERPRINT = 'b04ebe4af87f';
 const VERSION = 'bilal-near-v28';
 const SHELL = VERSION + '-' + SHELL_FINGERPRINT + '-shell';
 const TIMETABLE_CACHE = 'bilal-near-timetables-v1';

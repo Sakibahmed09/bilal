@@ -1,0 +1,53 @@
+name: Publish Bilal and refresh mosque pages
+on:
+  push:
+    branches: [gh-pages]
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Refresh dated mosque timetables
+        if: github.event_name != 'push'
+        env:
+          SITE_ROOT: '.'
+        run: node scripts/seo/build.mjs
+      - name: Save the refreshed publication
+        if: github.event_name != 'push'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add mosques sitemap.xml scripts/seo/state.json scripts/seo/audit.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Refresh dated mosque timetables'
+            git push
+          fi
+      - name: Package tracked site files
+        run: |
+          mkdir -p /tmp/bilal-site
+          git archive HEAD | tar -x -C /tmp/bilal-site
+          rm -rf /tmp/bilal-site/.github /tmp/bilal-site/scripts
+          rm -f /tmp/bilal-site/seo-state.json /tmp/bilal-site/seo-audit.json /tmp/bilal-site/seo-aliases.json
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: /tmp/bilal-site
+      - uses: actions/deploy-pages@v4
+        id: deployment

@@ -10,30 +10,28 @@
 # ── ordinary search engines ─────────────────────────────────────────────────
 User-agent: *
 Disallow: /mosques.json
-Disallow: /s
+Disallow: /s$
 Disallow: /s.html
 Disallow: /bug.html
 Disallow: /diag.js
 
-# ── model training and agent crawlers ───────────────────────────────────────
+# ── model training and bulk collection crawlers ───────────────────────────────────────
 # Whole site, no exceptions. Naming them individually rather than relying on the
 # wildcard above, because several of these read a bare `User-agent: *` block as
 # advice about indexing and not about collection.
 User-agent: GPTBot
-User-agent: OAI-SearchBot
 User-agent: ChatGPT-User
+User-agent: Claude-User
+User-agent: Perplexity-User
+User-agent: MistralAI-User
 User-agent: ClaudeBot
 User-agent: Claude-Web
-User-agent: Claude-SearchBot
-User-agent: Claude-User
 User-agent: anthropic-ai
 User-agent: Google-Extended
 User-agent: Applebot-Extended
 User-agent: meta-externalagent
 User-agent: meta-externalfetcher
 User-agent: FacebookBot
-User-agent: PerplexityBot
-User-agent: Perplexity-User
 User-agent: CCBot
 User-agent: Bytespider
 User-agent: Amazonbot
@@ -47,10 +45,11 @@ User-agent: YouBot
 User-agent: AI2Bot
 User-agent: Timpibot
 User-agent: PanguBot
-User-agent: DuckAssistBot
-User-agent: MistralAI-User
 User-agent: Scrapy
 User-agent: SemrushBot
 User-agent: AhrefsBot
 User-agent: DataForSeoBot
 Disallow: /
+
+# Search discovery follows the ordinary rules above; user-triggered AI fetches remain blocked.
+Sitemap: https://bilalathan.co.uk/sitemap.xml

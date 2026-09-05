@@ -68,7 +68,7 @@ export function createNearSession({
     }
     return state;
   }
-  async function start({ place = null, refresh = false } = {}) {
+  async function start({ place = null, refresh = false, mosque = null } = {}) {
     cancel();
     const token = generation;
     controller = new AbortController();
@@ -82,7 +82,7 @@ export function createNearSession({
     emit();
     const [directory, position] = await Promise.allSettled([
       data.directory({ signal }),
-      place
+      mosque ? Promise.resolve(null) : place
         ? Promise.resolve({ lat: Number(place.lat), lng: Number(place.lng) })
         : getLocation({ signal, fresh: refresh }),
     ]);
@@ -99,7 +99,18 @@ export function createNearSession({
       here,
       area,
       locationFailed = false;
-    if (position.status === "fulfilled") {
+    if (mosque) {
+      const requested = state.catalogue.find(m => m.g === mosque);
+      if (!requested) {
+        state.busy = false;
+        state.screen = "empty";
+        emit();
+        return;
+      }
+      candidates = [requested];
+      here = null;
+      area = "Choose your location";
+    } else if (position.status === "fulfilled") {
       here = position.value;
       area = place?.label || "Where you are now";
       candidates = nearby(state.catalogue, here, [retained?.id, memory?.usual]);
