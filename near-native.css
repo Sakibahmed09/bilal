@@ -317,3 +317,15 @@ html.sheet-open .atmosphere {
   background: var(--sheet);
   pointer-events: none;
 }
+/* Native overscroll leaves the header in place when the gesture settles.
+   Keep its completion receipt in the reserved gap beneath that header. */
+[data-ios-standalone] .refresh-status.busy,
+[data-ios-standalone] .refresh-status.finished {
+  top: calc(66px + var(--safe-top));
+}
+@media (prefers-reduced-motion: reduce) {
+  .refresh-status.busy,
+  .refresh-status.finished {
+    top: calc(66px + var(--safe-top));
+  }
+}
